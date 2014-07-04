@@ -20,7 +20,7 @@ To parse LAST output:
   `nanotools_parse_last.pl -s sample <-b basedir>`
 
 To plot graphs:
-  `Rscript nanotools_plot_graphs.R sample`
+  `Rscript nanotools_plot_graphs.R <basename> <sample>`
   
 To run all:
   `nanotools_run_all.sh sample`
