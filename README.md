@@ -10,8 +10,8 @@ The tools expect a sample name to be provided. Samples reside within a directory
 To extract reads:
   `nanotools_extract_reads.pl -s sample <-b basedir>`
 
-To get length stats:
-  `nanotools_get_contig_stats.pl -s sample <-b basedir>`
+To get read length stats:
+  `nanotools_get_read_stats.pl -s sample <-b basedir>`
 
 To run LAST on all reads:
   `nanotools_run_last.pl -s sample <-b basedir>`
@@ -22,3 +22,5 @@ To parse LAST output:
 To plot graphs:
   `Rscript nanotools_plot_graphs.R sample`
   
+To run all:
+  `nanotools_run_all.sh sample`
