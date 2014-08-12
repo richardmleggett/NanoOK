@@ -2,28 +2,38 @@ package nanotools;
 
 public class Nanotools {
     public static void main(String[] args) {
-        NanotoolsOptions options = new NanotoolsOptions();        
+        NanotoolsOptions options = new NanotoolsOptions();
         options.parseArgs(args);
         options.checkDirectoryStructure();
 
+        References references = new References(options);
+                
+        ReportWriter rw = new ReportWriter(options, references);
+        rw.open();
+        
         ReadLengthsSummaryFile summary = new ReadLengthsSummaryFile(options.getLengthSummaryFilename());
+        rw.beginLengthsSection();
         summary.open(options.getSample());
         for (int type = 0; type<3; type++) {
-            ReadSetAnalysis set = new ReadSetAnalysis(options);
+            ReadSet set = new ReadSet(options);
             set.gatherLengthStats(type);
             summary.addReadSet(set);
+            rw.addReadSet(set);
         }
         summary.close();
+        rw.endLengthsSection();
 
         options.initialiseAlignmentSummaryFile();
-        References references = new References(options);
         OverallAlignmentStats stats = new OverallAlignmentStats();
-        LastParser parser = new LastParser(options, stats, references);
+        LastParser parser = new LastParser(options, stats, references, rw);
         parser.parseAll();
 
         RGraphPlotter plotter = new RGraphPlotter(options);
         plotter.plot(references);
         
+        rw.addReferencePlots(references);
+      
+        rw.close();
         /*
         if (options.getProgram().equals("readstats")) {
             ReadLengthsSummaryFile summary = new ReadLengthsSummaryFile(options.getLengthSummaryFilename());

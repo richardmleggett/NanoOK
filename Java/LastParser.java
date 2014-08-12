@@ -6,17 +6,19 @@ public class LastParser {
     private NanotoolsOptions options;
     private OverallAlignmentStats overallStats;
     private References references;
+    private ReportWriter report;
     
-    public LastParser(NanotoolsOptions o, OverallAlignmentStats s, References r) {
+    public LastParser(NanotoolsOptions o, OverallAlignmentStats s, References r, ReportWriter rw) {
         options = o;
         overallStats = s;
         references = r;
+        report = rw;
     }
     
     public int parseFile(String filename, AlignmentsTableFile summaryFile) {
         int bestPerfectKmer = 0;
         int nAlignments = 0;
-        ReferenceContig bestKmerReference = null;
+        ReferenceSequence bestKmerReference = null;
         String leafName = new File(filename).getName();
 
         try
@@ -30,7 +32,7 @@ public class LastParser {
                     if (line.startsWith("a score=")) {
                         AlignmentLine hitLine = new AlignmentLine(br.readLine());
                         AlignmentLine queryLine = new AlignmentLine(br.readLine());
-                        ReferenceContig reference = references.getReferenceById(hitLine.getName());
+                        ReferenceSequence reference = references.getReferenceById(hitLine.getName());
                         AlignmentEntry stat = processMatches(hitLine, queryLine, reference);
                         
                         if (stat.getLongest() > bestPerfectKmer) {
@@ -44,9 +46,10 @@ public class LastParser {
                     }
                 }
             } while (line != null);
-        } catch (Exception ioe) {
+        } catch (Exception e) {
             System.out.println("parseFile Exception:");
-            System.out.println(ioe);
+            e.printStackTrace();
+            System.exit(1);
         }
         
         if (nAlignments == 0) {
@@ -98,12 +101,14 @@ public class LastParser {
                         
             perFileSummary.closeFile();
             overallStats.writeSummaryFile(options.getAlignmentSummaryFilename());
+            report.beginAlignmentsSection(overallStats);
             references.writeReferenceStatFiles(type);
             references.writeReferenceSummary();
+            references.writeTexSummary(report.getPrintWriter());
         }
     }
     
-    public AlignmentEntry processMatches(AlignmentLine hit, AlignmentLine query, ReferenceContig reference) {
+    public AlignmentEntry processMatches(AlignmentLine hit, AlignmentLine query, ReferenceSequence reference) {
         String hitSeq = hit.getAlignment();
         String querySeq = query.getAlignment();
         int hitSize = hitSeq.length();
@@ -131,6 +136,10 @@ public class LastParser {
                         
             if (storeThis) {
                 if (currentSize > 0) {
+                    if (reference == null) {
+                        System.out.println("Oops: null reference");
+                        System.exit(1);
+                    }
                     reference.addPerfectKmer(currentSize);
                     total+=currentSize;
                     count++;

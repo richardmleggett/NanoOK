@@ -10,9 +10,7 @@ public class NanotoolsOptions {
     private String baseDir="/Users/leggettr/Documents/Projects/Nanopore";
     private String reference=null;
     private String sample=null;
-    private String alignmentSummaryFilename;
-    private String lengthSummaryFilename;
-    private String scriptsDir="/Users/leggettr/Documents/github/nanotools";
+    private String scriptsDir="/Users/leggettr/Documents/github/nanotools/scripts";
     private int coverageBinSize = 100;
     
     public void parseArgs(String[] args) {
@@ -76,9 +74,6 @@ public class NanotoolsOptions {
             System.out.println("Error: You must specify a sample");
             System.exit(1);
         }
-
-        alignmentSummaryFilename = baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "alignment_summary.txt";
-        lengthSummaryFilename = baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "length_summary.txt";
     }
     
     public String getProgram() {
@@ -120,33 +115,56 @@ public class NanotoolsOptions {
     
     public void checkDirectoryStructure() {
         File analysisDir = new File(baseDir + getSeparator() + sample + getSeparator() + "analysis");
+        File graphsDir = new File(baseDir + getSeparator() + sample + getSeparator() + "graphs");
+        File latexDir = new File(baseDir + getSeparator() + sample + getSeparator() + "latex");
         
         if (!analysisDir.exists()) {
             analysisDir.mkdir();
         }
+
+        if (!graphsDir.exists()) {
+            graphsDir.mkdir();
+        }    
+
+        if (!latexDir.exists()) {
+            latexDir.mkdir();
+        }    
     }
     
     public void initialiseAlignmentSummaryFile() {
         try {
-            PrintWriter pw = new PrintWriter(new FileWriter(alignmentSummaryFilename)); 
+            PrintWriter pw = new PrintWriter(new FileWriter(this.getAlignmentSummaryFilename())); 
             pw.close();
         } catch (IOException e) {
             System.out.println("initialiseAlignmentSummaryFile exception:");
-            System.out.println(e);
+            e.printStackTrace();
+            System.exit(1);
         }        
     }
 
 
     
     public String getAlignmentSummaryFilename() {
-        return alignmentSummaryFilename;
+        return baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "alignment_summary.txt";
     }
 
     public String getLengthSummaryFilename() {
-        return lengthSummaryFilename;
+        return baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "length_summary.txt";
     }    
     
     public String getScriptsDir() {
         return scriptsDir;
+    }
+    
+    public String getGraphsDir() {
+        return baseDir + getSeparator() + sample + getSeparator() + "graphs";
+    } 
+    
+    public String getAnalysisDir() {
+        return baseDir + getSeparator() + sample + getSeparator() + "analysis";
+    } 
+    
+    public String getTexFilename() {
+        return baseDir + getSeparator() + sample + getSeparator() + "latex" + getSeparator() + sample + ".tex";
     }
 }

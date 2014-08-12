@@ -49,6 +49,30 @@ public class OverallAlignmentStats {
         }
     }
     
+    public String getType() {
+        return type;
+    }
+    
+    public int getNumberOfReads() {
+        return nReads;
+    }
+    
+    public int getNumberOfReadsWithAlignments() {
+        return nReadsWithAlignments;
+    }
+    
+    public int getNumberOfReadsWithoutAlignments() {
+        return nReadsWithoutAlignments;
+    }
+    
+    public double getPercentOfReadsWithAlignments() {
+        return (100.0 * (double)nReadsWithAlignments) / (double)nReads;
+    }
+    
+    public double getPercentOfReadsWithoutAlignments() {
+        return (100.0 * (double)nReadsWithoutAlignments) / (double)nReads;
+    }    
+    
     public void printStats() {
         System.out.println("Parse " + type + " alignments");
         System.out.println(type + " reads: " + nReads);
@@ -67,7 +91,8 @@ public class OverallAlignmentStats {
             pw.close();
         } catch (IOException e) {
             System.out.println("writeSummaryFile exception:");
-            System.out.println(e);
-        }
+            e.printStackTrace();
+            System.exit(1);
+        }        
     }
 }

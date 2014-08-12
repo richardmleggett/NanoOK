@@ -4,8 +4,9 @@ import java.io.BufferedReader;
 import java.io.*;
 import java.util.*;
 
-public class ReadSetAnalysis {
+public class ReadSet {
     private NanotoolsOptions options;
+    private PrintWriter pw;
     private int[] lengths = new int[NanotoolsOptions.MAX_READ_LENGTH];
     private int nReads = 0;
     private int nReadFiles = 0;
@@ -19,12 +20,29 @@ public class ReadSetAnalysis {
     private int n90 = 0;
     private int n90Count = 0;
    
-    public ReadSetAnalysis(NanotoolsOptions o) {
+    public ReadSet(NanotoolsOptions o) {
         options = o;
     }
     
-    private void addLength(int l) {
+    private void openLengthsFile() {
+        String filename = options.getAnalysisDir() + options.getSeparator() + "all_" + type + "_lengths.txt";
+        try {
+            pw = new PrintWriter(new FileWriter(filename)); 
+        } catch (IOException e) {
+            System.out.println("openLengthsFile exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }        
+    }
+    
+    private void closeLengthsFile() {
+        pw.close();
+    }
+    
+    private void addLength(String id, int l) {
         lengths[l]++;
+        
+        pw.println(id + "\t" + l);
         
         if (l > longest) {
             longest = l;
@@ -52,7 +70,7 @@ public class ReadSetAnalysis {
 
                 if ((line == null) || (line.startsWith(">"))) {                    
                     if (id != null) {
-                        addLength(contigLength);
+                        addLength(id, contigLength);
                         readsInThisFile++;
                         
                         if (readsInThisFile > 1) {
@@ -112,6 +130,8 @@ public class ReadSetAnalysis {
         
         System.out.println("Gathering stats on "+type+" reads");
         
+        openLengthsFile();
+        
         for (File file : listOfFiles) {
             if (file.isFile()) {
                 if (file.getName().endsWith(".fasta")) {
@@ -120,6 +140,8 @@ public class ReadSetAnalysis {
                 }
             }
         }
+        
+        closeLengthsFile();
              
         meanLength = (double)basesSum / (double)nReads;        
         calculateN();        

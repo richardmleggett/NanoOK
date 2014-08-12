@@ -4,7 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class ReferenceContig {
+public class ReferenceSequence {
     private String id = null;
     private String name = null;
     private int size = 0;
@@ -15,8 +15,8 @@ public class ReferenceContig {
     private int longestPerfectKmer = 0;
     private int nReadsWithAlignments = 0;
     
-    public ReferenceContig(String i, int s, String n) {
-        id = n;
+    public ReferenceSequence(String i, int s, String n) {
+        id = i;
         size = s;
         name = n;
         coverage = new int[size];
@@ -28,6 +28,18 @@ public class ReferenceContig {
     
     public String getName() {
         return name;
+    }
+    
+    public int getSize() {
+        return size;
+    }
+    
+    public int getNumberOfReadsWithAlignments() {
+        return nReadsWithAlignments;
+    }
+    
+    public int getLongestPerfectKmer() {
+        return longestPerfectKmer;
     }
 
     public void clearStats() {
@@ -87,7 +99,8 @@ public class ReferenceContig {
             pw.close();
         } catch (IOException e) {
             System.out.println("writeCoverageData exception:");
-            System.out.println(e);
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -100,7 +113,8 @@ public class ReferenceContig {
             pw.close();
         } catch (IOException e) {
             System.out.println("writePerfectKmerHist exception:");
-            System.out.println(e);
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -108,12 +122,19 @@ public class ReferenceContig {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));            
             for (int i=1; i<=longestPerfectKmer; i++) {
-                pw.printf("%d\t%d\t%.2f\n", i, readBestPerfectKmer[i], ((double)100.0 * readBestPerfectKmer[i]) / (double)nReadsWithAlignments);
+                double pc = 0;
+
+                if ((readBestPerfectKmer[i] > 0) && (nReadsWithAlignments > 0)) {
+                    pc = ((double)100.0 * readBestPerfectKmer[i]) / (double)nReadsWithAlignments;
+                } 
+
+                pw.printf("%d\t%d\t%.2f\n", i, readBestPerfectKmer[i], pc);
             }            
             pw.close();
         } catch (IOException e) {
             System.out.println("writeBestPerfectKmerHist exception:");
-            System.out.println(e);
+            e.printStackTrace();
+            System.exit(1);
         }
     }    
 
@@ -121,12 +142,19 @@ public class ReferenceContig {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));            
             for (int i=1; i<=longestPerfectKmer; i++) {
-                pw.printf("%d\t%d\t%.2f\n", i, readCumulativeBestPerfectKmer[i], ((double)100.0 * readCumulativeBestPerfectKmer[i]) / (double)nReadsWithAlignments);
+                double pc = 0;
+                
+                if ((readCumulativeBestPerfectKmer[i]> 0) && (nReadsWithAlignments > 0)){
+                    pc = ((double)100.0 * readCumulativeBestPerfectKmer[i]) / (double)nReadsWithAlignments;
+                }
+                
+                pw.printf("%d\t%d\t%.2f\n", i, readCumulativeBestPerfectKmer[i], pc);
             }            
             pw.close();
         } catch (IOException e) {
             System.out.println("writeBestPerfectKmerHistCumulative exception:");
-            System.out.println(e);
+            e.printStackTrace();
+            System.exit(1);
         }
     }    
     

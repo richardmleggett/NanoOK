@@ -19,11 +19,12 @@ public class ReadLengthsSummaryFile {
             pw.printf("%-10s %-8s %-10s %-10s %-8s %-8s %-8s %-8s %-8s %-8s\n", "Type", "NumReads", "TotalBases", "Mean", "Long", "Short", "N50", "N50Count", "N90", "N90Count"); 
         } catch (IOException e) {
             System.out.println("ReadLengthsSummaryFile exception:");
-            System.out.println(e);
+            e.printStackTrace();
+            System.exit(1);
         }        
     }
     
-    public void addReadSet(ReadSetAnalysis r) {
+    public void addReadSet(ReadSet r) {
         pw.printf("%-10s %-8d %-10d %-10.2f %-8d %-8d %-8d %-8d %-8d %-8d\n", r.getType(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
     }
     
