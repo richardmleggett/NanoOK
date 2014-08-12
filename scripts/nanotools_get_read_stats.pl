@@ -44,11 +44,11 @@ print "Merging 2D reads\n";
 system("find ${basedir}/${sample}/fasta/2D -name '*BaseCalled_2D.fasta' | xargs cat > ${basedir}/${sample}/fasta/all_2D.fasta");
 
 print "Generating stats for template reads\n";
-system("get_contig_stats.pl -i ${basedir}/${sample}/fasta/all_Template.fasta -a -g ${basedir}/${sample}/all_Template_fasta_hist.txt -r ${basedir}/${sample}/all_Template_lengths.txt -l 500,1000,1500,2000,2500,3000,3500,4000,4500,5000 > ${basedir}/${sample}/all_Template_stats.txt");
+system("get_contig_stats.pl -i ${basedir}/${sample}/fasta/all_Template.fasta -a -g ${basedir}/${sample}/analysis/all_Template_fasta_hist.txt -r ${basedir}/${sample}/analysis/all_Template_lengths.txt -l 500,1000,1500,2000,2500,3000,3500,4000,4500,5000 > ${basedir}/${sample}/analysis/all_Template_stats.txt");
 print "Generating stats for complement reads\n";
-system("get_contig_stats.pl -i ${basedir}/${sample}/fasta/all_Complement.fasta -a -g ${basedir}/${sample}/all_Complement_fasta_hist.txt -r ${basedir}/${sample}/all_Complement_lengths.txt -l 500,1000,1500,2000,2500,3000,3500,4000,4500,5000 > ${basedir}/${sample}/all_Complement_stats.txt");
+system("get_contig_stats.pl -i ${basedir}/${sample}/fasta/all_Complement.fasta -a -g ${basedir}/${sample}/analysis/all_Complement_fasta_hist.txt -r ${basedir}/${sample}/analysis/all_Complement_lengths.txt -l 500,1000,1500,2000,2500,3000,3500,4000,4500,5000 > ${basedir}/${sample}/analysis/all_Complement_stats.txt");
 print "Generating stats for 2D reads\n";
-system("get_contig_stats.pl -i ${basedir}/${sample}/fasta/all_2D.fasta -a -g ${basedir}/${sample}/all_2D_fasta_hist.txt -r ${basedir}/${sample}/all_2D_lengths.txt -l 500,1000,1500,2000,2500,3000,3500,4000,4500,5000 > ${basedir}/${sample}/all_2D_stats.txt");
+system("get_contig_stats.pl -i ${basedir}/${sample}/fasta/all_2D.fasta -a -g ${basedir}/${sample}/analysis/all_2D_fasta_hist.txt -r ${basedir}/${sample}/analysis/all_2D_lengths.txt -l 500,1000,1500,2000,2500,3000,3500,4000,4500,5000 > ${basedir}/${sample}/analysis/all_2D_stats.txt");
 
 system("echo \"\" >> ${basedir}/${sample}/summary.txt");
 system("cat ${basedir}/${sample}/all_Template_stats.txt | grep 'Headings:' | sed 's/Headings:/  ReadType/' >> ${basedir}/${sample}/summary.txt");

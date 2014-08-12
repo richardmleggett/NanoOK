@@ -6,14 +6,16 @@ use Getopt::Long;
 
 my $sample;
 my $help_requested;
-my $basedir="/Users/leggettr/Documents/Projects/Nanopore/";
+my $basedir="/Users/leggettr/Documents/Projects/Nanopore";
 my $coverage_bin_size = 100;
 my $genome_size = 50000;
+my $reference = $basedir."/references/lambdadb";
 
 my $n_reads;
 my $n_reads_with_alignments;
 my $n_reads_without_alignments;
 my %contig_lengths;
+my %ref_lengths;
 my @perfect_cumulative_n;
 my @perfect_best;
 my @coverage;
@@ -24,6 +26,7 @@ my @count_at_position;
 'b|basedir:s'     => \$basedir,
 'c|coveragebin:i' => \$coverage_bin_size,
 'g|genomesize:i'  => \$genome_size,
+'r|reference:s'   => \$reference,
 's|sample:s'      => \$sample,
 'h|help'          => \$help_requested
 );
@@ -45,6 +48,8 @@ if (defined $help_requested) {
 }
 
 die "You must specify a sample name" if not defined $sample;
+
+my $sizes_file = $reference.".fasta.sizes";
 
 print "Base directory: $basedir\n";
 print "Sample: $sample\n";
@@ -313,4 +318,23 @@ sub process_matches
     }
     
     return ($identical_bases, $longest, $total/$count, $loop_to);
+}
+
+sub read_sizes_file
+{
+    open(MYFILE, $sizes_file) or die "Can't open sizes file $sizes_file\n";
+    
+    while (<MYFILE>) {
+        chomp(my $line = $_);
+        if ($line =~ /(\S+)\t(\d+)/) {
+            my $id = $1;
+            my $length = $2;
+            
+            die "Error: Ref ID $id already defined!\n" if (defined $ref_lengths{$id});
+            $ref_lengths{$id} = $length;
+            print $id, "\t", $length, "\n";
+        }
+    }
+    
+    close(MYFILE);
 }
