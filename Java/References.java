@@ -4,12 +4,12 @@ import java.io.*;
 import java.util.*;
 
 public class References {
-    private NanotoolsOptions options;
+    private NanoOKOptions options;
     private File sizesFile;
     private Hashtable<String,ReferenceSequence> referenceSequences = new Hashtable();
     private int longestId = 0;
         
-    public References(NanotoolsOptions o)
+    public References(NanoOKOptions o)
     {
         options = o;
         getSizesFile();
@@ -25,7 +25,7 @@ public class References {
                     System.out.println("Error: reference contig ID "+values[0]+" occurs more than once.");
                     System.exit(1);
                 } else {
-                    referenceSequences.put(values[0], new ReferenceSequence(values[0], Integer.parseInt(values[1]), values[2]));
+                    referenceSequences.put(values[0], new ReferenceSequence(values[0], Integer.parseInt(values[1]), values[2], options));
                 }
                 
                 if (values[0].length() > longestId) {
@@ -106,7 +106,8 @@ public class References {
             String formatString = "%-"+longestId+"s %-12s %-10s %-10s\n";
             pw.println("");
             pw.printf(formatString, "Id", "Size", "ReadsAlign", "LongPerfKm");        
-            Set<String> keys = referenceSequences.keySet();
+            List<String> keys = new ArrayList<String>(referenceSequences.keySet());
+            Collections.sort(keys);
             for(String id : keys) {
                 referenceSequences.get(id).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10d\n");
             }
@@ -124,7 +125,8 @@ public class References {
         pw.println("\\fontsize{9pt}{11pt}\\selectfont");
         pw.println("\\begin{tabular}{l c c c}");
         pw.println("{\\bf Id} & {\\bf Size} & {\\bf Reads aligning} & {\\bf Longest Perfect Kmer} \\\\");
-        Set<String> keys = referenceSequences.keySet();
+        List<String> keys = new ArrayList<String>(referenceSequences.keySet());
+        Collections.sort(keys);
         for(String id : keys) {
             ReferenceSequence r = referenceSequences.get(id);
             pw.println(r.getName().replaceAll("_", " ") + " & " + r.getSize() + " & " + r.getNumberOfReadsWithAlignments() + " & " + r.getLongestPerfectKmer() + " \\\\");

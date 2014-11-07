@@ -1,15 +1,18 @@
 package nanotools;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class ReportWriter {
-    private NanotoolsOptions options;
+    private NanoOKOptions options;
     private References references;
     private PrintWriter pw;
     private String sample;
     
-    public ReportWriter(NanotoolsOptions o, References r) {
+    public ReportWriter(NanoOKOptions o, References r) {
         options = o;
         references = r;
         sample = o.getSample().replaceAll("_", "\\\\_");
@@ -94,34 +97,50 @@ public class ReportWriter {
     
     public void beginReferenceSection(ReferenceSequence refSeq) {
         String id = refSeq.getName().replaceAll("_", " ");
-        
+
         pw.println("\\clearpage");
+        pw.println("\\subsection*{" + id + " error analysis}");
+        pw.println("\\vspace{-3mm}");
+        pw.println("\\begin{table}[H]");
+        pw.println("{\\footnotesize");
+        pw.println("\\fontsize{9pt}{11pt}\\selectfont");
+        pw.println("\\begin{tabular}{l c c}");       
+        
+        pw.printf("Overall (all read) identity & %.2f\\%% \\\\", refSeq.getReadPercentIdentical());                
+        pw.printf("Identical bases per 100 aligned bases & %.2f\\%% \\\\", refSeq.getAlignedPercentIdentical());
+        pw.printf("Inserted bases per 100 aligned bases & %.2f\\%% \\\\", refSeq.getPercentInsertionErrors());
+        pw.printf("Deleted bases per 100 aligned bases & %.2f\\%% \\\\", refSeq.getPercentDeletionErrors());
+        pw.printf("Substitutions per 100 aligned bases & %.2f\\%% \\\\", refSeq.getPercentSubstitutionErrors());
+        pw.println("\\end{tabular}");
+        pw.println("}");
+        pw.println("\\end{table}");        
+        
         pw.println("\\subsection*{" + id + " coverage}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[width=.8\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_coverage.pdf}");
-        pw.println("\\includegraphics[width=.8\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_coverage.pdf}");
-        pw.println("\\includegraphics[width=.8\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_coverage.pdf}");
+        pw.println("\\includegraphics[width=.5\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_coverage.pdf}");
+        pw.println("\\includegraphics[width=.5\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_coverage.pdf}");
+        pw.println("\\includegraphics[width=.5\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_coverage.pdf}");
         pw.println("\\end{figure}");
 
-        pw.println("\\clearpage");
         pw.println("\\subsection*{" + id + " perfect kmers}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Template_cumulative_perfect_kmers.pdf}");
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Template_best_perfect_kmers.pdf}");
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_cumulative_perfect_kmers.pdf}");
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_best_perfect_kmers.pdf}");
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_cumulative_perfect_kmers.pdf}");        
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_best_perfect_kmers.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Template_cumulative_perfect_kmers.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_cumulative_perfect_kmers.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_cumulative_perfect_kmers.pdf}");        
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Template_best_perfect_kmers.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_best_perfect_kmers.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_best_perfect_kmers.pdf}");
         pw.println("\\end{figure}");
     }
     
     public void addReferencePlots(References refs) {
-        Set<String> ids = refs.getAllIds();
-        for (String id : ids) {
+        List<String> keys = new ArrayList<String>(refs.getAllIds());
+        Collections.sort(keys);
+        for (String id : keys) {
             beginReferenceSection(refs.getReferenceById(id));
         }
     }

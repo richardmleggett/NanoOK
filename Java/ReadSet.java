@@ -5,14 +5,14 @@ import java.io.*;
 import java.util.*;
 
 public class ReadSet {
-    private NanotoolsOptions options;
+    private NanoOKOptions options;
     private PrintWriter pw;
-    private int[] lengths = new int[NanotoolsOptions.MAX_READ_LENGTH];
+    private int[] lengths = new int[NanoOKOptions.MAX_READ_LENGTH];
     private int nReads = 0;
     private int nReadFiles = 0;
     private String type;
     private int longest = 0;
-    private int shortest = NanotoolsOptions.MAX_READ_LENGTH;
+    private int shortest = NanoOKOptions.MAX_READ_LENGTH;
     private int basesSum = 0;
     private double meanLength = 0;
     private int n50 = 0;
@@ -20,7 +20,7 @@ public class ReadSet {
     private int n90 = 0;
     private int n90Count = 0;
    
-    public ReadSet(NanotoolsOptions o) {
+    public ReadSet(NanoOKOptions o) {
         options = o;
     }
     

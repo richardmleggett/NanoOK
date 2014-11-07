@@ -48,4 +48,12 @@ public class AlignmentEntry {
     public double getMeanPerfectKmer() {
         return meanPerfectKmer;
     }
+    
+    public int getQuerySize() {
+        return querySize;
+    }
+    
+    public int getHitSize() {
+        return hitSize;
+    }
 }

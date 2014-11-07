@@ -9,8 +9,8 @@ public class OverallAlignmentStats {
     private int nReads = 0;
     private int nReadsWithAlignments = 0;
     private int nReadsWithoutAlignments = 0;
-    private int[] readBestPerfectKmer = new int[NanotoolsOptions.MAX_KMER];
-    private int[] readCumulativeBestPerfectKmer = new int[NanotoolsOptions.MAX_KMER];
+    private int[] readBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
+    private int[] readCumulativeBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
     
     public OverallAlignmentStats() {
     }
@@ -20,12 +20,12 @@ public class OverallAlignmentStats {
         nReads = 0;
         nReadsWithAlignments = 0;
         nReadsWithoutAlignments = 0;
-        for (int i=0; i<NanotoolsOptions.MAX_KMER; i++) {
+        for (int i=0; i<NanoOKOptions.MAX_KMER; i++) {
             readBestPerfectKmer[i] = 0;
             readCumulativeBestPerfectKmer[i] = 0;
         }
     }
-    
+        
     public void addReadWithAlignment() {
         nReads++;
         nReadsWithAlignments++;
@@ -35,9 +35,9 @@ public class OverallAlignmentStats {
         nReads++;
         nReadsWithoutAlignments++;
     }
-
+        
     public void addReadBestKmer(int bestKmer) {
-        if (bestKmer >= NanotoolsOptions.MAX_KMER) {
+        if (bestKmer >= NanoOKOptions.MAX_KMER) {
             System.out.println("Error: the unlikely event of a best kmer size of "+bestKmer+" has happened!");
             System.exit(1);
         }

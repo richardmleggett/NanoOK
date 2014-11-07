@@ -4,9 +4,9 @@ import java.io.*;
 import java.util.Set;
 
 public class RGraphPlotter {
-    private NanotoolsOptions options;
+    private NanoOKOptions options;
 
-    public RGraphPlotter(NanotoolsOptions o) {
+    public RGraphPlotter(NanoOKOptions o) {
         options = o;
     }
     

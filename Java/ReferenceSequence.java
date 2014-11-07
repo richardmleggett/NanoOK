@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class ReferenceSequence {
+    NanoOKOptions options = null;
     private String id = null;
     private String name = null;
     private int size = 0;
@@ -14,12 +15,23 @@ public class ReferenceSequence {
     private int[] readCumulativeBestPerfectKmer = new int[1000];
     private int longestPerfectKmer = 0;
     private int nReadsWithAlignments = 0;
+    private int totalReadBases = 0;
+    private int totalAlignedBases = 0;
+    private int totalIdentical = 0;
+    private int nDeletionErrors = 0;
+    private int nInsertionErrors = 0;
+    private int nSubstitutionErrors = 0;
+    private int nInsertedBases = 0;
+    private int nDeletedBases = 0;
     
-    public ReferenceSequence(String i, int s, String n) {
+    public ReferenceSequence(String i, int s, String n, NanoOKOptions o) {
         id = i;
         size = s;
         name = n;
+        options = o;
         coverage = new int[size];
+        
+        System.out.println("Got reference "+n);
     }
     
     public String getId() {
@@ -43,7 +55,7 @@ public class ReferenceSequence {
     }
 
     public void clearStats() {
-        for (int i=0; i<NanotoolsOptions.MAX_KMER; i++) {
+        for (int i=0; i<NanoOKOptions.MAX_KMER; i++) {
             perfectKmerCounts[i] = 0;
             readBestPerfectKmer[i] = 0;
             readCumulativeBestPerfectKmer[i] = 0;
@@ -161,4 +173,59 @@ public class ReferenceSequence {
     public void writeSummary(PrintWriter pw, String format) {
         pw.printf(format, name, size, nReadsWithAlignments, longestPerfectKmer);
     }
+    
+    public void addAlignmentStats(int querySize, int alignedSize, int identicalBases) {
+        totalAlignedBases += alignedSize;
+        totalReadBases += querySize;
+        totalIdentical += identicalBases;
+    }
+    
+    public void addDeletionError(int size, String kmer) {
+        nDeletionErrors++;
+        nDeletedBases += size;
+        System.out.println("Kmer before deletion "+kmer);
+    }
+    
+    public void addInsertionError(int size, String kmer) {
+        nInsertionErrors++;
+        nInsertedBases += size;
+        System.out.println("Kmer before insertion "+kmer);
+    }
+    
+    public void addSubstitutionError(String kmer) {
+        nSubstitutionErrors++;
+        System.out.println("Kmer before substitution "+kmer);
+    }
+    
+    public double getAlignedPercentIdentical() {
+        return (100.0 * totalIdentical) / totalAlignedBases;
+    }
+    
+    public double getReadPercentIdentical() {
+        return (100.0 * totalIdentical) / totalReadBases;
+    }
+
+    public int getNumberOfInsertionErrors() {
+        return nInsertionErrors;
+    }
+
+    public int getNumberOfDeletionErrors() {
+        return nDeletionErrors;
+    }
+    
+    public int getNumberOfSubstitutionErrors() {
+        return nSubstitutionErrors;
+    }
+    
+    public double getPercentInsertionErrors() {
+        return (100.0 * nInsertedBases) / (totalAlignedBases);
+    }
+
+    public double getPercentDeletionErrors() {
+        return (100.0 * nDeletedBases) / (totalAlignedBases);
+    }
+    
+    public double getPercentSubstitutionErrors() {
+        return (100.0 * nSubstitutionErrors) / (totalAlignedBases);
+    }    
 }

@@ -2,13 +2,16 @@ package nanotools;
 
 import java.io.*;
 
-public class LastParser {
-    private NanotoolsOptions options;
+public class LastParser extends AlignerParser {
+    private NanoOKOptions options;
     private OverallAlignmentStats overallStats;
     private References references;
     private ReportWriter report;
+    private int deletionSize = 0;
+    private int insertionSize = 0;
+        
     
-    public LastParser(NanotoolsOptions o, OverallAlignmentStats s, References r, ReportWriter rw) {
+    public LastParser(NanoOKOptions o, OverallAlignmentStats s, References r, ReportWriter rw) {
         options = o;
         overallStats = s;
         references = r;
@@ -34,7 +37,8 @@ public class LastParser {
                         AlignmentLine queryLine = new AlignmentLine(br.readLine());
                         ReferenceSequence reference = references.getReferenceById(hitLine.getName());
                         AlignmentEntry stat = processMatches(hitLine, queryLine, reference);
-                        
+                        reference.addAlignmentStats(stat.getQuerySize(), stat.getAlignmentSize(), stat.getIdenticalBases());
+
                         if (stat.getLongest() > bestPerfectKmer) {
                             bestPerfectKmer = stat.getLongest();
                             bestKmerReference = reference;
@@ -108,6 +112,18 @@ public class LastParser {
         }
     }
     
+    private void checkStoreInsertionsOrDeletions(ReferenceSequence reference, String errorKmer) {
+        if (deletionSize > 0) {
+            reference.addDeletionError(deletionSize, errorKmer);
+            deletionSize = 0;
+        }
+                
+        if (insertionSize > 0) {
+            reference.addInsertionError(insertionSize, errorKmer);
+            insertionSize = 0;
+        }
+    }
+    
     public AlignmentEntry processMatches(AlignmentLine hit, AlignmentLine query, ReferenceSequence reference) {
         String hitSeq = hit.getAlignment();
         String querySeq = query.getAlignment();
@@ -119,22 +135,65 @@ public class LastParser {
         int total = 0;
         int count = 0;
         int longest = 0;
+        String currentKmer = "";
+        String errorKmer = "";
         
+        insertionSize = 0;
+        deletionSize = 0;
+
         for (int i=0; i<loopTo; i++) {
-            boolean storeThis = false;
+            boolean fStoreKmer = false;
             
             if (hitSeq.charAt(i) == querySeq.charAt(i)) {
+                checkStoreInsertionsOrDeletions(reference, errorKmer);
+                errorKmer = "";
                 identicalBases++;
                 currentSize++;
-                
+                currentKmer += querySeq.charAt(i);
+                                                
                 if (i == (loopTo-1)) {
-                    storeThis = true;
+                    fStoreKmer = true;
                 }
             } else {
-                storeThis = true;
+                fStoreKmer = true;
+                if (hitSeq.charAt(i) == '-') {
+                    if (deletionSize > 0) {
+                        checkStoreInsertionsOrDeletions(reference, errorKmer);
+                        errorKmer = "";
+                    }
+                    
+                    insertionSize++;
+                    
+                    // If this is a new insertion and we have a previous kmer, store it
+                    if ((insertionSize == 1) && (currentKmer != "")) {
+                        errorKmer = currentKmer;
+                    }
+                } else if (querySeq.charAt(i) == '-') {
+                    if (insertionSize > 0) {
+                        checkStoreInsertionsOrDeletions(reference, errorKmer);
+                        errorKmer = "";
+                    }
+
+                    deletionSize++;
+
+                    // If this is a new deletion and we have a previous kmer, store it
+                    if ((deletionSize == 1) && (currentKmer != "")) {
+                        errorKmer = currentKmer;
+                    }
+                } else {
+                    checkStoreInsertionsOrDeletions(reference, errorKmer);
+                    errorKmer = "";
+                    
+                    if (currentKmer != "") {
+                        errorKmer = currentKmer;
+                    }
+                    
+                    reference.addSubstitutionError(errorKmer);
+                }
+                currentKmer = "";
             }
                         
-            if (storeThis) {
+            if (fStoreKmer) {
                 if (currentSize > 0) {
                     if (reference == null) {
                         System.out.println("Oops: null reference");
@@ -153,6 +212,6 @@ public class LastParser {
             }            
         }
         
-        return new AlignmentEntry(hit.getAlnSize(), query.getAlnSize(), identicalBases, longest, total, count, loopTo);
+        return new AlignmentEntry(hit.getSeqSize(), query.getSeqSize(), identicalBases, longest, total, count, loopTo);
     }
 }
