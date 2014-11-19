@@ -13,6 +13,7 @@ public class References {
     {
         options = o;
         getSizesFile();
+        GCParser gcp = new GCParser();
         
         try
         {
@@ -20,18 +21,25 @@ public class References {
             String line = br.readLine();
             while (line != null) {
                 String[] values = line.split("\\t");
+                int size = Integer.parseInt(values[1]);
+                float b = size / 1000;
+                int binSize = 500 * (1 + Math.round(b / 500));
+                
+                System.out.println("size = " + size + " Binsize = " + binSize);
+                
                 ReferenceSequence refSeq = referenceSequences.get(values[0]);
                 if (refSeq != null) {
                     System.out.println("Error: reference contig ID "+values[0]+" occurs more than once.");
                     System.exit(1);
                 } else {
-                    referenceSequences.put(values[0], new ReferenceSequence(values[0], Integer.parseInt(values[1]), values[2], options));
+                    referenceSequences.put(values[0], new ReferenceSequence(values[0], size, values[2]));
                 }
                 
                 if (values[0].length() > longestId) {
                     longestId = values[0].length();
                 }
                 
+                gcp.parseSequence(o.getReference() + ".fasta", values[0], options.getAnalysisDir()+options.getSeparator()+values[2]+"_gc.txt", binSize);               
                 line = br.readLine();
             }
         } catch (Exception e) {
@@ -51,14 +59,7 @@ public class References {
         
         return r;
     }
-    
-    public void clearReferenceStats() {
-        Set<String> keys = referenceSequences.keySet();
-        for(String id : keys) {
-            referenceSequences.get(id).clearStats();
-        }        
-    }
-    
+        
     public Set<String> getAllIds() {
         return referenceSequences.keySet();
     }
@@ -69,10 +70,10 @@ public class References {
         
         for(String id : keys) {
             ReferenceSequence ref = referenceSequences.get(id);
-            ref.writeCoverageData(analysisDir + options.getSeparator() + ref.getName() + "_" + options.getTypeFromInt(type) + "_coverage.txt", options.getCoverageBinSize());
-            ref.writePerfectKmerHist(analysisDir + options.getSeparator() + ref.getName() + "_" + options.getTypeFromInt(type) + "_all_perfect_kmers.txt");
-            ref.writeBestPerfectKmerHist(analysisDir + options.getSeparator() + ref.getName()+ "_" + options.getTypeFromInt(type) + "_best_perfect_kmers.txt");
-            ref.writeBestPerfectKmerHistCumulative(analysisDir + options.getSeparator() + ref.getName()+ "_" + options.getTypeFromInt(type) + "_cumulative_perfect_kmers.txt");
+            ref.getStatsByType(type).writeCoverageData(analysisDir + options.getSeparator() + ref.getName() + "_" + options.getTypeFromInt(type) + "_coverage.txt", options.getCoverageBinSize());
+            ref.getStatsByType(type).writePerfectKmerHist(analysisDir + options.getSeparator() + ref.getName() + "_" + options.getTypeFromInt(type) + "_all_perfect_kmers.txt");
+            ref.getStatsByType(type).writeBestPerfectKmerHist(analysisDir + options.getSeparator() + ref.getName()+ "_" + options.getTypeFromInt(type) + "_best_perfect_kmers.txt");
+            ref.getStatsByType(type).writeBestPerfectKmerHistCumulative(analysisDir + options.getSeparator() + ref.getName()+ "_" + options.getTypeFromInt(type) + "_cumulative_perfect_kmers.txt");
         }        
     }
     
@@ -100,7 +101,7 @@ public class References {
         }
     }
     
-    public void writeReferenceSummary() {
+    public void writeReferenceSummary(int type) {
        try {
             PrintWriter pw = new PrintWriter(new FileWriter(options.getAlignmentSummaryFilename(), true));
             String formatString = "%-"+longestId+"s %-12s %-10s %-10s\n";
@@ -109,7 +110,7 @@ public class References {
             List<String> keys = new ArrayList<String>(referenceSequences.keySet());
             Collections.sort(keys);
             for(String id : keys) {
-                referenceSequences.get(id).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10d\n");
+                referenceSequences.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10d\n");
             }
             pw.close();
         } catch (IOException e) {
@@ -119,7 +120,7 @@ public class References {
         }
     }
     
-    public void writeTexSummary(PrintWriter pw) {
+    public void writeTexSummary(int type, PrintWriter pw) {
         pw.println("\\begin{table}[H]");
         pw.println("{\\footnotesize");
         pw.println("\\fontsize{9pt}{11pt}\\selectfont");
@@ -129,7 +130,7 @@ public class References {
         Collections.sort(keys);
         for(String id : keys) {
             ReferenceSequence r = referenceSequences.get(id);
-            pw.println(r.getName().replaceAll("_", " ") + " & " + r.getSize() + " & " + r.getNumberOfReadsWithAlignments() + " & " + r.getLongestPerfectKmer() + " \\\\");
+            pw.println(r.getName().replaceAll("_", " ") + " & " + r.getSize() + " & " + r.getStatsByType(type).getNumberOfReadsWithAlignments() + " & " + r.getStatsByType(type).getLongestPerfectKmer() + " \\\\");
         }
         pw.println("\\end{tabular}");
         pw.println("}");

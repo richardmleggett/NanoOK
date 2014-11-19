@@ -24,8 +24,8 @@ public class ReadLengthsSummaryFile {
         }        
     }
     
-    public void addReadSet(ReadSet r) {
-        pw.printf("%-10s %-8d %-10d %-10.2f %-8d %-8d %-8d %-8d %-8d %-8d\n", r.getType(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
+    public void addReadSetStats(ReadSetStats r) {
+        pw.printf("%-10s %-8d %-10d %-10.2f %-8d %-8d %-8d %-8d %-8d %-8d\n", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
     }
     
     public void close() {

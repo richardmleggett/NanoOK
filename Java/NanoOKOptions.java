@@ -6,6 +6,12 @@ public class NanoOKOptions {
     public final static int MAX_KMER = 1000;
     public final static int MAX_READ_LENGTH = 1000000;
     public final static int MAX_READS = 1000000;
+    public final static int TYPE_TEMPLATE = 0;
+    public final static int TYPE_COMPLEMENT = 1;
+    public final static int TYPE_2D = 2;
+    public final static int TYPE_INSERTION = 0;
+    public final static int TYPE_DELETION = 1;
+    public final static int TYPE_SUBSTITUTION = 2;
     private String program="";
     private String baseDir="/Users/leggettr/Documents/Projects/Nanopore";
     private String reference=null;
@@ -96,13 +102,26 @@ public class NanoOKOptions {
         return coverageBinSize;
     }
         
-    public String getTypeFromInt(int n) {
+    public static String getTypeFromInt(int n) {
         String typeString;
         
         switch(n) {
-            case 0: typeString = "Template"; break;
-            case 1: typeString = "Complement"; break;
-            case 2: typeString = "2D"; break;
+            case TYPE_TEMPLATE: typeString = "Template"; break;
+            case TYPE_COMPLEMENT: typeString = "Complement"; break;
+            case TYPE_2D: typeString = "2D"; break;
+            default: typeString = "Unknown"; break;
+        }
+        
+        return typeString;
+    }
+
+    public static String getErrorTypeFromInt(int n) {
+        String typeString;
+        
+        switch(n) {
+            case TYPE_INSERTION: typeString = "Insertion"; break;
+            case TYPE_DELETION: typeString = "Deletion"; break;
+            case TYPE_SUBSTITUTION: typeString = "Substitution"; break;
             default: typeString = "Unknown"; break;
         }
         
@@ -141,8 +160,6 @@ public class NanoOKOptions {
             System.exit(1);
         }        
     }
-
-
     
     public String getAlignmentSummaryFilename() {
         return baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "alignment_summary.txt";

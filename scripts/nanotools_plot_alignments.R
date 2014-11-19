@@ -19,6 +19,9 @@ data_perfect_cumulative_complement <- paste(basename, "/", sample, "/analysis/",
 data_perfect_best_twod <- paste(basename, "/", sample, "/analysis/", refid, "_2D_best_perfect_kmers.txt", sep="");
 data_perfect_best_template <- paste(basename, "/", sample, "/analysis/", refid, "_Template_best_perfect_kmers.txt", sep="");
 data_perfect_best_complement <- paste(basename, "/", sample, "/analysis/", refid, "_Complement_best_perfect_kmers.txt", sep="");
+data_gc <- paste(basename, "/", sample, "/analysis/", refid, "_gc.txt", sep="");
+
+data_gc
 
 pdf_coverage_twod <- paste(basename, "/", sample, "/graphs/", refid, "_2D_coverage.pdf", sep="");
 pdf_coverage_template <- paste(basename, "/", sample, "/graphs/", refid, "_Template_coverage.pdf", sep="");
@@ -29,19 +32,26 @@ pdf_perfect_cumulative_complement <- paste(basename, "/", sample, "/graphs/", re
 pdf_perfect_best_twod <- paste(basename, "/", sample, "/graphs/", refid, "_2D_best_perfect_kmers.pdf", sep="");
 pdf_perfect_best_template <- paste(basename, "/", sample, "/graphs/", refid, "_Template_best_perfect_kmers.pdf", sep="");
 pdf_perfect_best_complement <- paste(basename, "/", sample, "/graphs/", refid, "_Complement_best_perfect_kmers.pdf", sep="");
+pdf_gc <- paste(basename, "/", sample, "/graphs/", refid, "_gc.pdf", sep="");
 
+pdf_gc
 
-pdf(pdf_coverage_twod, width=8, height=3)
+pdf(pdf_gc, width=12, height=3)
+data_gc = read.table(data_gc, col.name=c("Position", "Coverage"))
+ggplot(data_gc, aes(x=data_gc$Position, y=data_gc$Coverage)) + geom_line(color="salmon") + ggtitle("GC content") + theme(text = element_text(size=10)) + xlab("Position") + ylab("GC %") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + scale_y_continuous(limits=c(0, 100))
+garbage <- dev.off()
+
+pdf(pdf_coverage_twod, width=12, height=3)
 data_coverage_twod = read.table(data_coverage_twod, col.name=c("Position", "Coverage"))
 ggplot(data_coverage_twod, aes(x=data_coverage_twod$Position, y=data_coverage_twod$Coverage)) + geom_line() + ggtitle("2D coverage") + theme(text = element_text(size=10)) + xlab("Position") + ylab("Mean coverage for bin") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()
 
-pdf(pdf_coverage_template, width=8, height=3)
+pdf(pdf_coverage_template, width=12, height=3)
 data_coverage_template = read.table(data_coverage_template, col.name=c("Position", "Coverage"))
 ggplot(data_coverage_template, aes(x=data_coverage_template$Position, y=data_coverage_template$Coverage)) + geom_line() + ggtitle("Template coverage") + theme(text = element_text(size=10)) + xlab("Position") + ylab("Mean coverage for bin") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()
 
-pdf(pdf_coverage_complement, width=8, height=3)
+pdf(pdf_coverage_complement, width=12, height=3)
 data_coverage_complement = read.table(data_coverage_complement, col.name=c("Position", "Coverage"))
 ggplot(data_coverage_complement, aes(x=data_coverage_complement$Position, y=data_coverage_complement$Coverage)) + geom_line() + ggtitle("Complement coverage") + theme(text = element_text(size=10)) + xlab("Position") + ylab("Mean coverage for bin") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()

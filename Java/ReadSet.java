@@ -6,56 +6,20 @@ import java.util.*;
 
 public class ReadSet {
     private NanoOKOptions options;
-    private PrintWriter pw;
-    private int[] lengths = new int[NanoOKOptions.MAX_READ_LENGTH];
-    private int nReads = 0;
-    private int nReadFiles = 0;
-    private String type;
-    private int longest = 0;
-    private int shortest = NanoOKOptions.MAX_READ_LENGTH;
-    private int basesSum = 0;
-    private double meanLength = 0;
-    private int n50 = 0;
-    private int n50Count = 0;
-    private int n90 = 0;
-    private int n90Count = 0;
+    private AlignmentFileParser parser;
+    private ReadSetStats stats;
+    private References references;
+    private int type;
+    private String typeString;
    
-    public ReadSet(NanoOKOptions o) {
+    public ReadSet(int t, NanoOKOptions o, References r, AlignmentFileParser p, ReadSetStats s) {
         options = o;
+        parser = p;
+        references = r;
+        type = t;
+        stats = s;
     }
-    
-    private void openLengthsFile() {
-        String filename = options.getAnalysisDir() + options.getSeparator() + "all_" + type + "_lengths.txt";
-        try {
-            pw = new PrintWriter(new FileWriter(filename)); 
-        } catch (IOException e) {
-            System.out.println("openLengthsFile exception:");
-            e.printStackTrace();
-            System.exit(1);
-        }        
-    }
-    
-    private void closeLengthsFile() {
-        pw.close();
-    }
-    
-    private void addLength(String id, int l) {
-        lengths[l]++;
         
-        pw.println(id + "\t" + l);
-        
-        if (l > longest) {
-            longest = l;
-        }
-        
-        if (l < shortest) {
-            shortest = l;
-        }
-        
-        basesSum += l;
-        nReads++;
-    }
-    
     private void readFasta(String filename) {
         try
         {
@@ -70,7 +34,7 @@ public class ReadSet {
 
                 if ((line == null) || (line.startsWith(">"))) {                    
                     if (id != null) {
-                        addLength(id, contigLength);
+                        stats.addLength(id, contigLength);
                         readsInThisFile++;
                         
                         if (readsInThisFile > 1) {
@@ -97,97 +61,71 @@ public class ReadSet {
         }
 
     }
-    
-    private void calculateN() {
-        int total = 0;
-        int c = 0;
-                
-        for (int i=longest; i>0; i--) {
-            for (int j=0; j<lengths[i]; j++) {
-                total += i;
-                c++;
-                
-                if ((n50 == 0) && ((double)total >= ((double)basesSum * 0.5))) {
-                    n50 = i;
-                    n50Count = c;
-                }
-
-                if ((n90 == 0) && ((double)total >= ((double)basesSum * 0.9))) {
-                    n90 = i;
-                    n90Count = c;
-                }        
-            }
-        }
-        
-    }
-
-    public void gatherLengthStats(int nType) {
-        String inputDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "fasta" + options.getSeparator() + options.getTypeFromInt(nType);
+    public void gatherLengthStats() {
+        String inputDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "fasta" + options.getSeparator() + options.getTypeFromInt(type);
         File folder = new File(inputDir);
         File[] listOfFiles = folder.listFiles();
 
-        type = options.getTypeFromInt(nType);
+        typeString = options.getTypeFromInt(type);
         
-        System.out.println("Gathering stats on "+type+" reads");
+        System.out.println("Gathering stats on "+typeString+" reads");
         
-        openLengthsFile();
+        stats.openLengthsFile();
         
         for (File file : listOfFiles) {
             if (file.isFile()) {
                 if (file.getName().endsWith(".fasta")) {
                     readFasta(file.getPath());
-                    nReadFiles++;
+                    stats.addReadFile();
                 }
             }
         }
         
-        closeLengthsFile();
+        stats.closeLengthsFile();
              
-        meanLength = (double)basesSum / (double)nReads;        
-        calculateN();        
+        stats.calculateStats();        
     }
+    
+    public void parseFiles() {
+        int nReads = 0;
+        int nReadsWithAlignments = 0;
+        int nReadsWithoutAlignments = 0;
         
-    public String getType() {
-        return type;
+        String inputDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "last" + options.getSeparator() + options.getTypeFromInt(type);
+        String outputFilename = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "analysis" + options.getSeparator() + options.getTypeFromInt(type) + "_alignment_summary.txt";
+        AlignmentsTableFile perFileSummary = new AlignmentsTableFile(outputFilename);
+
+        System.out.println("Parsing " + options.getTypeFromInt(type));            
+
+        File folder = new File(inputDir);
+        File[] listOfFiles = folder.listFiles();
+
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                if (file.getName().endsWith(".maf")) {
+                    String pathname = inputDir + options.getSeparator() + file.getName();
+                    int nAlignments = parser.parseFile(pathname, perFileSummary);
+
+                    if (nAlignments > 0) {
+                        nReadsWithAlignments++;
+                    } else {
+                        nReadsWithoutAlignments++;
+                    }
+
+                    nReads++;
+                }
+            }
+        }
+
+        perFileSummary.closeFile();
+        stats.writeSummaryFile(options.getAlignmentSummaryFilename());
     }
     
-    public double getMeanLength() {
-        return meanLength;
+    public String getTypeString() {
+        return typeString;
     }
     
-    public int getLongest() {
-        return longest;
-    }
-    
-    public int getShortest() {
-        return shortest;
-    }
-    
-    public int getN50() {
-        return n50;
-    }
-    
-    public int getN50Count() {
-        return n50Count;
-    }
-    
-    public int getN90() {
-        return n90;
-    }
-    
-    public int getN90Count() {
-        return n90Count;
-    }
-    
-    public int getNumReads() {
-        return nReads;
-    }
-    
-    public int getNumReadFiles() {
-        return nReadFiles;
-    }
-    
-    public int getTotalBases() {
-        return basesSum;
+    public ReadSetStats getStats() {
+        return stats;
     }
 }

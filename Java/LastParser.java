@@ -2,20 +2,20 @@ package nanotools;
 
 import java.io.*;
 
-public class LastParser extends AlignerParser {
+public class LastParser extends AlignmentFileParser {
     private NanoOKOptions options;
-    private OverallAlignmentStats overallStats;
+    private ReadSetStats overallStats;
     private References references;
     private ReportWriter report;
     private int deletionSize = 0;
     private int insertionSize = 0;
-        
+    private int type = 0;    
     
-    public LastParser(NanoOKOptions o, OverallAlignmentStats s, References r, ReportWriter rw) {
+    public LastParser(int t, NanoOKOptions o, ReadSetStats s, References r) {
         options = o;
         overallStats = s;
         references = r;
-        report = rw;
+        type = t;
     }
     
     public int parseFile(String filename, AlignmentsTableFile summaryFile) {
@@ -37,14 +37,14 @@ public class LastParser extends AlignerParser {
                         AlignmentLine queryLine = new AlignmentLine(br.readLine());
                         ReferenceSequence reference = references.getReferenceById(hitLine.getName());
                         AlignmentEntry stat = processMatches(hitLine, queryLine, reference);
-                        reference.addAlignmentStats(stat.getQuerySize(), stat.getAlignmentSize(), stat.getIdenticalBases());
+                        reference.getStatsByType(type).addAlignmentStats(stat.getQuerySize(), stat.getAlignmentSize(), stat.getIdenticalBases());
 
                         if (stat.getLongest() > bestPerfectKmer) {
                             bestPerfectKmer = stat.getLongest();
                             bestKmerReference = reference;
                         }
                         
-                        reference.addCoverage(hitLine.getStart(), hitLine.getAlnSize());
+                        reference.getStatsByType(type).addCoverage(hitLine.getStart(), hitLine.getAlnSize());
                         summaryFile.writeAlignment(leafName, hitLine, queryLine, stat);
                         nAlignments++;
                     }
@@ -60,7 +60,7 @@ public class LastParser extends AlignerParser {
             summaryFile.writeNoAlignmentMessage(leafName);
             overallStats.addReadWithoutAlignment();
         } else {
-            bestKmerReference.addReadBestKmer(bestPerfectKmer);
+            bestKmerReference.getStatsByType(type).addReadBestKmer(bestPerfectKmer);
             overallStats.addReadWithAlignment();
             overallStats.addReadBestKmer(bestPerfectKmer);
         }
@@ -68,58 +68,14 @@ public class LastParser extends AlignerParser {
         return nAlignments;
     }
     
-    public void parseAll() {
-        int nReads = 0;
-        int nReadsWithAlignments = 0;
-        int nReadsWithoutAlignments = 0;
-        
-        for (int type=0; type<3; type++) {
-            String inputDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "last" + options.getSeparator() + options.getTypeFromInt(type);
-            String outputFilename = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "analysis" + options.getSeparator() + options.getTypeFromInt(type) + "_alignment_summary.txt";
-            AlignmentsTableFile perFileSummary = new AlignmentsTableFile(outputFilename);
-        
-            System.out.println("Parsing " + options.getTypeFromInt(type));            
-            
-            overallStats.clearStats(options.getTypeFromInt(type));
-            references.clearReferenceStats();
-
-            File folder = new File(inputDir);
-            File[] listOfFiles = folder.listFiles();
-
-            for (File file : listOfFiles) {
-                if (file.isFile()) {
-                    if (file.getName().endsWith(".maf")) {
-                        String pathname = inputDir + options.getSeparator() + file.getName();
-                        int nAlignments = parseFile(pathname, perFileSummary);
-                        
-                        if (nAlignments > 0) {
-                            nReadsWithAlignments++;
-                        } else {
-                            nReadsWithoutAlignments++;
-                        }
-                        
-                        nReads++;
-                    }
-                }
-            }
-                        
-            perFileSummary.closeFile();
-            overallStats.writeSummaryFile(options.getAlignmentSummaryFilename());
-            report.beginAlignmentsSection(overallStats);
-            references.writeReferenceStatFiles(type);
-            references.writeReferenceSummary();
-            references.writeTexSummary(report.getPrintWriter());
-        }
-    }
-    
     private void checkStoreInsertionsOrDeletions(ReferenceSequence reference, String errorKmer) {
         if (deletionSize > 0) {
-            reference.addDeletionError(deletionSize, errorKmer);
+            reference.getStatsByType(type).addDeletionError(deletionSize, errorKmer, overallStats);
             deletionSize = 0;
         }
                 
         if (insertionSize > 0) {
-            reference.addInsertionError(insertionSize, errorKmer);
+            reference.getStatsByType(type).addInsertionError(insertionSize, errorKmer, overallStats);
             insertionSize = 0;
         }
     }
@@ -188,7 +144,7 @@ public class LastParser extends AlignerParser {
                         errorKmer = currentKmer;
                     }
                     
-                    reference.addSubstitutionError(errorKmer);
+                    reference.getStatsByType(type).addSubstitutionError(errorKmer, hitSeq.charAt(i), querySeq.charAt(i), overallStats);
                 }
                 currentKmer = "";
             }
@@ -199,7 +155,7 @@ public class LastParser extends AlignerParser {
                         System.out.println("Oops: null reference");
                         System.exit(1);
                     }
-                    reference.addPerfectKmer(currentSize);
+                    reference.getStatsByType(type).addPerfectKmer(currentSize);
                     total+=currentSize;
                     count++;
                    

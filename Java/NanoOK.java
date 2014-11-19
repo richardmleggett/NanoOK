@@ -1,39 +1,56 @@
 package nanotools;
 
+import java.util.Set;
+
 public class NanoOK {
     public static void main(String[] args) {
         NanoOKOptions options = new NanoOKOptions();
+        OverallStats overallStats = new OverallStats(options);
+
+        //SequenceLogo logo = new SequenceLogo();
+        //logo.drawImage();
+        //logo.saveImage("/Users/leggettr/Desktop/logo.png");
+        //System.exit(0);
+        
+        // Parse command line
         options.parseArgs(args);
         options.checkDirectoryStructure();
 
+        // Load references
         References references = new References(options);
                 
-        ReportWriter rw = new ReportWriter(options, references);
-        rw.open();
-        
+        // Parse all reads sets       
         ReadLengthsSummaryFile summary = new ReadLengthsSummaryFile(options.getLengthSummaryFilename());
-        rw.beginLengthsSection();
         summary.open(options.getSample());
         for (int type = 0; type<3; type++) {
-            ReadSet set = new ReadSet(options);
-            set.gatherLengthStats(type);
-            summary.addReadSet(set);
-            rw.addReadSet(set);
+            AlignmentFileParser parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
+            ReadSet readSet = new ReadSet(type, options, references, parser, overallStats.getStatsByType(type));
+            readSet.parseFiles();
+            readSet.gatherLengthStats();
+            summary.addReadSetStats(overallStats.getStatsByType(type));
         }
         summary.close();
-        rw.endLengthsSection();
 
-        options.initialiseAlignmentSummaryFile();
-        OverallAlignmentStats stats = new OverallAlignmentStats();
-        AlignerParser parser = new LastParser(options, stats, references, rw);
-        parser.parseAll();
-
-        RGraphPlotter plotter = new RGraphPlotter(options);
-        plotter.plot(references);
+        // Write files
+        Set<String> ids = references.getAllIds();
+        for (String id : ids) {
+            for (int type=0; type<3; type++) {
+                references.writeReferenceStatFiles(type);
+                references.writeReferenceSummary(type);
+            }
+        }
         
-        rw.addReferencePlots(references);
-      
-        rw.close();
+        // Plot graphs
+        RGraphPlotter plotter = new RGraphPlotter(options);
+        plotter.plot(references);                
+        options.initialiseAlignmentSummaryFile();
+
+        ReportWriter rw = new ReportWriter(options, references, overallStats);
+        rw.writeReport();
+        
+        
+//        reportWriter.addReferencePlots(references);      
+//        reportWriter.close();
         /*
         if (options.getProgram().equals("readstats")) {
             ReadLengthsSummaryFile summary = new ReadLengthsSummaryFile(options.getLengthSummaryFilename());
@@ -56,5 +73,7 @@ public class NanoOK {
             plotter.plot(references);
         }
         */
+        
+//        stats.outputMotifStats();
     }
 }

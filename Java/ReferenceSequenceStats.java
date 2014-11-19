@@ -4,11 +4,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class ReferenceSequence {
-    NanoOKOptions options = null;
-    private String id = null;
-    private String name = null;
-    private int size = 0;
+public class ReferenceSequenceStats {
+    private int size;
+    private String name;
     private int[] coverage;
     private int[] perfectKmerCounts = new int[1000];
     private int[] readBestPerfectKmer = new int[1000];
@@ -23,27 +21,11 @@ public class ReferenceSequence {
     private int nSubstitutionErrors = 0;
     private int nInsertedBases = 0;
     private int nDeletedBases = 0;
-    
-    public ReferenceSequence(String i, int s, String n, NanoOKOptions o) {
-        id = i;
+
+    public ReferenceSequenceStats(int s, String n) {
         size = s;
         name = n;
-        options = o;
         coverage = new int[size];
-        
-        System.out.println("Got reference "+n);
-    }
-    
-    public String getId() {
-        return id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public int getSize() {
-        return size;
     }
     
     public int getNumberOfReadsWithAlignments() {
@@ -180,29 +162,40 @@ public class ReferenceSequence {
         totalIdentical += identicalBases;
     }
     
-    public void addDeletionError(int size, String kmer) {
+    public void addDeletionError(int size, String kmer, ReadSetStats stats) {
         nDeletionErrors++;
         nDeletedBases += size;
-        System.out.println("Kmer before deletion "+kmer);
+        //System.out.println("Kmer before deletion "+kmer);
+        stats.addDeletionError(size, kmer);
     }
     
-    public void addInsertionError(int size, String kmer) {
+    public void addInsertionError(int size, String kmer, ReadSetStats stats) {
         nInsertionErrors++;
         nInsertedBases += size;
-        System.out.println("Kmer before insertion "+kmer);
+        //System.out.println("Kmer before insertion "+kmer);
+        stats.addInsertionError(size, kmer);
     }
     
-    public void addSubstitutionError(String kmer) {
+    public void addSubstitutionError(String kmer, char refChar, char subChar, ReadSetStats stats) {
         nSubstitutionErrors++;
-        System.out.println("Kmer before substitution "+kmer);
+        //System.out.println("Kmer before substitution "+kmer);
+        stats.addSubstitutionError(kmer, refChar, subChar);
     }
     
     public double getAlignedPercentIdentical() {
-        return (100.0 * totalIdentical) / totalAlignedBases;
+        if ((totalIdentical == 0) || (totalAlignedBases == 0)) {
+            return 0;
+        } else {           
+            return (100.0 * totalIdentical) / totalAlignedBases;
+        }
     }
     
     public double getReadPercentIdentical() {
-        return (100.0 * totalIdentical) / totalReadBases;
+        if ((totalIdentical == 0) || (totalReadBases == 0)) {
+            return 0;
+        } else {
+            return (100.0 * totalIdentical) / totalReadBases;
+        }
     }
 
     public int getNumberOfInsertionErrors() {
@@ -218,14 +211,26 @@ public class ReferenceSequence {
     }
     
     public double getPercentInsertionErrors() {
-        return (100.0 * nInsertedBases) / (totalAlignedBases);
+        if ((nInsertedBases == 0) || (totalAlignedBases == 0)) {
+            return 0;
+        } else {
+            return (100.0 * nInsertedBases) / (totalAlignedBases);
+        }
     }
 
     public double getPercentDeletionErrors() {
-        return (100.0 * nDeletedBases) / (totalAlignedBases);
+        if ((nDeletedBases == 0) || (totalAlignedBases == 0)) {
+            return 0;
+        } else {
+            return (100.0 * nDeletedBases) / (totalAlignedBases);
+        }
     }
     
     public double getPercentSubstitutionErrors() {
-        return (100.0 * nSubstitutionErrors) / (totalAlignedBases);
+        if ((nSubstitutionErrors == 0) || (totalAlignedBases == 0)) {
+            return 0;
+        } else {
+           return (100.0 * nSubstitutionErrors) / (totalAlignedBases);
+        }
     }    
 }
