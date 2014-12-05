@@ -5,6 +5,7 @@ import java.io.*;
 public class AlignmentsTableFile {
     private String filename;
     private PrintWriter pw;
+    private int count = 0;
 
     public AlignmentsTableFile(String f) {
         filename = f;
@@ -19,50 +20,70 @@ public class AlignmentsTableFile {
     
     private void writeHeader() {
         pw.print("Filename\t");
-        pw.print("Query Name\t");
-        pw.print("Query Start\t");
-        pw.print("Query Bases Covered\t");
-        pw.print("Query Strand\t");
-        pw.print("Query Length\t");
-        pw.print("Hit Name\t");
-        pw.print("Hit Start\t");
-        pw.print("Hit Bases Covered\t");
-        pw.print("Hit Strand\t");
-        pw.print("Hit Length\t");
-        pw.print("Alignment Size\t");
-        pw.print("Identical Bases\t");
-        pw.print("Alignment Percent Identity\t");
-        pw.print("Query Percent Identity\t");
-        pw.print("Longest Perfect Kmer\t");
-        pw.println("Mean Perfect Kmer");
+        pw.print("QueryName\t");
+        pw.print("QueryStart\t");
+        pw.print("QueryBasesCovered\t");
+        pw.print("QueryStrand\t");
+        pw.print("QueryLength\t");
+        pw.print("HitName\t");
+        pw.print("HitStart\t");
+        pw.print("HitBasesCovered\t");
+        pw.print("HitStrand\t");
+        pw.print("HitLength\t");
+        pw.print("AlignmentSize\t");
+        pw.print("IdenticalBases\t");
+        pw.print("AlignmentPercentIdentity\t");
+        pw.print("QueryPercentIdentity\t");
+        pw.print("LongestPerfectKmer\t");
+        pw.print("MeanPerfectKmer\t");
+        pw.print("PercentQueryAligned");
+        pw.println("");
     }
     
-    public void writeAlignment(String filename, AlignmentLine hitLine, AlignmentLine queryLine, AlignmentEntry stat) {
-        pw.print(filename+"\t");
-        pw.print(queryLine.getName()+"\t");
-        pw.print(queryLine.getStart()+"\t");
-        pw.print(queryLine.getAlnSize()+"\t");
-        pw.print(queryLine.getStrand()+"\t");
-        pw.print(queryLine.getSeqSize()+"\t");
-        pw.print(hitLine.getName()+"\t");
-        pw.print(hitLine.getStart()+"\t");
-        pw.print(hitLine.getAlnSize()+"\t");
-        pw.print(hitLine.getStrand()+"\t");
-        pw.print(hitLine.getSeqSize()+"\t");
-        pw.print(stat.getAlignmentSize() + "\t");
-        pw.print(stat.getIdenticalBases() + "\t");
-        pw.printf("%.2f\t", stat.getAlignmentId());
-        pw.printf("%.2f\t", stat.getQueryId());
-        pw.print(stat.getLongest() + "\t");
-        pw.printf("%.2f\n", stat.getMeanPerfectKmer());            
+    public void writeAlignment(String alignmentFilename, LastAlignmentLine hitLine, LastAlignmentLine queryLine, AlignmentInfo stat) {
+        String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f",
+                alignmentFilename,
+                queryLine.getName(),
+                queryLine.getStart(),
+                queryLine.getAlnSize(),
+                queryLine.getStrand(),
+                queryLine.getSeqSize(),
+                hitLine.getName(),
+                hitLine.getStart(),
+                hitLine.getAlnSize(),
+                hitLine.getStrand(),
+                hitLine.getSeqSize(),
+                stat.getAlignmentSize(),
+                stat.getIdenticalBases(),
+                stat.getAlignmentId(),
+                stat.getQueryId(),
+                stat.getLongest(),
+                stat.getMeanPerfectKmer(),
+                stat.getPercentQueryAligned());
+        
+        pw.println(outputLine);
+        pw.flush();
+
+        //if (filename.equals("/Users/leggettr/Documents/Projects/Nanopore/N79681_EvenMC_R7_06082014/analysis/Rhodobacter_sphaeroides_2D_alignments.txt")) {
+        //if ((count == 19) || (count == 20) || (count == 21)) {
+        //    System.out.println("DEBUG");
+        //    System.out.println("["+outputLine+"]");
+        //    System.out.println("["+filename+"]");
+        //    System.out.println("["+alignmentFilename+"]");
+        //    System.out.println("["+hitLine.getName()+"]");
+        //}
+        //}
+        
+        count++;
     }
     
-    public void writeNoAlignmentMessage(String filename) {
-        pw.println(filename+"\tNO ALIGNMENTS");
+    public void writeNoAlignmentMessage(String alignmentFilename) {
+        pw.println(alignmentFilename+"\tNO ALIGNMENTS");
     }
 
     public void closeFile() {
         pw.flush();
         pw.close();
+        //System.out.println("File closed");
     }
 }

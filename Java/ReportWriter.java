@@ -71,19 +71,19 @@ public class ReportWriter {
         pw.println("\\end{tabular}");
         pw.println("}");
         pw.println("\\end{table}");
-
+        pw.println("\\vspace{-10mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_Template_lengths.pdf}");
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_Complement_lengths.pdf}");
-        pw.println("\\includegraphics[width=.45\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_2D_lengths.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_Template_lengths.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_Complement_lengths.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_2D_lengths.pdf}");
         pw.println("\\end{figure}");
     }
     
     public void writeAlignmentsSection(ReadSetStats stats) {
-        if ((stats.getTypeString() == "Template") || (references.getNumberOfReferences() > 8)) {
-            pw.println("\\clearpage");
-        }
+        //if ((stats.getTypeString() == "Template") || (references.getNumberOfReferences() > 8)) {
+        //    pw.println("\\clearpage");
+        //}
         pw.println("\\subsection*{" + stats.getTypeString() + " alignments}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{table}[H]");
@@ -96,6 +96,7 @@ public class ReportWriter {
         pw.println("\\end{tabular}");
         pw.println("}");
         pw.println("\\end{table}");
+        pw.println("\\vspace{-10mm}");
     }
     
     public void writeReferenceSection(ReferenceSequence refSeq) {
@@ -132,7 +133,32 @@ public class ReportWriter {
                 refSeq.getStatsByType(2).getPercentSubstitutionErrors());
         pw.println("\\end{tabular}");
         pw.println("}");
-        pw.println("\\end{table}");        
+        pw.println("\\end{table}");     
+        
+        pw.println("\\begin{figure}[H]");
+        pw.println("\\centering");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_insertions.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_insertions.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_insertions.pdf} \\\\");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_deletions.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_deletions.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_deletions.pdf}");
+        pw.println("\\end{figure}");
+        
+        pw.println("\\subsection*{" + id + " read identity}");
+        pw.println("\\vspace{-3mm}");
+        pw.println("\\begin{figure}[H]");
+        pw.println("\\centering");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_length_vs_identity_hist.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_length_vs_identity_hist.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_length_vs_identity_hist.pdf} \\\\");        
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_length_vs_identity_scatter.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_length_vs_identity_scatter.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_length_vs_identity_scatter.pdf} \\\\");        
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_read_fraction_vs_alignment_identity_scatter.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_read_fraction_vs_alignment_identity_scatter.pdf}");
+        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_read_fraction_vs_alignment_identity_scatter.pdf}");        
+        pw.println("\\end{figure}");
         
         pw.println("\\subsection*{" + id + " coverage}");
         pw.println("\\vspace{-3mm}");

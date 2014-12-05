@@ -21,6 +21,18 @@ public class ReferenceSequence {
         }
     }
     
+    public void openAlignmentSummaryFiles(String analysisDir) {
+        for (int t=0; t<3; t++) {
+            referenceStats[t].openAlignmentsTableFile(analysisDir + name + "_" + NanoOKOptions.getTypeFromInt(t) + "_alignments.txt");
+        }
+    }
+    
+    public void closeAlignmentSummaryFiles() {
+        for (int t=0; t<3; t++) {
+            referenceStats[t].getAlignmentsTableFile().closeFile();
+        }
+    }
+    
     public ReferenceSequenceStats getStatsByType(int t) {
         return referenceStats[t];
     }

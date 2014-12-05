@@ -44,9 +44,9 @@ public class GCParser {
                         continueReading = false;
                     } else if (id.equals(sequenceId)) {
                         foundID = true;
-                    } else {                  
-                        System.out.println("["+id+"] not equal to ["+sequenceId+"]");
-                    }
+                    } //else {                  
+                        //System.out.println("["+id+"] not equal to ["+sequenceId+"]");
+                    //}
                 } else if (foundID) {
                     for (int i=0; i<line.length(); i++) {
                         if ((line.charAt(i) == 'G') || (line.charAt(i) == 'C') || (line.charAt(i) == 'g') || (line.charAt(i) == 'c')) {

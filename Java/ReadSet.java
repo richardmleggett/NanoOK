@@ -92,10 +92,10 @@ public class ReadSet {
         int nReadsWithoutAlignments = 0;
         
         String inputDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "last" + options.getSeparator() + options.getTypeFromInt(type);
-        String outputFilename = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "analysis" + options.getSeparator() + options.getTypeFromInt(type) + "_alignment_summary.txt";
-        AlignmentsTableFile perFileSummary = new AlignmentsTableFile(outputFilename);
+        String outputFilename = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "analysis" + options.getSeparator() + options.getTypeFromInt(type) + "_nonaligned.txt";
+        AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile(outputFilename);
 
-        System.out.println("Parsing " + options.getTypeFromInt(type));            
+        System.out.println("\nParsing " + options.getTypeFromInt(type));            
 
         File folder = new File(inputDir);
         File[] listOfFiles = folder.listFiles();
@@ -104,7 +104,7 @@ public class ReadSet {
             if (file.isFile()) {
                 if (file.getName().endsWith(".maf")) {
                     String pathname = inputDir + options.getSeparator() + file.getName();
-                    int nAlignments = parser.parseFile(pathname, perFileSummary);
+                    int nAlignments = parser.parseFile(pathname, nonAlignedSummary);
 
                     if (nAlignments > 0) {
                         nReadsWithAlignments++;
@@ -117,7 +117,7 @@ public class ReadSet {
             }
         }
 
-        perFileSummary.closeFile();
+        nonAlignedSummary.closeFile();
         stats.writeSummaryFile(options.getAlignmentSummaryFilename());
     }
     

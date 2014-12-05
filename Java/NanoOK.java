@@ -40,6 +40,8 @@ public class NanoOK {
             }
         }
         
+        references.closeAlignmentFiles();
+        
         // Plot graphs
         RGraphPlotter plotter = new RGraphPlotter(options);
         plotter.plot(references);                

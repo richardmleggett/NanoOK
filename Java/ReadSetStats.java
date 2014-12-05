@@ -28,7 +28,9 @@ public class ReadSetStats {
     private MotifStatistics motifStats = new MotifStatistics();
     private int substitutionErrors[][] = new int[4][4];
     private int nSubstitutions = 0;
-    
+    private int nInsertions = 0;
+    private int nDeletions = 0;
+        
     public ReadSetStats(NanoOKOptions o, int t) {
         options=o;
         typeString = NanoOKOptions.getTypeFromInt(t);
@@ -140,7 +142,7 @@ public class ReadSetStats {
         }
         
         basesSum += l;
-        nReads++;
+        //nReads++;
     }    
         
     public void addReadWithAlignment() {
@@ -211,15 +213,17 @@ public class ReadSetStats {
     
     public void addDeletionError(int size, String kmer) {
         motifStats.addDeletionMotifs(kmer);
+        nDeletions++;
     }
     
     public void addInsertionError(int size, String kmer) {
         motifStats.addInsertionMotifs(kmer);
+        nInsertions++;
     }
     
     public void addSubstitutionError(String kmer, char refChar, char subChar) {
-        int r = 0;
-        int s = 0;
+        int r = -1;
+        int s = -1;
         
         motifStats.addSubstitutionMotifs(kmer);
         
@@ -228,7 +232,7 @@ public class ReadSetStats {
             case 'C': r=1; break;
             case 'G': r=2; break;
             case 'T': r=3; break;
-            default: System.out.println("Warning: Unknown base in addSubstitutionError\n"); break;
+            default: break; //System.out.println("Warning: Unknown base ("+refChar+") in reference"); break;
         }
 
         switch(subChar) {
@@ -236,11 +240,13 @@ public class ReadSetStats {
             case 'C': s=1; break;
             case 'G': s=2; break;
             case 'T': s=3; break;
-            default: System.out.println("Warning: Unknown base in addSubstitutionError\n"); break;
+            default: System.out.println("Warning: Unknown base ("+refChar+") in read"); break;
         }
-
-        substitutionErrors[r][s]++;
-        nSubstitutions++;
+           
+        if ((r >= 0) && (s >= 0)) {
+            nSubstitutions++;
+            substitutionErrors[r][s]++;
+        }
     }
     
     public int[][] getSubstitutionErrors() {

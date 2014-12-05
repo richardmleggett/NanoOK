@@ -26,6 +26,16 @@ public class RGraphPlotter {
                 System.out.println("Executing "+command);
                 p = Runtime.getRuntime().exec(command);
                 p.waitFor();                
+                
+                command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanotools_plot_indels.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
+                System.out.println("Executing "+command);
+                p = Runtime.getRuntime().exec(command);
+                p.waitFor();
+
+                command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanotools_plot_read_identity.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
+                System.out.println("Executing "+command);
+                p = Runtime.getRuntime().exec(command);
+                p.waitFor();               
             }          
         } catch (Exception e) {
             System.out.println("RGraphPlotter exception:");

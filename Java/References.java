@@ -32,14 +32,16 @@ public class References {
                     System.out.println("Error: reference contig ID "+values[0]+" occurs more than once.");
                     System.exit(1);
                 } else {
-                    referenceSequences.put(values[0], new ReferenceSequence(values[0], size, values[2]));
+                    refSeq = new ReferenceSequence(values[0], size, values[2]);                    
+                    referenceSequences.put(values[0], refSeq);
+                    refSeq.openAlignmentSummaryFiles(options.getAnalysisDir() + options.getSeparator());
                 }
                 
                 if (values[0].length() > longestId) {
                     longestId = values[0].length();
                 }
                 
-                gcp.parseSequence(o.getReference() + ".fasta", values[0], options.getAnalysisDir()+options.getSeparator()+values[2]+"_gc.txt", binSize);               
+                gcp.parseSequence(o.getReferenceFile() + ".fasta", values[0], options.getAnalysisDir()+options.getSeparator()+values[2]+"_gc.txt", binSize);               
                 line = br.readLine();
             }
         } catch (Exception e) {
@@ -49,6 +51,14 @@ public class References {
         }
     }    
 
+    public void closeAlignmentFiles() {
+        Set<String> keys = referenceSequences.keySet();
+        for(String id : keys) {
+            ReferenceSequence ref = referenceSequences.get(id);
+            ref.closeAlignmentSummaryFiles();
+        }
+    }
+    
     public ReferenceSequence getReferenceById(String id) {
         ReferenceSequence r = referenceSequences.get(id);
         
@@ -74,6 +84,8 @@ public class References {
             ref.getStatsByType(type).writePerfectKmerHist(analysisDir + options.getSeparator() + ref.getName() + "_" + options.getTypeFromInt(type) + "_all_perfect_kmers.txt");
             ref.getStatsByType(type).writeBestPerfectKmerHist(analysisDir + options.getSeparator() + ref.getName()+ "_" + options.getTypeFromInt(type) + "_best_perfect_kmers.txt");
             ref.getStatsByType(type).writeBestPerfectKmerHistCumulative(analysisDir + options.getSeparator() + ref.getName()+ "_" + options.getTypeFromInt(type) + "_cumulative_perfect_kmers.txt");
+            ref.getStatsByType(type).writeInsertionStats(analysisDir + options.getSeparator() + ref.getName()+ "_" + options.getTypeFromInt(type) + "_insertions.txt");
+            ref.getStatsByType(type).writeDeletionStats(analysisDir + options.getSeparator() + ref.getName()+ "_" + options.getTypeFromInt(type) + "_deletions.txt");
         }        
     }
     
@@ -87,11 +99,11 @@ public class References {
     
     private void getSizesFile()
     {
-        sizesFile = new File(options.getReference()+".sizes");
+        sizesFile = new File(options.getReferenceFile()+".sizes");
         if (! sizesFile.exists()) {
-            sizesFile = new File(options.getReference()+".fasta.sizes");
+            sizesFile = new File(options.getReferenceFile()+".fasta.sizes");
             if (!sizesFile.exists()) {
-                sizesFile = new File(options.getReference()+".fa.sizes");
+                sizesFile = new File(options.getReferenceFile()+".fa.sizes");
             }
         }
         

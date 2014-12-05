@@ -18,7 +18,7 @@ public class LastParser extends AlignmentFileParser {
         type = t;
     }
     
-    public int parseFile(String filename, AlignmentsTableFile summaryFile) {
+    public int parseFile(String filename, AlignmentsTableFile nonAlignedSummaryFile) {
         int bestPerfectKmer = 0;
         int nAlignments = 0;
         ReferenceSequence bestKmerReference = null;
@@ -33,10 +33,10 @@ public class LastParser extends AlignmentFileParser {
                 line = br.readLine();
                 if (line != null) {
                     if (line.startsWith("a score=")) {
-                        AlignmentLine hitLine = new AlignmentLine(br.readLine());
-                        AlignmentLine queryLine = new AlignmentLine(br.readLine());
+                        LastAlignmentLine hitLine = new LastAlignmentLine(br.readLine());
+                        LastAlignmentLine queryLine = new LastAlignmentLine(br.readLine());
                         ReferenceSequence reference = references.getReferenceById(hitLine.getName());
-                        AlignmentEntry stat = processMatches(hitLine, queryLine, reference);
+                        AlignmentInfo stat = processMatches(hitLine, queryLine, reference);
                         reference.getStatsByType(type).addAlignmentStats(stat.getQuerySize(), stat.getAlignmentSize(), stat.getIdenticalBases());
 
                         if (stat.getLongest() > bestPerfectKmer) {
@@ -45,7 +45,7 @@ public class LastParser extends AlignmentFileParser {
                         }
                         
                         reference.getStatsByType(type).addCoverage(hitLine.getStart(), hitLine.getAlnSize());
-                        summaryFile.writeAlignment(leafName, hitLine, queryLine, stat);
+                        reference.getStatsByType(type).getAlignmentsTableFile().writeAlignment(leafName, hitLine, queryLine, stat);
                         nAlignments++;
                     }
                 }
@@ -57,7 +57,7 @@ public class LastParser extends AlignmentFileParser {
         }
         
         if (nAlignments == 0) {
-            summaryFile.writeNoAlignmentMessage(leafName);
+            nonAlignedSummaryFile.writeNoAlignmentMessage(leafName);
             overallStats.addReadWithoutAlignment();
         } else {
             bestKmerReference.getStatsByType(type).addReadBestKmer(bestPerfectKmer);
@@ -80,7 +80,7 @@ public class LastParser extends AlignmentFileParser {
         }
     }
     
-    public AlignmentEntry processMatches(AlignmentLine hit, AlignmentLine query, ReferenceSequence reference) {
+    public AlignmentInfo processMatches(LastAlignmentLine hit, LastAlignmentLine query, ReferenceSequence reference) {
         String hitSeq = hit.getAlignment();
         String querySeq = query.getAlignment();
         int hitSize = hitSeq.length();
@@ -93,6 +93,10 @@ public class LastParser extends AlignmentFileParser {
         int longest = 0;
         String currentKmer = "";
         String errorKmer = "";
+        
+        if (hitSize != querySize) {
+            System.out.println("hitSize not equal to querySize");
+        }
         
         insertionSize = 0;
         deletionSize = 0;
@@ -144,6 +148,7 @@ public class LastParser extends AlignmentFileParser {
                         errorKmer = currentKmer;
                     }
                     
+                    //System.out.println(query.getName());
                     reference.getStatsByType(type).addSubstitutionError(errorKmer, hitSeq.charAt(i), querySeq.charAt(i), overallStats);
                 }
                 currentKmer = "";
@@ -168,6 +173,6 @@ public class LastParser extends AlignmentFileParser {
             }            
         }
         
-        return new AlignmentEntry(hit.getSeqSize(), query.getSeqSize(), identicalBases, longest, total, count, loopTo);
+        return new AlignmentInfo(hit.getName(), hit.getSeqSize(), query.getName(), query.getSeqSize(), identicalBases, longest, total, count, loopTo);
     }
 }

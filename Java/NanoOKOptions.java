@@ -14,7 +14,7 @@ public class NanoOKOptions {
     public final static int TYPE_SUBSTITUTION = 2;
     private String program="";
     private String baseDir="/Users/leggettr/Documents/Projects/Nanopore";
-    private String reference=null;
+    private String referenceFile=null;
     private String sample=null;
     private String scriptsDir="/Users/leggettr/Documents/github/nanotools/scripts";
     private int coverageBinSize = 100;
@@ -57,7 +57,7 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-coveragebin")) {
                 coverageBinSize = Integer.parseInt(args[i+1]);
             } else if (args[i].equalsIgnoreCase("-reference")) {
-                reference = args[i+1];
+                referenceFile = args[i+1];
             } else if (args[i].equalsIgnoreCase("-sample")) {
                 sample = args[i+1];
             } else {
@@ -72,7 +72,7 @@ public class NanoOKOptions {
             System.out.println("Error: You must specify a base directory");
             System.exit(1);
         }
-        if (reference == null) {
+        if (referenceFile == null) {
             System.out.println("Error: You must specify a reference");
             System.exit(1);
         }
@@ -94,8 +94,8 @@ public class NanoOKOptions {
         return sample;
     }
     
-    public String getReference() {
-        return reference;
+    public String getReferenceFile() {
+        return referenceFile;
     }
     
     public int getCoverageBinSize() {

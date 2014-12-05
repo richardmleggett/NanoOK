@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class ReferenceSequenceStats {
+    private static final int MAX_INDEL = 100;
     private int size;
     private String name;
     private int[] coverage;
@@ -21,11 +22,28 @@ public class ReferenceSequenceStats {
     private int nSubstitutionErrors = 0;
     private int nInsertedBases = 0;
     private int nDeletedBases = 0;
+    private int largestInsertion = 0;
+    private int largestDeletion = 0;
+    private int insertionSizes[] = new int[MAX_INDEL];
+    private int deletionSizes[] = new int[MAX_INDEL];
+    private AlignmentsTableFile atf;
 
     public ReferenceSequenceStats(int s, String n) {
         size = s;
         name = n;
         coverage = new int[size];
+    }
+    
+    public void openAlignmentsTableFile(String filename) {
+        atf = new AlignmentsTableFile(filename);
+    }
+    
+    public void closeAlignmentsTableFile() {
+        atf.closeFile();
+    }
+    
+    public AlignmentsTableFile getAlignmentsTableFile() {
+            return  atf;
     }
     
     public int getNumberOfReadsWithAlignments() {
@@ -165,14 +183,20 @@ public class ReferenceSequenceStats {
     public void addDeletionError(int size, String kmer, ReadSetStats stats) {
         nDeletionErrors++;
         nDeletedBases += size;
-        //System.out.println("Kmer before deletion "+kmer);
+        deletionSizes[size]++;
+        if (size > largestDeletion) {
+            largestDeletion = size;
+        }
         stats.addDeletionError(size, kmer);
     }
     
     public void addInsertionError(int size, String kmer, ReadSetStats stats) {
         nInsertionErrors++;
         nInsertedBases += size;
-        //System.out.println("Kmer before insertion "+kmer);
+        insertionSizes[size]++;
+        if (size > largestInsertion) {
+            largestInsertion = size;
+        }
         stats.addInsertionError(size, kmer);
     }
     
@@ -232,5 +256,34 @@ public class ReferenceSequenceStats {
         } else {
            return (100.0 * nSubstitutionErrors) / (totalAlignedBases);
         }
+    }  
+    
+    public void writeInsertionStats(String filename) {
+        try {
+            PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
+            for (int i=1; i<=largestInsertion; i++) {
+                //pw.println(i + "\t" + insertionSizes[i]);
+                pw.printf("%d\t%.4f\n", i, (100.0 * (double)insertionSizes[i]/(double)nInsertionErrors));
+            }
+            pw.close();
+        } catch (IOException e) {
+            System.out.println("writeInsertionStats exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }                
+    }
+
+    public void writeDeletionStats(String filename) {
+        try {
+            PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
+            for (int i=1; i<=largestDeletion; i++) {
+                //pw.println(i + "\t" + deletionSizes[i]);
+                pw.printf("%d\t%.4f\n", i, (100.0 * (double)deletionSizes[i]/(double)nDeletionErrors));            }
+            pw.close();
+        } catch (IOException e) {
+            System.out.println("writeInsertionStats exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }                
     }    
 }
