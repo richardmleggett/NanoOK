@@ -1,6 +1,6 @@
 nanotools
 =========
 
-These are pre-release scripts, not yet ready for the world.
+This is pre-release software, not ready for the big bad world.
 
-richard.leggett@tgac.ac.uk
+Contact richard.leggett@tgac.ac.uk if interested in beta testing.
