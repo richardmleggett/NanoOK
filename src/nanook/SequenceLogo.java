@@ -1,4 +1,4 @@
-package nanotools;
+package nanook;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -10,6 +10,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 
+/**
+ * Create sequence logo (for error motifs etc.)
+ * 
+ * @author Richard Leggett
+ */
 public class SequenceLogo {
     private BufferedImage bImage;
     private int size = 0;
@@ -21,11 +26,18 @@ public class SequenceLogo {
     private int charWidth = 0;
     private int charHeight = 0;
     
+    /**
+     * Constructor
+     * @param size size (in bases) 
+     */
     public SequenceLogo(int s) {
         size = s;
         counts = new double[4][size];
     }
 
+    /**
+     * Debugging constructor
+     */
     public SequenceLogo() {
         this(6);
         this.addBase(0, 25, 25, 25, 25);
@@ -36,6 +48,14 @@ public class SequenceLogo {
         this.addBase(5, 33, 33, 0, 34);
     }    
 
+    /**
+     * Set relative counts at a given position in the logo.
+     * @param position position (0-offset)
+     * @param a number of As
+     * @param c number of Cs
+     * @param g number of Gs
+     * @param t number of Ts
+     */
     public void addBase(int position, int a, int c, int g, int t) {
         if (position < size) {
             counts[0][position] = (double)a / (double)(a + c + g + t);
@@ -47,6 +67,9 @@ public class SequenceLogo {
         }
     }
         
+    /**
+     * Draw the logo image.
+     */
     public void drawImage() {
         // Create temporary image to work out sizing
         bImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
@@ -87,6 +110,10 @@ public class SequenceLogo {
         
     }
     
+    /**
+     * Save the logo as an image.
+     * @param filename output filename
+     */
     public void saveImage(String filename) {
         try {
             ImageIO.write(bImage, "PNG", new File(filename));

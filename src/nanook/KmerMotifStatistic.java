@@ -1,7 +1,12 @@
-package nanotools;
+package nanook;
 
 import java.util.*;
 
+/**
+ * Class to store kmer motif statistics.
+ * 
+ * @author Richard Leggett
+ */
 public class KmerMotifStatistic {
     public final static int TYPE_TOP = 1;
     public final static int TYPE_BOTTOM = 2;
@@ -11,11 +16,19 @@ public class KmerMotifStatistic {
     private int totalCount = 0;
     private int[][] baseCounts;
     
+    /**
+     * Constructor
+     * @param s - kmer size
+     */
     public KmerMotifStatistic(int s) {
         kSize = s;
         baseCounts = new int[4][kSize];
     }
     
+    /**
+     * Add a motif to store.
+     * @param kmer motif to store
+     */
     public void addMotif(String kmer) {
         Integer currentCount = motifs.get(kmer);
         
@@ -32,6 +45,11 @@ public class KmerMotifStatistic {
         //System.out.println("Adding motif "+kmer+" to size "+kSize);
     }
     
+    /**
+     * Parse motif, updating count of bases seen at each position.
+     * @param motif - kmer motif
+     * @param count - count of number of times seen
+     */
     private void updateBaseCounts(String motif, int count) {
         for (int i=0; i<motif.length(); i++) {
             switch(motif.charAt(i)) {
@@ -43,6 +61,9 @@ public class KmerMotifStatistic {
         }
     }
     
+    /**
+     * Calculate percent each motif has been seen.
+     */
     public void calculateMotifs() {
         Set<String> keys = motifs.keySet();
         
@@ -54,6 +75,9 @@ public class KmerMotifStatistic {
         }
     }
     
+    /**
+     * Update motif base counts for top 10 motifs
+     */
     public void calculateTopBaseCounts() {
         ArrayList<Map.Entry<String, Integer>> list = getSortedMotifCounts();
         for (int i=0; i<10; i++) {
@@ -64,6 +88,9 @@ public class KmerMotifStatistic {
         }
     }
 
+    /**
+     * Update motif bases counts for bottom 10 motifs
+     */
     public void calculateBottomBaseCounts() {
         ArrayList<Map.Entry<String, Integer>> list = getSortedMotifCounts();
         for (int i=0; i<10; i++) {
@@ -73,7 +100,12 @@ public class KmerMotifStatistic {
             }
         }
     }
-    
+
+    /**
+     * Write a top 10 or bottom 10 logo image.
+     * @param type TYPE_TOP for Top 10 or TYPE_BOTTOM for bottom 10
+     * @param filename PNG output filename
+     */
     public void writeLogoImage(int type, String filename) {
         baseCounts = new int[4][kSize];
         if (type == TYPE_TOP) {
@@ -93,6 +125,10 @@ public class KmerMotifStatistic {
         sl.saveImage(filename);
     }
     
+    /**
+     * Return ArrayList of sorted motif counts.
+     * @return sorted motifs
+     */
     public ArrayList<Map.Entry<String, Integer>> getSortedMotifCounts() {
         ArrayList<Map.Entry<String, Integer>>list = new ArrayList(motifs.entrySet());
         
@@ -104,6 +140,10 @@ public class KmerMotifStatistic {
         return list;
     }
 
+    /**
+     * Return ArrayList of sorted motif percentages.
+     * @return sorted motifs
+     */
     public ArrayList<Map.Entry<String, Double>> getSortedMotifPercentages() {
         if (motifsPercent.size() == 0) {
             calculateMotifs();
@@ -125,6 +165,9 @@ public class KmerMotifStatistic {
         return list;
     }    
     
+    /**
+     * Write motif counts to stdout.
+     */
     public void outputMotifCounts() {
         ArrayList<Map.Entry<String, Integer>>list = getSortedMotifCounts();
         
@@ -137,6 +180,10 @@ public class KmerMotifStatistic {
         System.out.println(list);
     }
     
+    /**
+     * Get total motif count.
+     * @return total motif count
+     */
     public int getTotalMotifCount() {
         return totalCount;
     }

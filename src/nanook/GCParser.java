@@ -1,4 +1,4 @@
-package nanotools;
+package nanook;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -6,20 +6,25 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class GCParser {    
+/**
+ * Class to parse GC content of a FASTA file for creating a GC graph.
+ * 
+ * @author Richard Leggett
+ */
+public class GCParser {
+    /**
+     * Constructor
+     */
     public GCParser() {    
     }
     
-    private double getGC(int[] counts, int binSize) {
-        int gc = 0;
-                
-        for (int i=0; i<binSize; i++) {
-            gc += counts[i];
-        }
-        
-        return (100.0 * (double)gc) / (double)binSize;
-    }
-    
+    /**
+     * Parse a file looking for a particular ID and write GC content histogram data.
+     * @param fastaFilename name of FASTA file
+     * @param sequenceId ID of sequence in file
+     * @param outputFilename output tab separated file containing GC content per position
+     * @param binSize bin size to use
+     */
     public void parseSequence(String fastaFilename, String sequenceId, String outputFilename, int binSize) {
         int currentGCPosition = binSize / 2;
         int currentGCCounter = 0;
@@ -80,5 +85,21 @@ public class GCParser {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    /**
+     * Get overall GC content of file.
+     * @param counts - GC counts array
+     * @param binSize - bin size
+     * @return 
+     */
+    private double getGC(int[] counts, int binSize) {
+        int gc = 0;
+                
+        for (int i=0; i<binSize; i++) {
+            gc += counts[i];
+        }
+        
+        return (100.0 * (double)gc) / (double)binSize;
     }
 }

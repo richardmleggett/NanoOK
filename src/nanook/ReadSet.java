@@ -1,9 +1,14 @@
-package nanotools;
+package nanook;
 
 import java.io.BufferedReader;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Represents a read set (Template reads, Complement reads, or 2D reads).
+ * 
+ * @author leggettr
+ */
 public class ReadSet {
     private NanoOKOptions options;
     private AlignmentFileParser parser;
@@ -12,6 +17,14 @@ public class ReadSet {
     private int type;
     private String typeString;
    
+    /**
+     * Constructor
+     * @param t type (defined in NanoOKOprions)
+     * @param o NanoOKOptions object
+     * @param r the References
+     * @param p an alignment parser object
+     * @param s set of stats to associate with this read set
+     */
     public ReadSet(int t, NanoOKOptions o, References r, AlignmentFileParser p, ReadSetStats s) {
         options = o;
         parser = p;
@@ -20,6 +33,10 @@ public class ReadSet {
         stats = s;
     }
         
+    /**
+     * Parse a FASTA file, noting length of reads etc.
+     * @param filename filename of FASTA file
+     */
     private void readFasta(String filename) {
         try
         {
@@ -59,8 +76,11 @@ public class ReadSet {
             e.printStackTrace();
             System.exit(1);
         }
-
     }
+    
+    /**
+     * Gather length statistics on all files in this read set.
+     */
     public void gatherLengthStats() {
         String inputDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "fasta" + options.getSeparator() + options.getTypeFromInt(type);
         File folder = new File(inputDir);
@@ -86,7 +106,10 @@ public class ReadSet {
         stats.calculateStats();        
     }
     
-    public void parseFiles() {
+    /**
+     * Parse all alignment files for this read set.
+     */
+    public void parseAlignmentFiles() {
         int nReads = 0;
         int nReadsWithAlignments = 0;
         int nReadsWithoutAlignments = 0;
@@ -121,10 +144,18 @@ public class ReadSet {
         stats.writeSummaryFile(options.getAlignmentSummaryFilename());
     }
     
+    /**
+     * Get type of this read set.
+     * @return a String (e.g. "Template")
+     */
     public String getTypeString() {
         return typeString;
     }
     
+    /**
+     * Get stats object.
+     * @return a ReadSetStats object
+     */
     public ReadSetStats getStats() {
         return stats;
     }

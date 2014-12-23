@@ -1,14 +1,22 @@
-package nanotools;
+package nanook;
 
 import java.io.*;
 import java.util.*;
 
+/**
+ * Represents the set of references (sequences) used for the analysis.
+ * @author Richard Leggett
+ */
 public class References {
     private NanoOKOptions options;
     private File sizesFile;
     private Hashtable<String,ReferenceSequence> referenceSequences = new Hashtable();
     private int longestId = 0;
         
+    /**
+     * Constructor
+     * @param o a NanoOKOptions object
+     */
     public References(NanoOKOptions o)
     {
         options = o;
@@ -51,6 +59,9 @@ public class References {
         }
     }    
 
+    /**
+     * Close alignment summary files for all references.
+     */
     public void closeAlignmentFiles() {
         Set<String> keys = referenceSequences.keySet();
         for(String id : keys) {
@@ -59,6 +70,9 @@ public class References {
         }
     }
     
+    /**
+     * Get a ReferenceSequence object from sequence ID.
+     */
     public ReferenceSequence getReferenceById(String id) {
         ReferenceSequence r = referenceSequences.get(id);
         
@@ -70,10 +84,18 @@ public class References {
         return r;
     }
         
+    /**
+     * Return set of all reference sequence IDs.
+     * @return a String set
+     */
     public Set<String> getAllIds() {
         return referenceSequences.keySet();
     }
     
+    /**
+     * Initiate writing of all statistics data files used to generate graphs.
+     * @param type a type, as defined in NanoOKOptions (for example TYPE_TEMPLATE)
+     */
     public void writeReferenceStatFiles(int type) {
         Set<String> keys = referenceSequences.keySet();
         String analysisDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "analysis";
@@ -89,14 +111,25 @@ public class References {
         }        
     }
     
+    /**
+     * Get the length of the longest ID - used for formatting output.
+     * @return length of longest sequence ID
+     */
     public int getLongestIdLength() {
         return longestId;
     }
     
+    /**
+     * Get number of references.
+     * @return number of references
+     */
     public int getNumberOfReferences() {
         return referenceSequences.size();
     }
     
+    /**
+     * Work out the sizes filename for this set of references.
+     */
     private void getSizesFile()
     {
         sizesFile = new File(options.getReferenceFile()+".sizes");
@@ -113,6 +146,10 @@ public class References {
         }
     }
     
+    /**
+     * Write reference summary text file.
+     * @param type type from NanoOKOptions
+     */
     public void writeReferenceSummary(int type) {
        try {
             PrintWriter pw = new PrintWriter(new FileWriter(options.getAlignmentSummaryFilename(), true));
@@ -132,6 +169,11 @@ public class References {
         }
     }
     
+    /**
+     * Write reference summary to LaTeX report.
+     * @param type type from NanoOKOptions
+     * @param pw handle to LaTeX file
+     */
     public void writeTexSummary(int type, PrintWriter pw) {
         pw.println("\\begin{table}[H]");
         pw.println("{\\footnotesize");

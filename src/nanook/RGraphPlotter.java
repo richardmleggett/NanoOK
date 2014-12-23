@@ -1,15 +1,28 @@
-package nanotools;
+package nanook;
 
 import java.io.*;
 import java.util.Set;
 
+/**
+ * Executes command to plot graphs with R.
+ * 
+ * @author Richard Leggett
+ */
 public class RGraphPlotter {
     private NanoOKOptions options;
 
+    /**
+     * Constructor.
+     * @param o NanoOKOptions object
+     */
     public RGraphPlotter(NanoOKOptions o) {
         options = o;
     }
     
+    /**
+     * Execute plot commands.
+     * @param references References object containing all references
+     */
     public void plot(References references) {
        String s = null;
  

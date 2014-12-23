@@ -1,4 +1,4 @@
-package nanotools;
+package nanook;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Hashtable;
 
+/**
+ * Represent statistics about a read set (for example Template read set).
+ * 
+ * @author Richard Leggett
+ */
 public class ReadSetStats {
     NanoOKOptions options;
     private PrintWriter pw;
@@ -30,7 +35,12 @@ public class ReadSetStats {
     private int nSubstitutions = 0;
     private int nInsertions = 0;
     private int nDeletions = 0;
-        
+   
+    /**
+     * Constructor
+     * @param o NanoOKOptions object
+     * @param t Type integer (defined in NanoOKOptions)
+     */
     public ReadSetStats(NanoOKOptions o, int t) {
         options=o;
         typeString = NanoOKOptions.getTypeFromInt(t);
@@ -40,6 +50,9 @@ public class ReadSetStats {
         }
     }
 
+    /**
+     * Open a text file to store read lengths.
+     */
     public void openLengthsFile() {
         String filename = options.getAnalysisDir() + options.getSeparator() + "all_" + typeString + "_lengths.txt";
         try {
@@ -51,11 +64,17 @@ public class ReadSetStats {
         }        
     }
     
+    /**
+     * Close the read lengths file.
+     */
     public void closeLengthsFile() {
         pw.close();
     }
-    
-   public void calculateStats() {
+
+    /**
+     * Calculate various statistics, e.g. N50 etc.
+     */
+    public void calculateStats() {
         int total = 0;
         int c = 0;
                 
@@ -79,55 +98,107 @@ public class ReadSetStats {
         }
         
     }
-        
-   public void addReadFile() {
+    
+    /**
+     * Update count of read files.
+     */
+    public void addReadFile() {
        nReadFiles++;
-   }
+    }
    
+    /**
+     * Get type as a string.
+     * @return type String
+     */
     public String getTypeString() {
         return typeString;
     }
     
+    /**
+     * Get mean length of reads in this read set.
+     * @return length
+     */
     public double getMeanLength() {
         return meanLength;
     }
     
+    /**
+     * Get longest read in this read set.
+     * @return length
+     */
     public int getLongest() {
         return longest;
     }
     
+    /**
+     * Get shortest read in this read set.
+     * @return length
+     */
     public int getShortest() {
         return shortest;
     }
     
+    /**
+     * Get N50 for this read set.
+     * @return N50 length
+     */
     public int getN50() {
         return n50;
     }
     
+    /**
+     * Get N50 count - number of reads of length N50 or greater.
+     * @return count
+     */
     public int getN50Count() {
         return n50Count;
     }
     
+    /**
+     * Get N90 for this read set.
+     * @return N90 length
+     */
     public int getN90() {
         return n90;
     }
     
+    /**
+     * Get N90 count - number of reads of length N90 or greater.
+     * @return count
+     */
     public int getN90Count() {
         return n90Count;
     }
     
+    /**
+     * Get number of reads.
+     * @return number of reads
+     */
     public int getNumReads() {
         return nReads;
     }
         
+    /**
+     * Get total bases represented by read set.
+     * @return number of bases
+     */
     public int getTotalBases() {
         return basesSum;
     }    
     
+    /**
+     * Get number of read files.
+     * @return number of files
+     */
     public int getNumReadFiles() {
         return nReadFiles;
     }    
     
+    /**
+     * Store a read length in the array of read lengths.
+     * @param id ID of read
+     * @param l length
+     */
     public void addLength(String id, int l) {
         lengths[l]++;
         
@@ -145,16 +216,26 @@ public class ReadSetStats {
         //nReads++;
     }    
         
+    /**
+     * Store a read with an alignment.
+     */
     public void addReadWithAlignment() {
         nReads++;
         nReadsWithAlignments++;
     }
 
+    /**
+     * Store a read without an alignment.
+     */
     public void addReadWithoutAlignment() {
         nReads++;
         nReadsWithoutAlignments++;
     }
         
+    /**
+     * Store best perfect kmers for each read.
+     * @param bestKmer length of best perfect kmer
+     */
     public void addReadBestKmer(int bestKmer) {
         if (bestKmer >= NanoOKOptions.MAX_KMER) {
             System.out.println("Error: the unlikely event of a best kmer size of "+bestKmer+" has happened!");
@@ -168,26 +249,49 @@ public class ReadSetStats {
         }
     }
         
+    /**
+     * Get number of reads in this read set.
+     * @return number of reads.
+     */
     public int getNumberOfReads() {
         return nReads;
     }
     
+    /**
+     * Get number of reads with alignments in this read set.
+     * @return number of reads
+     */
     public int getNumberOfReadsWithAlignments() {
         return nReadsWithAlignments;
     }
     
+    /**
+     * Get number of reads without alignments in this read set.
+     * @return number of reads
+     */
     public int getNumberOfReadsWithoutAlignments() {
         return nReadsWithoutAlignments;
     }
     
+    /**
+     * Get percentage of reads with alignments
+     * @return percentage of reads
+     */
     public double getPercentOfReadsWithAlignments() {
         return (100.0 * (double)nReadsWithAlignments) / (double)nReads;
     }
     
+    /**
+     * Get percentage of reads without alignments
+     * @return percentage of reads
+     */
     public double getPercentOfReadsWithoutAlignments() {
         return (100.0 * (double)nReadsWithoutAlignments) / (double)nReads;
     }    
     
+    /**
+     * Print statistics to screen.
+     */
     public void printStats() {
         System.out.println("Parse " + typeString + " alignments");
         System.out.println(typeString + " reads: " + nReads);
@@ -195,6 +299,10 @@ public class ReadSetStats {
         System.out.println(typeString + " reads without alignments: " + nReadsWithoutAlignments);
     }
     
+    /**
+     * Write a short summary file for this read set.
+     * @param filename output filename
+     */
     public void writeSummaryFile(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename, true));
@@ -211,16 +319,32 @@ public class ReadSetStats {
         }        
     }
     
+    /**
+     * Store a deletion error.
+     * @param size size of deletion
+     * @param kmer kmer prior to error
+     */
     public void addDeletionError(int size, String kmer) {
         motifStats.addDeletionMotifs(kmer);
         nDeletions++;
     }
     
+    /**
+     * Store an insertion error.
+     * @param size size of insertion
+     * @param kmer kmer prior to error
+     */
     public void addInsertionError(int size, String kmer) {
         motifStats.addInsertionMotifs(kmer);
         nInsertions++;
     }
     
+    /** 
+     * Store a substitution error.
+     * @param kmer kmer prior to error
+     * @param refChar reference base
+     * @param subChar substituted base
+     */
     public void addSubstitutionError(String kmer, char refChar, char subChar) {
         int r = -1;
         int s = -1;
@@ -249,18 +373,33 @@ public class ReadSetStats {
         }
     }
     
+    /**
+     * Get substitution error matrix (A, C, G, T vs A, C, G, T).
+     * @return Substitution error matrix
+     */
     public int[][] getSubstitutionErrors() {
         return substitutionErrors;
     }
     
+    /**
+     * Get number of substitutions.
+     * @return number
+     */
     public int getNumberOfSubstitutions() {
         return nSubstitutions;
     }
     
+    /**
+     * Write motif stats to screen.
+     */
     public void outputMotifStats() {
         motifStats.outputAllMotifCounts();
     }
     
+    /**
+     * Get motif statistics.
+     * @return MotifStatistics object
+     */
     public MotifStatistics getMotifStatistics() {
         return motifStats;
     }

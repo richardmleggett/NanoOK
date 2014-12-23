@@ -1,12 +1,21 @@
-package nanotools;
+package nanook;
 
 import java.io.*;
 
+/**
+ * Represents alignment summary file written by tool and used for graph plotting.
+ * 
+ * @author Richard Leggett
+ */
 public class AlignmentsTableFile {
     private String filename;
     private PrintWriter pw;
     private int count = 0;
 
+    /**
+     * Constructor.
+     * @param f filename of output file
+     */
     public AlignmentsTableFile(String f) {
         filename = f;
         
@@ -18,6 +27,9 @@ public class AlignmentsTableFile {
         }
     }
     
+    /**
+     * Write header row to file.
+     */
     private void writeHeader() {
         pw.print("Filename\t");
         pw.print("QueryName\t");
@@ -40,6 +52,13 @@ public class AlignmentsTableFile {
         pw.println("");
     }
     
+    /**
+     * Write an alignment line.
+     * @param alignmentFilename filename of alignment
+     * @param hitLine hit object
+     * @param queryLine query object
+     * @param stat AlignmentInfo statistics
+     */
     public void writeAlignment(String alignmentFilename, LastAlignmentLine hitLine, LastAlignmentLine queryLine, AlignmentInfo stat) {
         String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f",
                 alignmentFilename,
@@ -77,10 +96,17 @@ public class AlignmentsTableFile {
         count++;
     }
     
+    /**
+     * Used when no alignment found for this query.
+     * @param alignmentFilename - alignment filename
+     */
     public void writeNoAlignmentMessage(String alignmentFilename) {
         pw.println(alignmentFilename+"\tNO ALIGNMENTS");
     }
 
+    /**
+     * Close file.
+     */
     public void closeFile() {
         pw.flush();
         pw.close();

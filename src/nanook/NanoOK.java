@@ -1,8 +1,17 @@
-package nanotools;
+package nanook;
 
 import java.util.Set;
 
+/**
+ * Entry class for tool.
+ * 
+ * @author Richard Leggett
+ */
 public class NanoOK {
+    /**
+     * Entry to tool.
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         NanoOKOptions options = new NanoOKOptions();
         OverallStats overallStats = new OverallStats(options);
@@ -25,7 +34,7 @@ public class NanoOK {
         for (int type = 0; type<3; type++) {
             AlignmentFileParser parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
             ReadSet readSet = new ReadSet(type, options, references, parser, overallStats.getStatsByType(type));
-            readSet.parseFiles();
+            readSet.parseAlignmentFiles();
             readSet.gatherLengthStats();
             summary.addReadSetStats(overallStats.getStatsByType(type));
         }

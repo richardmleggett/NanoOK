@@ -1,9 +1,14 @@
-package nanotools;
+package nanook;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * Stores stats for each reference sequence, one object per read type (Template, Complement, 2D).
+ * 
+ * @author Richard Leggett
+ */
 public class ReferenceSequenceStats {
     private static final int MAX_INDEL = 100;
     private int size;
@@ -28,32 +33,59 @@ public class ReferenceSequenceStats {
     private int deletionSizes[] = new int[MAX_INDEL];
     private AlignmentsTableFile atf;
 
+    /** 
+     * Constructor.
+     * @param size size (length) of reference
+     * @param n name of reference
+     */
     public ReferenceSequenceStats(int s, String n) {
         size = s;
         name = n;
         coverage = new int[size];
     }
     
+    /**
+     * Create an alignments table file.
+     * @param filename flename
+     */
     public void openAlignmentsTableFile(String filename) {
         atf = new AlignmentsTableFile(filename);
     }
     
+    /**
+     * Close the alignments table file.
+     */
     public void closeAlignmentsTableFile() {
         atf.closeFile();
     }
     
+    /**
+     * Get the associated AlignmentsTableFile object
+     * @return an AlignmentsTableFile
+     */
     public AlignmentsTableFile getAlignmentsTableFile() {
             return  atf;
     }
     
+    /**
+     * Get number of reads with alignments.
+     * @return number of reads
+     */
     public int getNumberOfReadsWithAlignments() {
         return nReadsWithAlignments;
     }
     
+    /**
+     * Get longest perfect kmer length.
+     * @return length longest perfect kmer, in bases
+     */
     public int getLongestPerfectKmer() {
         return longestPerfectKmer;
     }
 
+    /**
+     * Clear all stats.
+     */
     public void clearStats() {
         for (int i=0; i<NanoOKOptions.MAX_KMER; i++) {
             perfectKmerCounts[i] = 0;
@@ -69,6 +101,10 @@ public class ReferenceSequenceStats {
         nReadsWithAlignments = 0;
     }    
     
+    /**
+     * Store all perfect kmer sizes for later analysis.
+     * @param size size of kmer
+     */
     public void addPerfectKmer(int size) {
         if (size >= 1000) {
             System.out.println("Error: very unlikely situation with perfect kmer of size " + size);
@@ -82,12 +118,21 @@ public class ReferenceSequenceStats {
         }
     }
     
+    /**
+     * Increment coverage between two points.
+     * @param start start position
+     * @param size size
+     */
     public void addCoverage(int start, int size) {
         for (int i=start; i<(start+size); i++) {
             coverage[i]++;
         }
     }
     
+    /**
+     * Store best perfect kmer length for each read.
+     * @param bestKmer length of best perfect kmer
+     */
     public void addReadBestKmer(int bestKmer) {
         readBestPerfectKmer[bestKmer]++;
         
@@ -98,6 +143,11 @@ public class ReferenceSequenceStats {
         nReadsWithAlignments++;
     }
     
+    /**
+     * Write coverage file for later graph plotting.
+     * @param filename output filename
+     * @param binSize bin size
+     */
     public void writeCoverageData(String filename, int binSize) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));            
@@ -116,6 +166,10 @@ public class ReferenceSequenceStats {
         }
     }
 
+    /**
+     * Write data for perfect kmer histogram.
+     * @param filename output filename
+     */
     public void writePerfectKmerHist(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));            
@@ -130,6 +184,10 @@ public class ReferenceSequenceStats {
         }
     }
 
+    /**
+     * Write data for best perfect kmer histogram.
+     * @param filename output filename
+     */
     public void writeBestPerfectKmerHist(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));            
@@ -150,6 +208,10 @@ public class ReferenceSequenceStats {
         }
     }    
 
+    /**
+     * Write data for best perfect kmer cumulative histogram.
+     * @param filename output filename
+     */
     public void writeBestPerfectKmerHistCumulative(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));            
@@ -169,17 +231,33 @@ public class ReferenceSequenceStats {
             System.exit(1);
         }
     }    
-    
+    /**
+     * Write a line to the reference sequence summary file.
+     * @param pw PrintWriter object to write with
+     * @param format format string for output
+     */
     public void writeSummary(PrintWriter pw, String format) {
         pw.printf(format, name, size, nReadsWithAlignments, longestPerfectKmer);
     }
     
+    /**
+     * Store alignment stats.
+     * @param querySize query size
+     * @param alignedSize number of aligned bases
+     * @param identicalBases number of identical bases
+     */
     public void addAlignmentStats(int querySize, int alignedSize, int identicalBases) {
         totalAlignedBases += alignedSize;
         totalReadBases += querySize;
         totalIdentical += identicalBases;
     }
     
+    /** 
+     * Store a deletion error.
+     * @param size - size of deletion
+     * @param kmer - kmer before error
+     * @param stats - ReadSetStats associated with the error
+     */
     public void addDeletionError(int size, String kmer, ReadSetStats stats) {
         nDeletionErrors++;
         nDeletedBases += size;
@@ -190,6 +268,12 @@ public class ReferenceSequenceStats {
         stats.addDeletionError(size, kmer);
     }
     
+    /** 
+     * Store an insertion error.
+     * @param size - size of insertion
+     * @param kmer - kmer before error
+     * @param stats - ReadSetStats associated with the error
+     */
     public void addInsertionError(int size, String kmer, ReadSetStats stats) {
         nInsertionErrors++;
         nInsertedBases += size;
@@ -200,12 +284,23 @@ public class ReferenceSequenceStats {
         stats.addInsertionError(size, kmer);
     }
     
+    /** 
+     * Store a substitution error.
+     * @param kmer - kmer before error
+     * @param refChar - reference base
+     * @param subChar - substituted base
+     * @param stats - ReadSetStats associated with the error
+     */
     public void addSubstitutionError(String kmer, char refChar, char subChar, ReadSetStats stats) {
         nSubstitutionErrors++;
         //System.out.println("Kmer before substitution "+kmer);
         stats.addSubstitutionError(kmer, refChar, subChar);
     }
     
+    /**
+     * Get percent identity of aligned bases.
+     * @return identity
+     */
     public double getAlignedPercentIdentical() {
         if ((totalIdentical == 0) || (totalAlignedBases == 0)) {
             return 0;
@@ -214,6 +309,10 @@ public class ReferenceSequenceStats {
         }
     }
     
+    /**
+     * Get percent identity of read.
+     * @return identity
+     */
     public double getReadPercentIdentical() {
         if ((totalIdentical == 0) || (totalReadBases == 0)) {
             return 0;
@@ -222,18 +321,34 @@ public class ReferenceSequenceStats {
         }
     }
 
+    /**
+     * Getnumber of insertion errors.
+     * @return number
+     */
     public int getNumberOfInsertionErrors() {
         return nInsertionErrors;
     }
 
+    /**
+     * Get number of deletion errors.
+     * @return number
+     */
     public int getNumberOfDeletionErrors() {
         return nDeletionErrors;
     }
     
+    /**
+     * Get number of substitution errors.
+     * @return number
+     */
     public int getNumberOfSubstitutionErrors() {
         return nSubstitutionErrors;
     }
     
+    /**
+     * Get percentage of insertion errors
+     * @return percentage
+     */
     public double getPercentInsertionErrors() {
         if ((nInsertedBases == 0) || (totalAlignedBases == 0)) {
             return 0;
@@ -242,6 +357,10 @@ public class ReferenceSequenceStats {
         }
     }
 
+    /** 
+     * Get percentage of deletion errors
+     * @return percentage
+     */
     public double getPercentDeletionErrors() {
         if ((nDeletedBases == 0) || (totalAlignedBases == 0)) {
             return 0;
@@ -250,6 +369,10 @@ public class ReferenceSequenceStats {
         }
     }
     
+    /**
+     * Get percentage of substitution errors
+     * @return percentage
+     */
     public double getPercentSubstitutionErrors() {
         if ((nSubstitutionErrors == 0) || (totalAlignedBases == 0)) {
             return 0;
@@ -258,6 +381,10 @@ public class ReferenceSequenceStats {
         }
     }  
     
+    /**
+     * Write a file of insertion stats for plotting.
+     * @param filename output filename
+     */
     public void writeInsertionStats(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
@@ -273,6 +400,10 @@ public class ReferenceSequenceStats {
         }                
     }
 
+    /**
+     * Write a file of deletion stats for plotting.
+     * @param filename output filename
+     */
     public void writeDeletionStats(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename)); 

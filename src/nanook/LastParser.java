@@ -1,7 +1,12 @@
-package nanotools;
+package nanook;
 
 import java.io.*;
 
+/**
+ * Parser for LAST aligner files.
+ * 
+ * @author Richard Leggett
+ */
 public class LastParser extends AlignmentFileParser {
     private NanoOKOptions options;
     private ReadSetStats overallStats;
@@ -11,6 +16,13 @@ public class LastParser extends AlignmentFileParser {
     private int insertionSize = 0;
     private int type = 0;    
     
+    /**
+     * Constructor.
+     * @param t type of alignment (TYPE_TEMPLATE etc.)
+     * @param o NanoOKOptions object
+     * @param s ReadSetStats object to store stats in
+     * @param r References object
+     */
     public LastParser(int t, NanoOKOptions o, ReadSetStats s, References r) {
         options = o;
         overallStats = s;
@@ -18,6 +30,12 @@ public class LastParser extends AlignmentFileParser {
         type = t;
     }
     
+    /**
+     * Parse a LAST file.
+     * @param filename filename to parse
+     * @param nonAlignedSummaryFile an AlignmentTableFile to output details of anything that doesn't align to
+     * @return number of alignments parsed
+     */
     public int parseFile(String filename, AlignmentsTableFile nonAlignedSummaryFile) {
         int bestPerfectKmer = 0;
         int nAlignments = 0;
@@ -68,6 +86,11 @@ public class LastParser extends AlignmentFileParser {
         return nAlignments;
     }
     
+    /**
+     * Helper method to check if to store insertion or deletion (and store it).
+     * @param reference Reference object this alignment relates to
+     * @param errorKmer The perfect sequence before this error
+     */
     private void checkStoreInsertionsOrDeletions(ReferenceSequence reference, String errorKmer) {
         if (deletionSize > 0) {
             reference.getStatsByType(type).addDeletionError(deletionSize, errorKmer, overallStats);
@@ -80,6 +103,13 @@ public class LastParser extends AlignmentFileParser {
         }
     }
     
+    /**
+     * Compare hit string and query string base-by-base looking for matches.
+     * @param hit hit object
+     * @param query query object
+     * @param reference matching reference (ie. hit)
+     * @return 
+     */
     public AlignmentInfo processMatches(LastAlignmentLine hit, LastAlignmentLine query, ReferenceSequence reference) {
         String hitSeq = hit.getAlignment();
         String querySeq = query.getAlignment();

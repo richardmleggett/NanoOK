@@ -1,7 +1,12 @@
-package nanotools;
+package nanook;
 
 import java.io.*;
 
+/**
+ * Representation of program options and some global constants.
+ * 
+ * @author Richard Leggett
+ */
 public class NanoOKOptions {
     public final static int MAX_KMER = 1000;
     public final static int MAX_READ_LENGTH = 1000000;
@@ -19,6 +24,10 @@ public class NanoOKOptions {
     private String scriptsDir="/Users/leggettr/Documents/github/nanotools/scripts";
     private int coverageBinSize = 100;
     
+    /**
+     * Parse command line arguments.
+     * @param args array of command line arguments
+     */
     public void parseArgs(String[] args) {
         int i=0;
         
@@ -82,26 +91,51 @@ public class NanoOKOptions {
         }
     }
     
+    /**
+     * Get 'program' name.
+     * @return program name String
+     */
     public String getProgram() {
         return program;
     }
     
+    /**
+     * Get base directory name.
+     * @return directory name as String
+     */
     public String getBaseDirectory() {
         return baseDir;
     }
     
+    /**
+     * Get sample name.
+     * @return name String
+     */
     public String getSample() {
         return sample;
     }
     
+    /**
+     * Get name of references file.
+     * @return filename String
+     */
     public String getReferenceFile() {
         return referenceFile;
     }
     
+    /**
+     * Get coverage graph bin size.
+     * @return bin size
+     */
     public int getCoverageBinSize() {
         return coverageBinSize;
     }
         
+    /**
+     * Get a type string (Template, Complement, 2D) from an integer.
+     * @param n integer to convert
+     * @return type String
+     */
     public static String getTypeFromInt(int n) {
         String typeString;
         
@@ -115,6 +149,11 @@ public class NanoOKOptions {
         return typeString;
     }
 
+    /**
+     * Get an error type string (Insertion, Deletion, Substitution) from an integer.
+     * @param n error type integer
+     * @return type String
+     */
     public static String getErrorTypeFromInt(int n) {
         String typeString;
         
@@ -128,10 +167,17 @@ public class NanoOKOptions {
         return typeString;
     }
     
+    /**
+     * Get the filename separator string for this platform.
+     * @return separator string.
+     */
     public String getSeparator() {
         return "/";   
     }
     
+    /**
+     * Check if various required directories exist and create if not.
+     */
     public void checkDirectoryStructure() {
         File analysisDir = new File(baseDir + getSeparator() + sample + getSeparator() + "analysis");
         File graphsDir = new File(baseDir + getSeparator() + sample + getSeparator() + "graphs");
@@ -150,6 +196,9 @@ public class NanoOKOptions {
         }    
     }
     
+    /**
+     * Create a new alignment summary file.
+     */
     public void initialiseAlignmentSummaryFile() {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(this.getAlignmentSummaryFilename())); 
@@ -161,26 +210,50 @@ public class NanoOKOptions {
         }        
     }
     
+    /**
+     * Get filename of alignment summary file.
+     * @return filename String
+     */
     public String getAlignmentSummaryFilename() {
         return baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "alignment_summary.txt";
     }
 
+    /**
+     * Get filename of length summary file.
+     * @return filename String
+     */
     public String getLengthSummaryFilename() {
         return baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "length_summary.txt";
     }    
     
+    /**
+     * Get scripts directory.
+     * @return directory name as String
+     */
     public String getScriptsDir() {
         return scriptsDir;
     }
     
+    /**
+     * Get graphs directory.
+     * @return directory name as String
+     */
     public String getGraphsDir() {
         return baseDir + getSeparator() + sample + getSeparator() + "graphs";
     } 
     
+    /**
+     * Get analysis directory.
+     * @return directory name as String
+     */
     public String getAnalysisDir() {
         return baseDir + getSeparator() + sample + getSeparator() + "analysis";
     } 
     
+    /**
+     * Get LaTeX filename.
+     * @return filename as String
+     */
     public String getTexFilename() {
         return baseDir + getSeparator() + sample + getSeparator() + "latex" + getSeparator() + sample + ".tex";
     }

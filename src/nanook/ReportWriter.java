@@ -1,4 +1,4 @@
-package nanotools;
+package nanook;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -7,13 +7,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Writes a LaTeX report file.
+ * 
+ * @author Richard Leggett
+ */
 public class ReportWriter {
     private NanoOKOptions options;
     private References references;
     private OverallStats overallStats;
     private PrintWriter pw;
     private String sample;
-    
+   
+    /**
+     * Constructor.
+     * @param o a NanoOKOptions object
+     * @param r the references
+     * @param s overall statistics
+     */
     public ReportWriter(NanoOKOptions o, References r, OverallStats s) {
         options = o;
         references = r;
@@ -21,6 +32,9 @@ public class ReportWriter {
         sample = o.getSample().replaceAll("_", "\\\\_");
     }
     
+    /**
+     * Open the .tex file.
+     */
     public void open() {
         try {
             pw = new PrintWriter(new FileWriter(options.getTexFilename())); 
@@ -32,11 +46,17 @@ public class ReportWriter {
         }        
     }
     
+    /**
+     * Close the .tex file.
+     */
     public void close() {
         writeLaTeXFooter();
         pw.close();
     }
     
+    /**
+     * Write the top of the LaTeX document.
+     */
     private void writeLaTeXHeader() {
         pw.println("\\documentclass[a4paper,11pt,oneside]{article}");
         pw.println("\\usepackage{graphicx}");
@@ -53,6 +73,9 @@ public class ReportWriter {
         pw.println("\\section*{\\large{NanoOK report for " + sample + "}}");
     }
     
+    /**
+     * Start the read lengths section.
+     */
     public void beginLengthsSection() {
         pw.println("\\subsection*{Read lengths}");
         pw.println("\\vspace{-3mm}");
@@ -63,10 +86,17 @@ public class ReportWriter {
         pw.println("{\\bf Type} & {\\bf NumReads} & {\\bf TotalBases} & {\\bf Mean} & {\\bf Longest} & {\\bf Shortest} & {\\bf N50} & {\\bf N50Count} & {\\bf N90} & {\\bf N90Count} \\\\");
     }
     
+    /**
+     * Add a read set (Template, Complement, 2D) to the lengths section.
+     * @param r the read set
+     */
     public void addReadSet(ReadSetStats r) {
         pw.printf("%s & %d & %d & %.2f & %d & %d & %d & %d & %d & %d \\\\\n", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
     }
     
+    /**
+     * Finish the lengths section.
+     */
     public void endLengthsSection() {       
         pw.println("\\end{tabular}");
         pw.println("}");
@@ -80,6 +110,10 @@ public class ReportWriter {
         pw.println("\\end{figure}");
     }
     
+    /**
+     * Write the alignments section to the report.
+     * @param stats a ReadSetStats object
+     */
     public void writeAlignmentsSection(ReadSetStats stats) {
         //if ((stats.getTypeString() == "Template") || (references.getNumberOfReferences() > 8)) {
         //    pw.println("\\clearpage");
@@ -99,6 +133,10 @@ public class ReportWriter {
         pw.println("\\vspace{-10mm}");
     }
     
+    /**
+     * Write a section for a reference sequence.
+     * @param refSeq reference to write
+     */
     public void writeReferenceSection(ReferenceSequence refSeq) {
         String id = refSeq.getName().replaceAll("_", " ");
 
@@ -183,6 +221,11 @@ public class ReportWriter {
         pw.println("\\end{figure}");
     }
     
+    /**
+     * Write Top 10 or Bottom 10 moitf section.
+     * @param listType either TYPE_TOP or TYPE_BOTTOM
+     * @param k kmer size
+     */
     public void writeMotifRange(int listType, int k) {
         ArrayList<Map.Entry<String, Double>>[] insertionMotifs = new ArrayList[3];
         ArrayList<Map.Entry<String, Double>>[] deletionMotifs = new ArrayList[3];
@@ -278,6 +321,9 @@ public class ReportWriter {
         pw.println(" \\\\");
     }
     
+    /**
+     * Write motif section of report.
+     */
     public void writeMotifSection() {
         pw.println("\\clearpage");
         pw.println("\\subsection*{Error motif analysis}");
@@ -307,6 +353,11 @@ public class ReportWriter {
         }
     }
     
+    /**
+     * Convert integer (0, 1, 2, 3) to base (A, C, G, T)
+     * @param i number to convert
+     * @return base character
+     */
     private char intToBase(int i) {
         char c;
         
@@ -321,6 +372,9 @@ public class ReportWriter {
         return c;
     }
     
+    /**
+     * Write section to report on substitution errors.
+     */
     public void writeSubstitutionErrorsSection()
     {
         pw.println("\\subsection*{Substitutions}");
@@ -358,7 +412,11 @@ public class ReportWriter {
         pw.println("\\end{table}");  
     }
     
-    public void addReferencePlots(References refs) {
+    /**
+     * Add sections for each reference sequence.
+     * @param refs reference sequences
+     */
+    public void addAllReferenceSections(References refs) {
         List<String> keys = new ArrayList<String>(refs.getAllIds());
         Collections.sort(keys);
         for (String id : keys) {
@@ -366,14 +424,24 @@ public class ReportWriter {
         }
     }
     
+    /**
+     * Write end of LaTeX file.
+     */
     private void writeLaTeXFooter() {
         pw.println("\\end{document}");
     }
     
+    /**
+     * Get handle to PrintWriter.
+     * @return a PrintWriter object
+     */
     public PrintWriter getPrintWriter() {
         return pw;
     }    
     
+    /**
+     * Write the LaTeX report.
+     */
     public void writeReport() {
         open();
         beginLengthsSection();        
