@@ -1,5 +1,5 @@
-nanotools
-=========
+NanoOK
+======
 
 This is pre-release software, not ready for the big bad world.
 
