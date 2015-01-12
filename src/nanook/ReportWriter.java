@@ -74,30 +74,47 @@ public class ReportWriter {
     }
     
     /**
-     * Start the read lengths section.
+     * Add the pass/fail section
      */
-    public void beginLengthsSection() {
+    public void addPassFailSection() {
+        if (options.isNewStyleDir()) {
+            pw.println("\\subsection*{Pass and fail counts}");
+            pw.println("\\vspace{-3mm}");
+            pw.println("\\begin{table}[H]");
+            pw.println("{\\footnotesize");
+            pw.println("\\fontsize{9pt}{11pt}\\selectfont");
+            pw.println("\\begin{tabular}{l c c}");
+            pw.println("{\\bf Type} & {\\bf Pass} & {\\bf Fail} \\\\");
+    
+            for (int type = 0; type<3; type++) {
+                ReadSetStats r = overallStats.getStatsByType(type);           
+                pw.printf("%s & %d & %d  \\\\\n", r.getTypeString(), r.getNumberOfPassFiles(), r.getNumberOfFailFiles());
+            }
+            
+            pw.println("\\end{tabular}");
+            pw.println("}");
+            pw.println("\\end{table}");
+        }
+    }
+    
+    /**
+     * Add the read lengths section.
+     */
+    public void addLengthsSection() {
         pw.println("\\subsection*{Read lengths}");
         pw.println("\\vspace{-3mm}");
+                        
         pw.println("\\begin{table}[H]");
         pw.println("{\\footnotesize");
         pw.println("\\fontsize{9pt}{11pt}\\selectfont");
         pw.println("\\begin{tabular}{l c c c c c c c c c}");
         pw.println("{\\bf Type} & {\\bf NumReads} & {\\bf TotalBases} & {\\bf Mean} & {\\bf Longest} & {\\bf Shortest} & {\\bf N50} & {\\bf N50Count} & {\\bf N90} & {\\bf N90Count} \\\\");
-    }
-    
-    /**
-     * Add a read set (Template, Complement, 2D) to the lengths section.
-     * @param r the read set
-     */
-    public void addReadSet(ReadSetStats r) {
-        pw.printf("%s & %d & %d & %.2f & %d & %d & %d & %d & %d & %d \\\\\n", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
-    }
-    
-    /**
-     * Finish the lengths section.
-     */
-    public void endLengthsSection() {       
+
+        for (int type = 0; type<3; type++) {
+            ReadSetStats r = overallStats.getStatsByType(type);           
+            pw.printf("%s & %d & %d & %.2f & %d & %d & %d & %d & %d & %d \\\\\n", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
+        }
+
         pw.println("\\end{tabular}");
         pw.println("}");
         pw.println("\\end{table}");
@@ -108,6 +125,7 @@ public class ReportWriter {
         pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_Complement_lengths.pdf}");
         pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_2D_lengths.pdf}");
         pw.println("\\end{figure}");
+    
     }
     
     /**
@@ -444,11 +462,8 @@ public class ReportWriter {
      */
     public void writeReport() {
         open();
-        beginLengthsSection();        
-        for (int type = 0; type<3; type++) {            
-            addReadSet(overallStats.getStatsByType(type));            
-        }
-        endLengthsSection();
+        addPassFailSection();
+        addLengthsSection();
         
         for (int type=0; type<3; type++) {            
             writeAlignmentsSection(overallStats.getStatsByType(type));            

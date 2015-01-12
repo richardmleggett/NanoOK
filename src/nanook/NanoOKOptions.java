@@ -17,12 +17,17 @@ public class NanoOKOptions {
     public final static int TYPE_INSERTION = 0;
     public final static int TYPE_DELETION = 1;
     public final static int TYPE_SUBSTITUTION = 2;
+    public final static int READTYPE_COMBINED = 0;
+    public final static int READTYPE_PASS = 1;
+    public final static int READTYPE_FAIL = 2;
     private String program="";
     private String baseDir="/Users/leggettr/Documents/Projects/Nanopore";
     private String referenceFile=null;
     private String sample=null;
     private String scriptsDir="/Users/leggettr/Documents/github/nanotools/scripts";
     private int coverageBinSize = 100;
+    private boolean processPassReads = true;
+    private boolean processFailReads = true;
     
     /**
      * Parse command line arguments.
@@ -241,6 +246,34 @@ public class NanoOKOptions {
     public String getGraphsDir() {
         return baseDir + getSeparator() + sample + getSeparator() + "graphs";
     } 
+
+    /**
+     * Get FASTA directory.
+     * @return directory name as String
+     */
+    public String getFastaDir() {
+        return baseDir + getSeparator() + sample + getSeparator() + "fasta";
+    } 
+
+    /**
+     * Get LAST directory.
+     * @return directory name as String
+     */
+    public String getLastDir() {
+        return baseDir + getSeparator() + sample + getSeparator() + "last";
+    } 
+    
+    public boolean isNewStyleDir() {
+        File passDir = new File(getFastaDir() + getSeparator() + "pass");
+        File failDir = new File(getFastaDir() + getSeparator() + "pass");
+        boolean rc = false;
+        
+        if (passDir.exists() && passDir.isDirectory() && failDir.exists() && failDir.isDirectory()) {
+            rc = true;
+        }
+        
+        return rc;
+    }
     
     /**
      * Get analysis directory.
@@ -256,5 +289,21 @@ public class NanoOKOptions {
      */
     public String getTexFilename() {
         return baseDir + getSeparator() + sample + getSeparator() + "latex" + getSeparator() + sample + ".tex";
+    }
+    
+    /**
+     * Check if processing "pass" reads.
+     * @return true to process
+     */
+    public boolean processPassReads() {
+        return processPassReads;
+    }
+
+    /**
+     * Check if processing "fail" reads.
+     * @return true to process
+     */
+    public boolean processFailReads() {
+        return processFailReads;
     }
 }

@@ -27,7 +27,7 @@ public class RGraphPlotter {
        String s = null;
  
         try {         
-            String command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanotools_plot_lengths.R "+options.getBaseDirectory()+" "+options.getSample();
+            String command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanook_plot_lengths.R "+options.getBaseDirectory()+" "+options.getSample();
             System.out.println("Executing "+command);
             Process p = Runtime.getRuntime().exec(command);
             p.waitFor();
@@ -35,17 +35,17 @@ public class RGraphPlotter {
             Set<String> ids = references.getAllIds();
             for (String id : ids) {
                 String name = references.getReferenceById(id).getName();
-                command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanotools_plot_alignments.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
+                command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanook_plot_alignments.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
                 System.out.println("Executing "+command);
                 p = Runtime.getRuntime().exec(command);
                 p.waitFor();                
                 
-                command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanotools_plot_indels.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
+                command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanook_plot_indels.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
                 System.out.println("Executing "+command);
                 p = Runtime.getRuntime().exec(command);
                 p.waitFor();
 
-                command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanotools_plot_read_identity.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
+                command="Rscript "+options.getScriptsDir()+options.getSeparator()+"nanook_plot_read_identity.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
                 System.out.println("Executing "+command);
                 p = Runtime.getRuntime().exec(command);
                 p.waitFor();               

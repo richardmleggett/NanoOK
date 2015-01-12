@@ -82,21 +82,45 @@ public class ReadSet {
      * Gather length statistics on all files in this read set.
      */
     public void gatherLengthStats() {
-        String inputDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "fasta" + options.getSeparator() + options.getTypeFromInt(type);
-        File folder = new File(inputDir);
-        File[] listOfFiles = folder.listFiles();
+        String dirs[] = new String[2];
+        int readTypes[] = new int[2];
+        int nDirs = 0;
 
         typeString = options.getTypeFromInt(type);
         
         System.out.println("Gathering stats on "+typeString+" reads");
         
         stats.openLengthsFile();
-        
-        for (File file : listOfFiles) {
-            if (file.isFile()) {
-                if (file.getName().endsWith(".fasta")) {
-                    readFasta(file.getPath());
-                    stats.addReadFile();
+
+        if (options.isNewStyleDir()) {
+            if (options.processPassReads()) {
+                dirs[nDirs] = options.getFastaDir() + options.getSeparator() + "pass";
+                readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
+                nDirs++;
+            }
+            
+            if (options.processFailReads()) {
+                dirs[nDirs] = options.getFastaDir() + options.getSeparator() + "fail";
+                readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
+                nDirs++;
+            }
+        } else {
+            dirs[nDirs] = options.getFastaDir();
+            readTypes[nDirs] = NanoOKOptions.READTYPE_COMBINED;
+            nDirs++;
+        }
+                
+        for (int dirIndex=0; dirIndex<nDirs; dirIndex++) {        
+            String inputDir = dirs[dirIndex] + options.getSeparator() + options.getTypeFromInt(type);
+            File folder = new File(inputDir);
+            File[] listOfFiles = folder.listFiles();
+
+            for (File file : listOfFiles) {
+                if (file.isFile()) {
+                    if (file.getName().endsWith(".fasta")) {
+                        readFasta(file.getPath());
+                        stats.addReadFile(dirIndex, readTypes[dirIndex]);
+                    }
                 }
             }
         }
@@ -108,34 +132,58 @@ public class ReadSet {
     
     /**
      * Parse all alignment files for this read set.
+     * Code in common with gatherLengthStats - combine?
      */
     public void parseAlignmentFiles() {
         int nReads = 0;
         int nReadsWithAlignments = 0;
         int nReadsWithoutAlignments = 0;
-        
-        String inputDir = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "last" + options.getSeparator() + options.getTypeFromInt(type);
-        String outputFilename = options.getBaseDirectory() + options.getSeparator() + options.getSample() + options.getSeparator() + "analysis" + options.getSeparator() + options.getTypeFromInt(type) + "_nonaligned.txt";
+        String dirs[] = new String[2];
+        int readTypes[] = new int[2];
+        int nDirs = 0;
+        String outputFilename = options.getAnalysisDir() + options.getSeparator() + options.getTypeFromInt(type) + "_nonaligned.txt";
         AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile(outputFilename);
+        
+        if (options.isNewStyleDir()) {
+            if (options.processPassReads()) {
+                dirs[nDirs] = options.getLastDir() + options.getSeparator() + "pass";
+                readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
+                nDirs++;
+            }
+            
+            if (options.processFailReads()) {
+                dirs[nDirs] = options.getLastDir() + options.getSeparator() + "fail";
+                readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
+                nDirs++;
+            }
+        } else {
+            dirs[nDirs] = options.getLastDir();
+            readTypes[nDirs] = NanoOKOptions.READTYPE_COMBINED;
+            nDirs++;
+        }
+        
+        for (int dirIndex=0; dirIndex<nDirs; dirIndex++) {        
+            String inputDir = dirs[dirIndex] + options.getSeparator() + options.getTypeFromInt(type);
 
-        System.out.println("\nParsing " + options.getTypeFromInt(type));            
+            System.out.println("Parsing " + options.getTypeFromInt(type));            
 
-        File folder = new File(inputDir);
-        File[] listOfFiles = folder.listFiles();
+            File folder = new File(inputDir);
+            File[] listOfFiles = folder.listFiles();
 
-        for (File file : listOfFiles) {
-            if (file.isFile()) {
-                if (file.getName().endsWith(".maf")) {
-                    String pathname = inputDir + options.getSeparator() + file.getName();
-                    int nAlignments = parser.parseFile(pathname, nonAlignedSummary);
+            for (File file : listOfFiles) {
+                if (file.isFile()) {
+                    if (file.getName().endsWith(".maf")) {
+                        String pathname = inputDir + options.getSeparator() + file.getName();
+                        int nAlignments = parser.parseFile(pathname, nonAlignedSummary);
 
-                    if (nAlignments > 0) {
-                        nReadsWithAlignments++;
-                    } else {
-                        nReadsWithoutAlignments++;
+                        if (nAlignments > 0) {
+                            nReadsWithAlignments++;
+                        } else {
+                            nReadsWithoutAlignments++;
+                        }
+
+                        nReads++;
                     }
-
-                    nReads++;
                 }
             }
         }

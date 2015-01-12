@@ -26,6 +26,8 @@ public class ReadSetStats {
     private int[] lengths = new int[NanoOKOptions.MAX_READ_LENGTH];
     private int nReads = 0;
     private int nReadFiles = 0;
+    private int nPassFiles = 0;
+    private int nFailFiles = 0;
     private int nReadsWithAlignments = 0;
     private int nReadsWithoutAlignments = 0;
     private int[] readBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
@@ -101,11 +103,34 @@ public class ReadSetStats {
     
     /**
      * Update count of read files.
+     * @param i subdirectory index (0=pass, 1=fail)
      */
-    public void addReadFile() {
+    public void addReadFile(int i, int type) {
        nReadFiles++;
+       
+       if (type == NanoOKOptions.READTYPE_PASS) {
+           nPassFiles++;
+       } else if (type == NanoOKOptions.READTYPE_FAIL) {
+           nFailFiles++;
+       }
     }
-   
+    
+    /**
+     * Get number of read files in pass directory
+     * @return Number of files in pass directory
+     */
+    public int getNumberOfPassFiles() {
+        return nPassFiles;        
+    }
+
+    /**
+     * Get number of read files in fail directory
+     * @return Number of files in fail directory
+     */
+    public int getNumberOfFailFiles() {
+        return nFailFiles;        
+    }    
+    
     /**
      * Get type as a string.
      * @return type String
