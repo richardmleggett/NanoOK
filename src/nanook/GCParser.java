@@ -26,14 +26,12 @@ public class GCParser {
      * @param binSize bin size to use
      */
     public void parseSequence(String fastaFilename, String sequenceId, String outputFilename, int binSize) {
-        int currentGCPosition = binSize / 2;
+        int currentGCPosition = binSize;
         int currentGCCounter = 0;
         int currentGC = 0;
-        int counts[] = new int[binSize];
+        int counts[] = new int[binSize*2];
         boolean foundID = false;
         boolean continueReading = true;
-
-        //System.out.println("Writing to "+outputFilename);
         
         try
         {
@@ -49,9 +47,7 @@ public class GCParser {
                         continueReading = false;
                     } else if (id.equals(sequenceId)) {
                         foundID = true;
-                    } //else {                  
-                        //System.out.println("["+id+"] not equal to ["+sequenceId+"]");
-                    //}
+                    } 
                 } else if (foundID) {
                     for (int i=0; i<line.length(); i++) {
                         if ((line.charAt(i) == 'G') || (line.charAt(i) == 'C') || (line.charAt(i) == 'g') || (line.charAt(i) == 'c')) {
@@ -62,16 +58,13 @@ public class GCParser {
                         }
                         currentGCCounter++;
                         
-                        if (currentGCCounter == binSize) {
-                            //pw.println(currentGCPosition + "\t" + (double)((double)currentGC / (double)currentGCLength));
+                        if (currentGCCounter == (binSize*2)) {
                             pw.println(currentGCPosition + "\t" + getGC(counts, binSize));
                             currentGCCounter = 0;
-                            for (int j=(binSize / 2); j<binSize; j++) {
+                            for (int j=binSize; j<(binSize*2); j++) {
                                 counts[currentGCCounter++] = counts[j];
                             }
-                            currentGCPosition += (binSize / 2);
-                            //currentGCPosition += binSize;
-                            //currentGCLength = 0;
+                            currentGCPosition += binSize;
                             currentGC = 0;
                         }
                     }

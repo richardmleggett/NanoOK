@@ -14,9 +14,9 @@ public class ReferenceSequenceStats {
     private int size;
     private String name;
     private int[] coverage;
-    private int[] perfectKmerCounts = new int[1000];
-    private int[] readBestPerfectKmer = new int[1000];
-    private int[] readCumulativeBestPerfectKmer = new int[1000];
+    private int[] perfectKmerCounts = new int[NanoOKOptions.MAX_KMER];
+    private int[] readBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
+    private int[] readCumulativeBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
     private int longestPerfectKmer = 0;
     private int nReadsWithAlignments = 0;
     private int totalReadBases = 0;
@@ -106,7 +106,7 @@ public class ReferenceSequenceStats {
      * @param size size of kmer
      */
     public void addPerfectKmer(int size) {
-        if (size >= 1000) {
+        if (size >= NanoOKOptions.MAX_KMER) {
             System.out.println("Error: very unlikely situation with perfect kmer of size " + size);
             System.exit(1);
         }
@@ -172,7 +172,7 @@ public class ReferenceSequenceStats {
      */
     public void writePerfectKmerHist(String filename) {
         try {
-            PrintWriter pw = new PrintWriter(new FileWriter(filename));            
+            PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=longestPerfectKmer; i++) {
                 pw.printf("%d\t%d\n", i, perfectKmerCounts[i]);
             }            
@@ -190,7 +190,7 @@ public class ReferenceSequenceStats {
      */
     public void writeBestPerfectKmerHist(String filename) {
         try {
-            PrintWriter pw = new PrintWriter(new FileWriter(filename));            
+            PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=longestPerfectKmer; i++) {
                 double pc = 0;
 
@@ -214,7 +214,7 @@ public class ReferenceSequenceStats {
      */
     public void writeBestPerfectKmerHistCumulative(String filename) {
         try {
-            PrintWriter pw = new PrintWriter(new FileWriter(filename));            
+            PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=longestPerfectKmer; i++) {
                 double pc = 0;
                 
@@ -382,6 +382,14 @@ public class ReferenceSequenceStats {
     }  
     
     /**
+     * Get the number of aligned bases
+     * @return number of bases
+     */
+    public int getTotalAlignedBases() {
+        return totalAlignedBases;
+    }
+    
+    /**
      * Write a file of insertion stats for plotting.
      * @param filename output filename
      */
@@ -406,7 +414,7 @@ public class ReferenceSequenceStats {
      */
     public void writeDeletionStats(String filename) {
         try {
-            PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
+            PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=largestDeletion; i++) {
                 //pw.println(i + "\t" + deletionSizes[i]);
                 pw.printf("%d\t%.4f\n", i, (100.0 * (double)deletionSizes[i]/(double)nDeletionErrors));            }

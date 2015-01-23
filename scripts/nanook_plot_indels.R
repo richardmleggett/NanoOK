@@ -9,19 +9,19 @@ basename <- args[1];
 sample <-args[2];
 refid <- args[3];
 
-data_insertions_twod_filename <- paste(basename, "/", sample, "/analysis/", refid, "_2D_insertions.txt", sep="");
-data_insertions_template_filename <- paste(basename, "/", sample, "/analysis/", refid, "_Template_insertions.txt", sep="");
-data_insertions_complement_filename <- paste(basename, "/", sample, "/analysis/", refid, "_Complement_insertions.txt", sep="");
-data_deletions_twod_filename <- paste(basename, "/", sample, "/analysis/", refid, "_2D_deletions.txt", sep="");
-data_deletions_template_filename <- paste(basename, "/", sample, "/analysis/", refid, "_Template_deletions.txt", sep="");
-data_deletions_complement_filename <- paste(basename, "/", sample, "/analysis/", refid, "_Complement_deletions.txt", sep="");
+data_insertions_twod_filename <- paste(basename, "/", sample, "/analysis/", refid, "/", refid, "_2D_insertions.txt", sep="");
+data_insertions_template_filename <- paste(basename, "/", sample, "/analysis/", refid, "/", refid, "_Template_insertions.txt", sep="");
+data_insertions_complement_filename <- paste(basename, "/", sample, "/analysis/", refid, "/", refid, "_Complement_insertions.txt", sep="");
+data_deletions_twod_filename <- paste(basename, "/", sample, "/analysis/", refid, "/", refid, "_2D_deletions.txt", sep="");
+data_deletions_template_filename <- paste(basename, "/", sample, "/analysis/", refid, "/", refid, "_Template_deletions.txt", sep="");
+data_deletions_complement_filename <- paste(basename, "/", sample, "/analysis/", refid, "/", refid, "_Complement_deletions.txt", sep="");
 
-pdf_insertions_twod <- paste(basename, "/", sample, "/graphs/", refid, "_2D_insertions.pdf", sep="");
-pdf_insertions_template <- paste(basename, "/", sample, "/graphs/", refid, "_Template_insertions.pdf", sep="");
-pdf_insertions_complement <- paste(basename, "/", sample, "/graphs/", refid, "_Complement_insertions.pdf", sep="");
-pdf_deletions_twod <- paste(basename, "/", sample, "/graphs/", refid, "_2D_deletions.pdf", sep="");
-pdf_deletions_template <- paste(basename, "/", sample, "/graphs/", refid, "_Template_deletions.pdf", sep="");
-pdf_deletions_complement <- paste(basename, "/", sample, "/graphs/", refid, "_Complement_deletions.pdf", sep="");
+pdf_insertions_twod <- paste(basename, "/", sample, "/graphs/", refid, "/", refid, "_2D_insertions.pdf", sep="");
+pdf_insertions_template <- paste(basename, "/", sample, "/graphs/", refid, "/", refid, "_Template_insertions.pdf", sep="");
+pdf_insertions_complement <- paste(basename, "/", sample, "/graphs/", refid, "/", refid, "_Complement_insertions.pdf", sep="");
+pdf_deletions_twod <- paste(basename, "/", sample, "/graphs/", refid, "/", refid, "_2D_deletions.pdf", sep="");
+pdf_deletions_template <- paste(basename, "/", sample, "/graphs/", refid, "/", refid, "_Template_deletions.pdf", sep="");
+pdf_deletions_complement <- paste(basename, "/", sample, "/graphs/", refid, "/", refid, "_Complement_deletions.pdf", sep="");
 
 pdf(pdf_insertions_twod, height=2.5, width=4)
 data_insertions_twod = read.table(data_insertions_twod_filename, col.name=c("Size", "Percent"))

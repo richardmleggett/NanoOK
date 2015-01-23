@@ -1,5 +1,6 @@
 package nanook;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,6 +14,7 @@ public class ReferenceSequence {
     private String id = null;
     private String name = null;
     private int size = 0;
+    private int binSize = 500;
     private ReferenceSequenceStats referenceStats[] = new ReferenceSequenceStats[3];
     
     /**
@@ -25,8 +27,10 @@ public class ReferenceSequence {
         id = i;
         size = s;
         name = n;
-        
-        System.out.println("Got reference "+n);
+
+        float b = size / 1000;
+        binSize = 500 * (1 + Math.round(b / 500));   
+                
         for (int t=0; t<3; t++) {
             referenceStats[t] = new ReferenceSequenceStats(size, name);
         }
@@ -39,7 +43,7 @@ public class ReferenceSequence {
      */
     public void openAlignmentSummaryFiles(String analysisDir) {
         for (int t=0; t<3; t++) {
-            referenceStats[t].openAlignmentsTableFile(analysisDir + name + "_" + NanoOKOptions.getTypeFromInt(t) + "_alignments.txt");
+            referenceStats[t].openAlignmentsTableFile(analysisDir + File.separator + name + File.separator + name + "_" + NanoOKOptions.getTypeFromInt(t) + "_alignments.txt");
         }
     }
     
@@ -83,5 +87,13 @@ public class ReferenceSequence {
      */
     public int getSize() {
         return size;
+    }
+    
+    /**
+     * Get bin size for graph plotting
+     * @return size (nt)
+     */
+    public int getBinSize() {
+        return binSize;
     }
 }

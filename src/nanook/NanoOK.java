@@ -8,11 +8,14 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
+    public final static String VERSION_STRING = "v0.2";
+    
     /**
      * Entry to tool.
      * @param args command line arguments
      */
     public static void main(String[] args) {
+        System.out.println("\nNanoOK " + VERSION_STRING + "\n");
         NanoOKOptions options = new NanoOKOptions();
         OverallStats overallStats = new OverallStats(options);
 
@@ -26,65 +29,55 @@ public class NanoOK {
         options.checkDirectoryStructure();
 
         // Load references
+        System.out.println("\nFinding references");
         References references = new References(options);
                 
         // Parse all reads sets       
-        ReadLengthsSummaryFile summary = new ReadLengthsSummaryFile(options.getLengthSummaryFilename());
-        summary.open(options.getSample());
-        for (int type = 0; type<3; type++) {
-            AlignmentFileParser parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
-            ReadSet readSet = new ReadSet(type, options, references, parser, overallStats.getStatsByType(type));
-            readSet.parseAlignmentFiles();
-            readSet.gatherLengthStats();
-            summary.addReadSetStats(overallStats.getStatsByType(type));
-        }
-        summary.close();
-
-        // Write files
-        Set<String> ids = references.getAllIds();
-        for (String id : ids) {
-            for (int type=0; type<3; type++) {
-                references.writeReferenceStatFiles(type);
-                references.writeReferenceSummary(type);
-            }
-        }
-        
-        references.closeAlignmentFiles();
-        
-        // Plot graphs
-        RGraphPlotter plotter = new RGraphPlotter(options);
-        plotter.plot(references);                
-        options.initialiseAlignmentSummaryFile();
-
-        ReportWriter rw = new ReportWriter(options, references, overallStats);
-        rw.writeReport();
-        
-        
-//        reportWriter.addReferencePlots(references);      
-//        reportWriter.close();
-        /*
-        if (options.getProgram().equals("readstats")) {
+        if (options.doParseAlignments()) {
             ReadLengthsSummaryFile summary = new ReadLengthsSummaryFile(options.getLengthSummaryFilename());
-            summary.open();
+            summary.open(options.getSample());
             for (int type = 0; type<3; type++) {
-                ReadSetAnalysis set = new ReadSetAnalysis(options);
-                set.gatherLengthStats(type);
-                summary.addReadSet(set);
+                AlignmentFileParser parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
+                ReadSet readSet = new ReadSet(type, options, references, parser, overallStats.getStatsByType(type));
+                readSet.gatherLengthStats();
+                readSet.parseAlignmentFiles();
+                summary.addReadSetStats(overallStats.getStatsByType(type));
             }
             summary.close();
-        } else if (options.getProgram().equals("parselast")) {
-            options.initialiseAlignmentSummaryFile();
-            References references = new References(options);
-            OverallAlignmentStats stats = new OverallAlignmentStats();
-            LastParser parser = new LastParser(options, stats, references);
-            parser.parseAll();
-        } else if (options.getProgram().equals("plot")) {
-            References references = new References(options);
-            RGraphPlotter plotter = new RGraphPlotter(options);
-            plotter.plot(references);
+
+            // Write files
+            System.out.println("\nWriting analysis files");
+            Set<String> ids = references.getAllIds();
+            int allCount = ids.size() * 3;
+            int counter = 1;
+            
+            for (String id : ids) {
+                for (int type=0; type<3; type++) {
+                    System.out.print("\r"+counter+"/"+allCount);
+                    references.writeReferenceStatFiles(type);
+                    references.writeReferenceSummary(type);
+                    counter++;
+                }
+            }
+
+            references.closeAlignmentFiles();
+            System.out.println("");
         }
-        */
         
-//        stats.outputMotifStats();
+        // Plot graphs
+        if (options.doPlotGraphs()) {
+            System.out.println("\nPlotting");
+            RGraphPlotter plotter = new RGraphPlotter(options);
+            plotter.plot(references);                
+        }
+        
+        // Make report
+        if (options.doMakeReport()) {
+            System.out.println("\nMaking report...");
+            ReportWriter rw = new ReportWriter(options, references, overallStats);
+            rw.writeReport();
+        }
+        
+        System.out.println("Done");
     }
 }

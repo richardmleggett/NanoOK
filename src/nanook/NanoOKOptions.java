@@ -8,7 +8,7 @@ import java.io.*;
  * @author Richard Leggett
  */
 public class NanoOKOptions {
-    public final static int MAX_KMER = 1000;
+    public final static int MAX_KMER = 5000;
     public final static int MAX_READ_LENGTH = 1000000;
     public final static int MAX_READS = 1000000;
     public final static int TYPE_TEMPLATE = 0;
@@ -20,7 +20,6 @@ public class NanoOKOptions {
     public final static int READTYPE_COMBINED = 0;
     public final static int READTYPE_PASS = 1;
     public final static int READTYPE_FAIL = 2;
-    private String program="";
     private String baseDir="/Users/leggettr/Documents/Projects/Nanopore";
     private String referenceFile=null;
     private String sample=null;
@@ -28,6 +27,30 @@ public class NanoOKOptions {
     private int coverageBinSize = 100;
     private boolean processPassReads = true;
     private boolean processFailReads = true;
+    private boolean parseAlignments = true;
+    private boolean plotGraphs = true;
+    private boolean makeReport = true;
+    private int maxReads = 0;
+    private boolean process2DReads = true;
+    private boolean processTemplateReads = true;
+    private boolean processComplementReads = true;
+    
+    public NanoOKOptions() {
+        String value = System.getenv("NANOOK_SCRIPT_DIR");
+        
+        if (value != null) {
+            scriptsDir = value;
+        } else {
+            System.out.println("WARNING: You should set NANOOK_SCRIPT_DIR");
+        }
+        
+        value = System.getenv("NANOOK_BASE_DIR");
+        if (value != null) {
+            baseDir = value;
+        }
+        
+        System.out.println("Scripts dir: "+scriptsDir);
+    }
     
     /**
      * Parse command line arguments.
@@ -37,11 +60,7 @@ public class NanoOKOptions {
         int i=0;
         
         if (args.length <= 1) {
-            System.out.println("Syntax Nanotools [program] [options]");
-            System.out.println("");
-            System.out.println("Programs:");            
-            System.out.println("    parselast - parse LAST alignments");            
-            System.out.println("    plot      - plot graphs");
+            System.out.println("Syntax nanook [options]");
             System.out.println("");
             System.out.println("Options:");
             System.out.println("    -basesdir <directory> specifies base directory");
@@ -52,34 +71,36 @@ public class NanoOKOptions {
             System.exit(0);
         }
         
-        if (args[i].equalsIgnoreCase("readstats")) {
-            program="readstats";
-        } else if (args[i].equalsIgnoreCase("parselast")) {
-            program="parselast";
-        } else if (args[i].equalsIgnoreCase("plot")) {
-            program="plot";
-        } else {
-            System.out.println("Unknown program "+program);
-            System.exit(1);
-        }
-        
-        i++;
-        
-        while (i < (args.length-1)) {
+        parseAlignments = true;
+        plotGraphs = true;
+        makeReport = true;
+                        
+        while (i < (args.length)) {
             if (args[i].equalsIgnoreCase("-basedir")) {
                 baseDir = args[i+1];
+                i+=2;
             } else if (args[i].equalsIgnoreCase("-coveragebin")) {
                 coverageBinSize = Integer.parseInt(args[i+1]);
+                i+=2;
             } else if (args[i].equalsIgnoreCase("-reference")) {
                 referenceFile = args[i+1];
+                i+=2;
             } else if (args[i].equalsIgnoreCase("-sample")) {
                 sample = args[i+1];
-            } else {
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-maxreads")) {
+                maxReads = Integer.parseInt(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-nofail")) {
+                processFailReads = false;  
+                i++;
+            } else if (args[i].equalsIgnoreCase("-nopass")) {
+                processPassReads = false;
+                i++;
+            } else {                
                 System.out.println("Unknown paramter: " + args[i]);
                 System.exit(0);
-            }
-            
-            i+=2;
+            }            
         }
         
         if (baseDir == null) {
@@ -95,15 +116,7 @@ public class NanoOKOptions {
             System.exit(1);
         }
     }
-    
-    /**
-     * Get 'program' name.
-     * @return program name String
-     */
-    public String getProgram() {
-        return program;
-    }
-    
+        
     /**
      * Get base directory name.
      * @return directory name as String
@@ -171,22 +184,15 @@ public class NanoOKOptions {
         
         return typeString;
     }
-    
-    /**
-     * Get the filename separator string for this platform.
-     * @return separator string.
-     */
-    public String getSeparator() {
-        return "/";   
-    }
-    
+        
     /**
      * Check if various required directories exist and create if not.
      */
     public void checkDirectoryStructure() {
-        File analysisDir = new File(baseDir + getSeparator() + sample + getSeparator() + "analysis");
-        File graphsDir = new File(baseDir + getSeparator() + sample + getSeparator() + "graphs");
-        File latexDir = new File(baseDir + getSeparator() + sample + getSeparator() + "latex");
+        File analysisDir = new File(getAnalysisDir());
+        File graphsDir = new File(getGraphsDir());
+        File motifsDir = new File(getGraphsDir() + File.separator + "motifs");
+        File latexDir = new File(getLatexDir());
         
         if (!analysisDir.exists()) {
             analysisDir.mkdir();
@@ -196,9 +202,30 @@ public class NanoOKOptions {
             graphsDir.mkdir();
         }    
 
+        if (!motifsDir.exists()) {
+            motifsDir.mkdir();
+        }    
+        
         if (!latexDir.exists()) {
             latexDir.mkdir();
         }    
+    }
+    
+    /**
+     * Check if an analysis reference directory exists and make if not.
+     * @param reference name of reference
+     */
+    public void checkAndMakeReferenceAnalysisDir(String reference) {
+        File analysisDir = new File(getAnalysisDir() + File.separator + reference);
+        File graphsDir = new File(getGraphsDir() + File.separator + reference);
+        
+        if (!analysisDir.exists()) {
+            analysisDir.mkdir();
+        }
+        if (!graphsDir.exists()) {
+            graphsDir.mkdir();
+        }
+
     }
     
     /**
@@ -220,7 +247,7 @@ public class NanoOKOptions {
      * @return filename String
      */
     public String getAlignmentSummaryFilename() {
-        return baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "alignment_summary.txt";
+        return getAnalysisDir() + File.separator + "alignment_summary.txt";
     }
 
     /**
@@ -228,7 +255,7 @@ public class NanoOKOptions {
      * @return filename String
      */
     public String getLengthSummaryFilename() {
-        return baseDir + getSeparator() + sample + getSeparator() + "analysis" + getSeparator() + "length_summary.txt";
+        return getAnalysisDir() + File.separator + "length_summary.txt";
     }    
     
     /**
@@ -244,7 +271,7 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getGraphsDir() {
-        return baseDir + getSeparator() + sample + getSeparator() + "graphs";
+        return baseDir + File.separator + sample + File.separator + "graphs";
     } 
 
     /**
@@ -252,7 +279,7 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getFastaDir() {
-        return baseDir + getSeparator() + sample + getSeparator() + "fasta";
+        return baseDir + File.separator + sample + File.separator + "fasta";
     } 
 
     /**
@@ -260,12 +287,20 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getLastDir() {
-        return baseDir + getSeparator() + sample + getSeparator() + "last";
+        return baseDir + File.separator + sample + File.separator + "last";
+    } 
+
+    /**
+     * Get LaTeX directory.
+     * @return directory name as String
+     */
+    public String getLatexDir() {
+        return baseDir + File.separator + sample + File.separator + "latex";
     } 
     
     public boolean isNewStyleDir() {
-        File passDir = new File(getFastaDir() + getSeparator() + "pass");
-        File failDir = new File(getFastaDir() + getSeparator() + "pass");
+        File passDir = new File(getFastaDir() + File.separator + "pass");
+        File failDir = new File(getFastaDir() + File.separator + "pass");
         boolean rc = false;
         
         if (passDir.exists() && passDir.isDirectory() && failDir.exists() && failDir.isDirectory()) {
@@ -280,7 +315,7 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getAnalysisDir() {
-        return baseDir + getSeparator() + sample + getSeparator() + "analysis";
+        return baseDir + File.separator + sample + File.separator + "analysis";
     } 
     
     /**
@@ -288,14 +323,14 @@ public class NanoOKOptions {
      * @return filename as String
      */
     public String getTexFilename() {
-        return baseDir + getSeparator() + sample + getSeparator() + "latex" + getSeparator() + sample + ".tex";
+        return baseDir + File.separator + sample + File.separator + "latex" + File.separator + sample + ".tex";
     }
     
     /**
      * Check if processing "pass" reads.
      * @return true to process
      */
-    public boolean processPassReads() {
+    public boolean doProcessPassReads() {
         return processPassReads;
     }
 
@@ -303,7 +338,39 @@ public class NanoOKOptions {
      * Check if processing "fail" reads.
      * @return true to process
      */
-    public boolean processFailReads() {
+    public boolean doProcessFailReads() {
         return processFailReads;
     }
+
+    /**
+     * Check if to parse alignments or not
+     * @return true to parse
+     */
+    public boolean doParseAlignments() {
+        return parseAlignments;
+    }
+    
+    /**
+     * Check if to plot graphs or not
+     * @return true to plot
+     */
+    public boolean doPlotGraphs() {
+        return plotGraphs;
+    }
+    
+    /**
+     * Check if to make report or not
+     * @return true to make report
+     */
+    public boolean doMakeReport() {
+        return makeReport;
+    }
+    
+    /**
+     * Get maximum number of reads (used for debugging)
+     * @return maximum number of reads
+     */
+    public int getMaxReads() {
+        return maxReads;
+    }    
 }

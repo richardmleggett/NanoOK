@@ -80,6 +80,12 @@ public class KmerMotifStatistic {
      */
     public void calculateTopBaseCounts() {
         ArrayList<Map.Entry<String, Integer>> list = getSortedMotifCounts();
+
+        if (list.size() < 10) {
+            System.out.println("Error: motif list smaller than 10");
+            return;
+        }
+        
         for (int i=0; i<10; i++) {
             if (i < list.size()) {
                 String motif = list.get(i).getKey();
@@ -93,6 +99,12 @@ public class KmerMotifStatistic {
      */
     public void calculateBottomBaseCounts() {
         ArrayList<Map.Entry<String, Integer>> list = getSortedMotifCounts();
+        
+        if (list.size() < 10) {
+            System.out.println("Error: motif list smaller than 10");
+            return;
+        }
+        
         for (int i=0; i<10; i++) {
             if (i >= 0) {
                 String motif = list.get(list.size() - 1 - i).getKey();

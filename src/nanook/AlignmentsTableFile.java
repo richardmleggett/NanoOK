@@ -23,7 +23,8 @@ public class AlignmentsTableFile {
             pw = new PrintWriter(new FileWriter(filename));
             writeHeader();
         } catch (IOException e) {
-            System.out.println(e);
+            System.out.println("AlignmentsTableFile exception");
+            e.printStackTrace();
         }
     }
     
@@ -82,16 +83,6 @@ public class AlignmentsTableFile {
         
         pw.println(outputLine);
         pw.flush();
-
-        //if (filename.equals("/Users/leggettr/Documents/Projects/Nanopore/N79681_EvenMC_R7_06082014/analysis/Rhodobacter_sphaeroides_2D_alignments.txt")) {
-        //if ((count == 19) || (count == 20) || (count == 21)) {
-        //    System.out.println("DEBUG");
-        //    System.out.println("["+outputLine+"]");
-        //    System.out.println("["+filename+"]");
-        //    System.out.println("["+alignmentFilename+"]");
-        //    System.out.println("["+hitLine.getName()+"]");
-        //}
-        //}
         
         count++;
     }

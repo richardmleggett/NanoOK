@@ -56,7 +56,7 @@ public class ReadSetStats {
      * Open a text file to store read lengths.
      */
     public void openLengthsFile() {
-        String filename = options.getAnalysisDir() + options.getSeparator() + "all_" + typeString + "_lengths.txt";
+        String filename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_lengths.txt";
         try {
             pw = new PrintWriter(new FileWriter(filename)); 
         } catch (IOException e) {
@@ -238,14 +238,13 @@ public class ReadSetStats {
         }
         
         basesSum += l;
-        //nReads++;
+        nReads++;
     }    
         
     /**
      * Store a read with an alignment.
      */
     public void addReadWithAlignment() {
-        nReads++;
         nReadsWithAlignments++;
     }
 
@@ -253,7 +252,6 @@ public class ReadSetStats {
      * Store a read without an alignment.
      */
     public void addReadWithoutAlignment() {
-        nReads++;
         nReadsWithoutAlignments++;
     }
         

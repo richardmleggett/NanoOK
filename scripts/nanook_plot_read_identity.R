@@ -6,25 +6,37 @@ basename <- args[1];
 sample <-args[2];
 reference <- args[3];
 
-alignments_twod_filename <- paste(basename, "/", sample, "/analysis/", reference, "_2D_alignments.txt", sep="");
-alignments_template_filename <- paste(basename, "/", sample, "/analysis/", reference, "_Template_alignments.txt", sep="");
-alignments_complement_filename <- paste(basename, "/", sample, "/analysis/", reference, "_Complement_alignments.txt", sep="");
+alignments_twod_filename <- paste(basename, "/", sample, "/analysis/", reference, "/", reference, "_2D_alignments.txt", sep="");
+alignments_template_filename <- paste(basename, "/", sample, "/analysis/", reference, "/", reference, "_Template_alignments.txt", sep="");
+alignments_complement_filename <- paste(basename, "/", sample, "/analysis/", reference, "/", reference, "_Complement_alignments.txt", sep="");
 
-identity_hist_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_2D_length_vs_identity_hist.pdf", sep="");
-identity_hist_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_Template_length_vs_identity_hist.pdf", sep="");
-identity_hist_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_Complement_length_vs_identity_hist.pdf", sep="");
+identity_hist_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_length_vs_identity_hist.pdf", sep="");
+identity_hist_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_length_vs_identity_hist.pdf", sep="");
+identity_hist_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_length_vs_identity_hist.pdf", sep="");
 
-identity_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_2D_length_vs_identity_scatter.pdf", sep="");
-identity_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_Template_length_vs_identity_scatter.pdf", sep="");
-identity_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_Complement_length_vs_identity_scatter.pdf", sep="");
+identity_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_length_vs_identity_scatter.pdf", sep="");
+identity_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_length_vs_identity_scatter.pdf", sep="");
+identity_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_length_vs_identity_scatter.pdf", sep="");
 
-aid_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_2D_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
-aid_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_Template_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
-aid_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_Complement_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
+aid_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
+aid_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
+aid_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
 
-qid_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_2D_read_fraction_vs_query_identity_scatter.pdf", sep="");
-qid_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_Template_read_fraction_vs_query_identity_scatter.pdf", sep="");
-qid_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "_Complement_read_fraction_vs_query_identity_scatter.pdf", sep="");
+qid_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_read_fraction_vs_query_identity_scatter.pdf", sep="");
+qid_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_read_fraction_vs_query_identity_scatter.pdf", sep="");
+qid_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_read_fraction_vs_query_identity_scatter.pdf", sep="");
+
+best_perf_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_longest_perfect_vs_length_scatter.pdf", sep="");
+best_perf_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_longest_perfect_vs_length_scatter.pdf", sep="");
+best_perf_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_longest_perfect_vs_length_scatter.pdf", sep="");
+
+best_perf_zoom_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_longest_perfect_vs_length_zoom_scatter.pdf", sep="");
+best_perf_zoom_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_longest_perfect_vs_length_zoom_scatter.pdf", sep="");
+best_perf_zoom_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_longest_perfect_vs_length_zoom_scatter.pdf", sep="");
+
+mean_perf_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_mean_perfect_vs_length_scatter.pdf", sep="");
+mean_perf_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_mean_perfect_vs_length_scatter.pdf", sep="");
+mean_perf_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_mean_perfect_vs_length_scatter.pdf", sep="");
 
 alignments_twod_filename
 data_alignments_twod = read.table(alignments_twod_filename, header=TRUE)
@@ -85,3 +97,42 @@ garbage <- dev.off()
 pdf(qid_scatter_complement_pdf, height=4, width=6)
 ggplot(data_alignments_complement, aes(x=data_alignments_complement$PercentQueryAligned, y=data_alignments_complement$QueryPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4) + xlab("Percentage of query aligned") +ylab("Query identity %") + ggtitle("Complement") + theme(text = element_text(size=10))
 garbage <- dev.off()
+
+# Best perfect sequence vs. length scatters
+pdf(best_perf_scatter_twod_pdf, height=4, width=6)
+ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryLength, y=data_alignments_twod$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("2D") + theme(text = element_text(size=10))
+garbage <- dev.off()
+
+pdf(best_perf_scatter_template_pdf, height=4, width=6)
+ggplot(data_alignments_template, aes(x=data_alignments_template$QueryLength, y=data_alignments_template$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("Template") + theme(text = element_text(size=10))
+garbage <- dev.off()
+
+pdf(best_perf_scatter_complement_pdf, height=4, width=6)
+ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryLength, y=data_alignments_complement$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("Complement") + theme(text = element_text(size=10))
+garbage <- dev.off()
+
+# Best perfect sequence vs. length scatters zoomed
+pdf(best_perf_zoom_scatter_twod_pdf, height=4, width=6)
+ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryLength, y=data_alignments_twod$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("2D") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000))
+garbage <- dev.off()
+
+pdf(best_perf_zoom_scatter_template_pdf, height=4, width=6)
+ggplot(data_alignments_template, aes(x=data_alignments_template$QueryLength, y=data_alignments_template$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("Template") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000))
+garbage <- dev.off()
+
+pdf(best_perf_zoom_scatter_complement_pdf, height=4, width=6)
+ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryLength, y=data_alignments_complement$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("Complement") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000))
+garbage <- dev.off()
+
+# Mean perfect sequence vs. length scatters
+#pdf(mean_perf_scatter_twod_pdf, height=4, width=6)
+#ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryLength, y=data_alignments_twod$MeanPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Mean perfect sequence") + ggtitle("2D") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000))
+#garbage <- dev.off()
+
+#pdf(mean_perf_scatter_template_pdf, height=4, width=6)
+#ggplot(data_alignments_template, aes(x=data_alignments_template$QueryLength, y=data_alignments_template$MeanPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Mean perfect sequence") + ggtitle("Template") + theme(text = element_text(size=10))
+#garbage <- dev.off()
+
+#pdf(mean_perf_scatter_complement_pdf, height=4, width=6)
+#ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryLength, y=data_alignments_complement$MeanPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Mean perfect sequence") + ggtitle("Complement") + theme(text = element_text(size=10))
+#garbage <- dev.off()

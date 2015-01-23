@@ -41,7 +41,7 @@ public class LastParser extends AlignmentFileParser {
         int nAlignments = 0;
         ReferenceSequence bestKmerReference = null;
         String leafName = new File(filename).getName();
-
+        
         try
         {
             BufferedReader br = new BufferedReader(new FileReader(filename));
@@ -68,6 +68,8 @@ public class LastParser extends AlignmentFileParser {
                     }
                 }
             } while (line != null);
+            
+            br.close();
         } catch (Exception e) {
             System.out.println("parseFile Exception:");
             e.printStackTrace();

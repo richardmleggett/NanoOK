@@ -121,9 +121,9 @@ public class ReportWriter {
         pw.println("\\vspace{-10mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_Template_lengths.pdf}");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_Complement_lengths.pdf}");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + "all_2D_lengths.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_Template_lengths.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_Complement_lengths.pdf}");
+        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_2D_lengths.pdf}");
         pw.println("\\end{figure}");
     
     }
@@ -149,6 +149,24 @@ public class ReportWriter {
         pw.println("}");
         pw.println("\\end{table}");
         pw.println("\\vspace{-10mm}");
+    }
+    
+    /**
+     * Check if graphic file exists and only insert if it does
+     * @param preTex LaTeX before filename
+     * @param filename the file
+     * @param postTex LaTeX after filename
+     */
+    private void includeGraphicsIfExists(String preTex, String filename, String postTex) {
+        File f = new File(filename);
+        
+        if (f.exists()) {
+            pw.print(preTex);
+            pw.print(filename);
+            pw.println(postTex);            
+        } else {
+            pw.print(" [NoData] ");
+        }
     }
     
     /**
@@ -193,49 +211,52 @@ public class ReportWriter {
         
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_insertions.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_insertions.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_insertions.pdf} \\\\");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_deletions.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_deletions.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_deletions.pdf}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_insertions.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_insertions.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_insertions.pdf", "} \\\\");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_deletions.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_deletions.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_deletions.pdf", "}");
         pw.println("\\end{figure}");
         
         pw.println("\\subsection*{" + id + " read identity}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_length_vs_identity_hist.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_length_vs_identity_hist.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_length_vs_identity_hist.pdf} \\\\");        
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_length_vs_identity_scatter.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_length_vs_identity_scatter.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_length_vs_identity_scatter.pdf} \\\\");        
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_read_fraction_vs_alignment_identity_scatter.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_read_fraction_vs_alignment_identity_scatter.pdf}");
-        pw.println("\\includegraphics[height=3.5cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_read_fraction_vs_alignment_identity_scatter.pdf}");        
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_hist.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_hist.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_hist.pdf", "} \\\\");        
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_scatter.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_scatter.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_scatter.pdf", "} \\\\");        
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_read_fraction_vs_alignment_identity_scatter.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_read_fraction_vs_alignment_identity_scatter.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_read_fraction_vs_alignment_identity_scatter.pdf", "}");        
         pw.println("\\end{figure}");
         
         pw.println("\\subsection*{" + id + " coverage}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[height=3cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName()+ "_Template_coverage.pdf}");
-        pw.println("\\includegraphics[height=3cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_coverage.pdf}");
-        pw.println("\\includegraphics[height=3cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_coverage.pdf}");
-        pw.println("\\includegraphics[height=3cm]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_gc.pdf}");
+        includeGraphicsIfExists("\\includegraphics[height=3cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_coverage.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_coverage.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_coverage.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_gc.pdf", "}");
         pw.println("\\end{figure}");
 
         pw.println("\\subsection*{" + id + " perfect kmers}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Template_cumulative_perfect_kmers.pdf}");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_cumulative_perfect_kmers.pdf}");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_cumulative_perfect_kmers.pdf}");        
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Template_best_perfect_kmers.pdf}");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_Complement_best_perfect_kmers.pdf}");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + options.getSeparator() + refSeq.getName() + "_2D_best_perfect_kmers.pdf}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_cumulative_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_cumulative_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_cumulative_perfect_kmers.pdf", "}");        
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_best_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_best_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_best_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_longest_perfect_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_longest_perfect_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_longest_perfect_vs_length_scatter.pdf", "}");
         pw.println("\\end{figure}");
     }
     
@@ -264,9 +285,9 @@ public class ReportWriter {
             deletionMotifs[type] = overallStats.getStatsByType(type).getMotifStatistics().getSortedDeletionMotifPercentages(k);
             substitutionMotifs[type] = overallStats.getStatsByType(type).getMotifStatistics().getSortedSubstitutionMotifPercentages(k);
 
-            overallStats.getStatsByType(type).getMotifStatistics().writeInsertionLogoImage(listType, options.getGraphsDir()+options.getSeparator()+"logo_insertion_"+typeString+"_k"+k+".png", k);
-            overallStats.getStatsByType(type).getMotifStatistics().writeDeletionLogoImage(listType, options.getGraphsDir()+options.getSeparator()+"logo_deletion_"+typeString+"_k"+k+".png", k);
-            overallStats.getStatsByType(type).getMotifStatistics().writeSubstitutionLogoImage(listType, options.getGraphsDir()+options.getSeparator()+"logo_substitution_"+typeString+"_k"+k+".png", k);
+            overallStats.getStatsByType(type).getMotifStatistics().writeInsertionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_insertion_" + typeString + "_k" + k + ".png", k);
+            overallStats.getStatsByType(type).getMotifStatistics().writeDeletionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_deletion_" + typeString + "_k" + k + ".png", k);
+            overallStats.getStatsByType(type).getMotifStatistics().writeSubstitutionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_substitution_" + typeString + "_k" + k + ".png", k);
         }
 
         for (int i=0; i<10; i++) {
@@ -286,19 +307,19 @@ public class ReportWriter {
                     substitutionPos = substitutionMotifs[type].size() - 10 + i;
                 }               
                 
-                if (insertionMotifs[type].size() > insertionPos) {
+                if ((insertionMotifs[type].size() > insertionPos) && (insertionPos >=0)) {
                     pw.printf(" & %s (%.2f\\%%)", insertionMotifs[type].get(insertionPos).getKey(), insertionMotifs[type].get(insertionPos).getValue());
                 } else {
                     pw.print(" &");
                 }
 
-                if (deletionMotifs[type].size() > deletionPos) {
+                if ((deletionMotifs[type].size() > deletionPos) && (deletionPos >=0)) {
                     pw.printf(" & %s (%.2f\\%%)", deletionMotifs[type].get(deletionPos).getKey(), deletionMotifs[type].get(deletionPos).getValue());
                 } else {
                     pw.print(" &");
                 }
 
-                if (substitutionMotifs[type].size() > substitutionPos) {
+                if ((substitutionMotifs[type].size() > substitutionPos) && (substitutionPos >=0)) {
                     pw.printf(" & %s (%.2f\\%%)", substitutionMotifs[type].get(substitutionPos).getKey(), substitutionMotifs[type].get(substitutionPos).getValue());
                 } else {
                     pw.print(" &");
@@ -331,9 +352,9 @@ public class ReportWriter {
                 typeString = overallStats.getStatsByType(type).getTypeString() + "_unknown";
             }
 
-            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+options.getSeparator()+"logo_insertion_"+typeString+"_k"+k + ".png}");
-            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+options.getSeparator()+"logo_deletion_"+typeString+"_k"+k + ".png}");
-            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+options.getSeparator()+"logo_substitution_"+typeString+"_k"+k + ".png}");
+            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_insertion_" + typeString + "_k" + k + ".png}");
+            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_deletion_" + typeString + "_k" + k + ".png}");
+            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_substitution_" + typeString + "_k" + k + ".png}");
         }
 
         pw.println(" \\\\");
@@ -464,6 +485,8 @@ public class ReportWriter {
         open();
         addPassFailSection();
         addLengthsSection();
+
+        options.initialiseAlignmentSummaryFile();
         
         for (int type=0; type<3; type++) {            
             writeAlignmentsSection(overallStats.getStatsByType(type));            
