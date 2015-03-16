@@ -16,9 +16,16 @@ public class AlignmentInfo {
     private int total;
     private int count;
     private int alignmentSize;
+    private int alignmentSizeMinusIndels;
     private double queryIdentity;
     private double alignmentIdentity;
+    private double alignmentIdentityMinusIndels;
     private double percentQueryAligned;
+    private int queryAlignmentSize;
+    int kSizes[];
+    int kCounts[];
+    int nk;
+
     
     /**
      * Constructor.
@@ -32,8 +39,10 @@ public class AlignmentInfo {
      * @param t sum of perfect kmers
      * @param c count of perfect kmers
      * @param as alignment size
+     * @param ad alignment size minus indels
+     * @param qas query alignment size
      */
-    public AlignmentInfo(String hn, int hs, String qn, int qs, int ib, int l, int t, int c, int as) {
+    public AlignmentInfo(String hn, int hs, String qn, int qs, int ib, int l, int t, int c, int as, int ami, int qas) {
         hitName = hn;
         hitSize = hs;
         querySize = qs;
@@ -43,10 +52,14 @@ public class AlignmentInfo {
         total = t;
         count = c;
         meanPerfectKmer = (double)t / (double)c;
-        alignmentSize = as;            
+        alignmentSize = as;        
+        alignmentSizeMinusIndels = ami;
+        queryAlignmentSize = qas;
         queryIdentity = (100.0 * (double)identicalBases) / (double)querySize;
         alignmentIdentity = (100.0 * (double)identicalBases) / (double)alignmentSize;        
-        percentQueryAligned = (100.0 * (double)alignmentSize) / (double)querySize;
+        alignmentIdentityMinusIndels = (100.0 * (double)identicalBases) / (double)alignmentSizeMinusIndels;        
+        //percentQueryAligned = (100.0 * (double)alignmentSize) / (double)querySize;
+        percentQueryAligned = (100.0 * (double)queryAlignmentSize) / (double)querySize;
     }
     
     /**
@@ -61,7 +74,7 @@ public class AlignmentInfo {
      * Get longest perfect kmer.
      * @return longest perfect kmer
      */
-    public int getLongest() {
+    public int getLongestPerfectKmer() {
         return longest;
     }
     
@@ -81,6 +94,14 @@ public class AlignmentInfo {
         return queryIdentity;
     }
     
+    public String getQueryName() {
+        return queryName;
+    }
+    
+    public String getHitName() {
+        return hitName;
+    }
+    
     /**
      * Get alignment identity.
      * @return alignment identity percent
@@ -88,6 +109,14 @@ public class AlignmentInfo {
     public double getAlignmentId() {
         return alignmentIdentity;
     }
+
+    /**
+     * Get alignment identity.
+     * @return alignment identity percent
+     */
+    public double getAlignmentIdMinusIndels() {
+        return alignmentIdentityMinusIndels;
+    }    
     
     /**
      * Get mean perfect kmer size.
@@ -119,5 +148,24 @@ public class AlignmentInfo {
      */
     public double getPercentQueryAligned() {
         return percentQueryAligned;
+    }
+    
+    public void addkCounts(int n, int[] s, int[] c) {
+        nk = n;
+        kSizes = s;
+        kCounts = c;
+    }
+    
+    public String getkCounts() {
+        String s="";
+        
+        for (int i=0; i<nk; i++) {
+            s = s + Integer.toString(kCounts[i]);
+            if (i != (nk-1)) {
+                s = s + "\t";
+            }
+        }
+        
+        return s;
     }
 }

@@ -42,7 +42,8 @@ my $name = "";
 
 while(<REFERENCE>) {
     chomp(my $line = $_);
-    
+    $line =~ s/\r//g;   
+ 
     if ($line =~ /^>(\S+)/) {
         if ($id ne "") {
             print OUTFILE $id, "\t", $current_length, "\t", $name, "\n";
@@ -50,6 +51,8 @@ while(<REFERENCE>) {
         $id = $1;
         $name = $id;
         $current_length = 0;
+
+        print $id, "\n";
 
         #$current_gc_position = 0;
         #$current_gc_length = 0;
@@ -60,7 +63,7 @@ while(<REFERENCE>) {
                 $name=$2."_".$3;
             }
         }
-    } else {
+    } else { 
         $current_length += length($line);
 
         #for my $c (split //, $line) {

@@ -32,6 +32,11 @@ public class NanoOK {
         System.out.println("\nFinding references");
         References references = new References(options);
                 
+        //AlignmentFileParser p = new LastParser(0, options, overallStats.getStatsByType(0), references);
+        //AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile("blob.txt");
+        //p.parseFile("/Users/leggettr/Documents/Projects/Nanopore/N79681_EvenMC_R7_06082014/last/2D/N79681_EvenMC_R7_0608215_5314_1_ch319_file116_strand.fast5_BaseCalled_2D.fasta.maf", nonAlignedSummary);
+        //System.exit(0);
+        
         // Parse all reads sets       
         if (options.doParseAlignments()) {
             ReadLengthsSummaryFile summary = new ReadLengthsSummaryFile(options.getLengthSummaryFilename());
@@ -42,6 +47,7 @@ public class NanoOK {
                 readSet.gatherLengthStats();
                 readSet.parseAlignmentFiles();
                 summary.addReadSetStats(overallStats.getStatsByType(type));
+                overallStats.getStatsByType(type).closeKmersFile();
             }
             summary.close();
 

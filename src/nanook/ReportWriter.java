@@ -165,7 +165,7 @@ public class ReportWriter {
             pw.print(filename);
             pw.println(postTex);            
         } else {
-            pw.print(" [NoData] ");
+            pw.print(" ");
         }
     }
     
@@ -185,10 +185,14 @@ public class ReportWriter {
         pw.println("\\begin{tabular}{l c c c}");       
         
         pw.println(" & Template & Complement & 2D \\\\");
-        pw.printf("Overall (all read) identity & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
+        pw.printf("Overall identity (minus indels) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
                 refSeq.getStatsByType(0).getReadPercentIdentical(),
                 refSeq.getStatsByType(1).getReadPercentIdentical(),
                 refSeq.getStatsByType(2).getReadPercentIdentical());                
+        pw.printf("Aligned identity (minus indels) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
+                refSeq.getStatsByType(0).getAlignedPercentIdenticalWithoutIndels(),
+                refSeq.getStatsByType(1).getAlignedPercentIdenticalWithoutIndels(),
+                refSeq.getStatsByType(2).getAlignedPercentIdenticalWithoutIndels());                
         pw.printf("Identical bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
                 refSeq.getStatsByType(0).getAlignedPercentIdentical(),
                 refSeq.getStatsByType(1).getAlignedPercentIdentical(),
@@ -451,6 +455,14 @@ public class ReportWriter {
         pw.println("\\end{table}");  
     }
     
+    private void writeOverallKmerSection() {
+        pw.println("\\subsection*{All reference perfect kmers}");
+        pw.println("\\vspace{-3mm}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + "all_Template_21mers.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + "all_Complement_21mers.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + "all_2D_21mers.pdf", "}");                
+    }
+    
     /**
      * Add sections for each reference sequence.
      * @param refs reference sequences
@@ -502,6 +514,7 @@ public class ReportWriter {
         
         writeMotifSection();
         writeSubstitutionErrorsSection();        
+        writeOverallKmerSection();
         
         writeLaTeXFooter();
         close();

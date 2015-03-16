@@ -13,7 +13,8 @@ import java.util.Hashtable;
  */
 public class ReadSetStats {
     NanoOKOptions options;
-    private PrintWriter pw;
+    private PrintWriter pwLengths;
+    private PrintWriter pwKmers;
     private String typeString = "";
     private int longest = 0;
     private int shortest = NanoOKOptions.MAX_READ_LENGTH;
@@ -56,9 +57,13 @@ public class ReadSetStats {
      * Open a text file to store read lengths.
      */
     public void openLengthsFile() {
-        String filename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_lengths.txt";
+        String lengthsFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_lengths.txt";
+        String kmersFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_kmers.txt";
+        
         try {
-            pw = new PrintWriter(new FileWriter(filename)); 
+            pwLengths = new PrintWriter(new FileWriter(lengthsFilename)); 
+            pwKmers = new PrintWriter(new FileWriter(kmersFilename));
+            pwKmers.write("Id\tLength\tnk15\tnk17\tnk19\tnk21\tnk23\tnk25\n");
         } catch (IOException e) {
             System.out.println("openLengthsFile exception:");
             e.printStackTrace();
@@ -70,7 +75,11 @@ public class ReadSetStats {
      * Close the read lengths file.
      */
     public void closeLengthsFile() {
-        pw.close();
+        pwLengths.close();
+    }
+    
+    public void closeKmersFile() {
+        pwKmers.close();
     }
 
     /**
@@ -227,7 +236,7 @@ public class ReadSetStats {
     public void addLength(String id, int l) {
         lengths[l]++;
         
-        pw.println(id + "\t" + l);
+        pwLengths.println(id + "\t" + l);
         
         if (l > longest) {
             longest = l;
@@ -425,5 +434,13 @@ public class ReadSetStats {
      */
     public MotifStatistics getMotifStatistics() {
         return motifStats;
+    }
+    
+    public void writekCounts(String id, int length, int nk, int[] s, int[] kCounts) {            
+        pwKmers.print(id+"\t"+Integer.toString(length));
+        for (int i=0; i<nk; i++) {
+            pwKmers.print("\t"+Integer.toString(kCounts[i]));
+        }
+        pwKmers.print("\n");
     }
 }

@@ -177,20 +177,24 @@ public class References {
         pw.println("\\begin{table}[H]");
         pw.println("{\\footnotesize");
         pw.println("\\fontsize{9pt}{11pt}\\selectfont");
-        pw.println("\\begin{tabular}{l c c c c c}");
-        pw.println("{\\bf Id} & {\\bf Size} & {\\bf Reads aligning} & {\\bf Total aligned bases} & {\\bf Coverage} & {\\bf Longest Perfect Kmer} \\\\");
+        pw.println("\\begin{tabular}{l c c c c c c c}");
+        pw.println("          &             & {\\bf Number of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest}   & {\\bf +ve/-ve} \\\\");
+        pw.println("{\\bf Id} & {\\bf Size} & {\\bf Reads}     & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} & {\\bf strand \\%} \\\\");
         List<String> keys = new ArrayList<String>(referenceSequences.keySet());
         Collections.sort(keys);
         for(String id : keys) {
             ReferenceSequence r = referenceSequences.get(id);
             ReferenceSequenceStats refStats = r.getStatsByType(type);
-            pw.printf("%s & %d & %d & %d & %.2f & %d \\\\\n",
+            pw.printf("%s & %d & %d & %.2f & %d & %.2f & %d & %.2f / %.2f \\\\\n",
                        r.getName().replaceAll("_", " "),
                        r.getSize(),
                        refStats.getNumberOfReadsWithAlignments(),
+                       refStats.getMeanReadLength(),
                        refStats.getTotalAlignedBases(),
                        (double)refStats.getTotalAlignedBases() / r.getSize(),
-                       refStats.getLongestPerfectKmer());
+                       refStats.getLongestPerfectKmer(),
+                       refStats.getAlignedPositiveStrandPercent(),
+                       refStats.getAlignedNegativeStrandPercent());
         }
         pw.println("\\end{tabular}");
         pw.println("}");

@@ -49,7 +49,8 @@ public class AlignmentsTableFile {
         pw.print("QueryPercentIdentity\t");
         pw.print("LongestPerfectKmer\t");
         pw.print("MeanPerfectKmer\t");
-        pw.print("PercentQueryAligned");
+        pw.print("PercentQueryAligned\t");
+        pw.print("nk15\tnk17\tnk19\tnk21\tnk23\tnk25");
         pw.println("");
     }
     
@@ -61,7 +62,7 @@ public class AlignmentsTableFile {
      * @param stat AlignmentInfo statistics
      */
     public void writeAlignment(String alignmentFilename, LastAlignmentLine hitLine, LastAlignmentLine queryLine, AlignmentInfo stat) {
-        String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f",
+        String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
                 queryLine.getName(),
                 queryLine.getStart(),
@@ -77,15 +78,44 @@ public class AlignmentsTableFile {
                 stat.getIdenticalBases(),
                 stat.getAlignmentId(),
                 stat.getQueryId(),
-                stat.getLongest(),
+                stat.getLongestPerfectKmer(),
                 stat.getMeanPerfectKmer(),
-                stat.getPercentQueryAligned());
+                stat.getPercentQueryAligned(),
+                stat.getkCounts());
         
         pw.println(outputLine);
         pw.flush();
         
         count++;
     }
+    
+    public void writeMergedAlignment(String alignmentFilename, LastAlignmentMerger merger, AlignmentInfo stat) {
+        String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
+                alignmentFilename,
+                stat.getQueryName(),
+                merger.getOverallQueryStart(),
+                merger.getOverallQuerySize(),
+                "+",
+                stat.getQuerySize(),
+                stat.getHitName(),
+                merger.getOverallHitStart(),
+                merger.getOverallHitSize(),
+                "+",
+                stat.getHitSize(),
+                stat.getAlignmentSize(),
+                stat.getIdenticalBases(),
+                stat.getAlignmentId(),
+                stat.getQueryId(),
+                stat.getLongestPerfectKmer(),
+                stat.getMeanPerfectKmer(),
+                stat.getPercentQueryAligned(),
+                stat.getkCounts());
+        
+        pw.println(outputLine);
+        pw.flush();
+        
+        count++;
+    }    
     
     /**
      * Used when no alignment found for this query.

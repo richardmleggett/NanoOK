@@ -21,6 +21,7 @@ public class ReferenceSequenceStats {
     private int nReadsWithAlignments = 0;
     private int totalReadBases = 0;
     private int totalAlignedBases = 0;
+    private int totalAlignedBasesWithoutIndels = 0;
     private int totalIdentical = 0;
     private int nDeletionErrors = 0;
     private int nInsertionErrors = 0;
@@ -31,6 +32,10 @@ public class ReferenceSequenceStats {
     private int largestDeletion = 0;
     private int insertionSizes[] = new int[MAX_INDEL];
     private int deletionSizes[] = new int[MAX_INDEL];
+    private int alignedPositiveStrand = 0;
+    private int alignedNegativeStrand = 0;
+    private long totalBases = 0;
+    private long totalReads = 0;
     private AlignmentsTableFile atf;
 
     /** 
@@ -213,13 +218,23 @@ public class ReferenceSequenceStats {
      * @param filename output filename
      */
     public void writeBestPerfectKmerHistCumulative(String filename) {
+        int nr = 0;
+        
+        for (int i=1; i<=longestPerfectKmer; i++) {
+            nr += readBestPerfectKmer[i];
+        }
+        
+        if (nReadsWithAlignments != nr) {
+            System.out.println("Discrepancy: "+nr+" not equal to "+nReadsWithAlignments);
+        }
+        
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=longestPerfectKmer; i++) {
                 double pc = 0;
                 
                 if ((readCumulativeBestPerfectKmer[i]> 0) && (nReadsWithAlignments > 0)){
-                    pc = ((double)100.0 * readCumulativeBestPerfectKmer[i]) / (double)nReadsWithAlignments;
+                    pc = ((double)100.0 * readCumulativeBestPerfectKmer[i]) / (double)nr; //(double)nReadsWithAlignments;
                 }
                 
                 pw.printf("%d\t%d\t%.2f\n", i, readCumulativeBestPerfectKmer[i], pc);
@@ -239,6 +254,18 @@ public class ReferenceSequenceStats {
     public void writeSummary(PrintWriter pw, String format) {
         pw.printf(format, name, size, nReadsWithAlignments, longestPerfectKmer);
     }
+        
+    /**
+     * Get mean read length
+     * @return mean read length
+     */
+    public double getMeanReadLength() {
+        if (nReadsWithAlignments > 0) {
+            return (double)totalReadBases / (double)nReadsWithAlignments;
+        } else {
+            return 0.0;
+        }
+    }
     
     /**
      * Store alignment stats.
@@ -246,10 +273,19 @@ public class ReferenceSequenceStats {
      * @param alignedSize number of aligned bases
      * @param identicalBases number of identical bases
      */
-    public void addAlignmentStats(int querySize, int alignedSize, int identicalBases) {
+    public void addAlignmentStats(int querySize, int alignedSize, int alignedSizeMinusIndels, int identicalBases, String hitStrand, String queryStrand) {
         totalAlignedBases += alignedSize;
+        totalAlignedBasesWithoutIndels += alignedSizeMinusIndels;
         totalReadBases += querySize;
         totalIdentical += identicalBases;
+        
+        if (hitStrand.equals("+")) {
+            if (queryStrand.equals("+")) {
+                alignedPositiveStrand++;
+            } else if (queryStrand.equals("-")) {
+                alignedNegativeStrand++;
+            }
+        }
     }
     
     /** 
@@ -308,6 +344,18 @@ public class ReferenceSequenceStats {
             return (100.0 * totalIdentical) / totalAlignedBases;
         }
     }
+
+    /**
+     * Get percent identity of aligned bases.
+     * @return identity
+     */
+    public double getAlignedPercentIdenticalWithoutIndels() {
+        if ((totalIdentical == 0) || (totalAlignedBasesWithoutIndels == 0)) {
+            return 0;
+        } else {           
+            return (100.0 * totalIdentical) / totalAlignedBasesWithoutIndels;
+        }
+    }    
     
     /**
      * Get percent identity of read.
@@ -425,4 +473,28 @@ public class ReferenceSequenceStats {
             System.exit(1);
         }                
     }    
+    
+    /**
+     * Get percent of reads aligned on +ve strand
+     * @return count
+     */
+    public double getAlignedPositiveStrandPercent() {
+        if (alignedPositiveStrand > 0) {
+            return (100.0 * (double)alignedPositiveStrand)/(double)(alignedPositiveStrand + alignedNegativeStrand);
+        } else {
+            return 0;
+        }
+    }
+    
+    /**
+     * Get percent of reads aligned on -ve strand
+     * @return count
+     */
+    public double getAlignedNegativeStrandPercent() {
+        if (alignedNegativeStrand > 0) {
+            return (100.0 * (double)alignedNegativeStrand)/(double)(alignedPositiveStrand + alignedNegativeStrand);
+        } else {
+            return 0;
+        }
+    }
 }
