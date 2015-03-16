@@ -21,6 +21,8 @@ my $aligner_params;
 my $n_types = 0;
 my $no_template;
 my $no_complement;
+my $pass_only;
+my $fail_only;
 my $no_2d;
 my @type;
 
@@ -34,6 +36,8 @@ my @type;
 'q|queue:s'      => \$queue,
 't|threads:i'    => \$num_threads,
 'x|scheduler:s'  => \$scheduler,
+'passonly'       => \$pass_only,
+'failonly'       => \$fail_only,
 'no2d'           => \$no_2d,
 'nocomplement'   => \$no_complement,
 'notemplate'     => \$no_template,

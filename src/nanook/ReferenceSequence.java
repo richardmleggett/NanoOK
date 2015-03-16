@@ -28,9 +28,17 @@ public class ReferenceSequence {
         size = s;
         name = n;
 
-        float b = size / 1000;
-        binSize = 500 * (1 + Math.round(b / 500));   
-                
+        float b = size / 100;
+
+        // Make a multiple of 10, 100 or 500...
+        if (size < 50000) {
+            binSize = 10 * (1 + Math.round(b / 10));   
+        } else if (size < 500000) {
+            binSize = 100 * (1 + Math.round(b / 100));   
+        } else {
+            binSize = 500 * (1 + Math.round(b / 500));   
+        }
+        
         for (int t=0; t<3; t++) {
             referenceStats[t] = new ReferenceSequenceStats(size, name);
         }

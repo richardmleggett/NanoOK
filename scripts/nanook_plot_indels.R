@@ -25,30 +25,30 @@ pdf_deletions_complement <- paste(basename, "/", sample, "/graphs/", refid, "/",
 
 pdf(pdf_insertions_twod, height=2.5, width=4)
 data_insertions_twod = read.table(data_insertions_twod_filename, col.name=c("Size", "Percent"))
-ggplot(data_insertions_twod, aes(x=data_insertions_twod$Size, y=data_insertions_twod$Percent)) + geom_bar(stat="identity") + ggtitle("2D insertion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
+ggplot(data_insertions_twod, aes(x=data_insertions_twod$Size, y=data_insertions_twod$Percent)) + geom_bar(stat="identity", fill="#68B5B9") + ggtitle("2D insertion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()
 
 pdf(pdf_insertions_template, height=2.5, width=4)
 data_insertions_template = read.table(data_insertions_template_filename, col.name=c("Size", "Percent"))
-ggplot(data_insertions_template, aes(x=data_insertions_template$Size, y=data_insertions_template$Percent)) + geom_bar(stat="identity") + ggtitle("Template insertion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
+ggplot(data_insertions_template, aes(x=data_insertions_template$Size, y=data_insertions_template$Percent)) + geom_bar(stat="identity", fill="#CF746D") + ggtitle("Template insertion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()
 
 pdf(pdf_insertions_complement, height=2.5, width=4)
 data_insertions_complement = read.table(data_insertions_complement_filename, col.name=c("Size", "Percent"))
-ggplot(data_insertions_complement, aes(x=data_insertions_complement$Size, y=data_insertions_complement$Percent)) + geom_bar(stat="identity") + ggtitle("Complement insertion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
+ggplot(data_insertions_complement, aes(x=data_insertions_complement$Size, y=data_insertions_complement$Percent)) + geom_bar(stat="identity", fill="#91A851") + ggtitle("Complement insertion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()
 
 pdf(pdf_deletions_twod, height=2.5, width=4)
 data_deletions_twod = read.table(data_deletions_twod_filename, col.name=c("Size", "Percent"))
-ggplot(data_deletions_twod, aes(x=data_deletions_twod$Size, y=data_deletions_twod$Percent)) + geom_bar(stat="identity") + ggtitle("2D deletion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
+ggplot(data_deletions_twod, aes(x=data_deletions_twod$Size, y=data_deletions_twod$Percent)) + geom_bar(stat="identity", fill="#68B5B9") + ggtitle("2D deletion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()
 
 pdf(pdf_deletions_template, height=2.5, width=4)
 data_deletions_template = read.table(data_deletions_template_filename, col.name=c("Size", "Percent"))
-ggplot(data_deletions_template, aes(x=data_deletions_template$Size, y=data_deletions_template$Percent)) + geom_bar(stat="identity") + ggtitle("Template deletion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
+ggplot(data_deletions_template, aes(x=data_deletions_template$Size, y=data_deletions_template$Percent)) + geom_bar(stat="identity", fill="#CF746D") + ggtitle("Template deletion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()
 
 pdf(pdf_deletions_complement, height=2.5, width=4)
 data_deletions_complement = read.table(data_deletions_complement_filename, col.name=c("Size", "Percent"))
-ggplot(data_deletions_complement, aes(x=data_deletions_complement$Size, y=data_deletions_complement$Percent)) + geom_bar(stat="identity") + ggtitle("Complement deletion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
+ggplot(data_deletions_complement, aes(x=data_deletions_complement$Size, y=data_deletions_complement$Percent)) + geom_bar(stat="identity", fill="#91A851") + ggtitle("Complement deletion size") + theme(text = element_text(size=10)) + xlab("Size") + ylab("%") + theme(plot.margin = unit(c(0.2,0.2,0.2,0.2), "cm")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2))
 garbage <- dev.off()

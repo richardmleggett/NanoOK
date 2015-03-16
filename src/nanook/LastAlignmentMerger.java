@@ -31,6 +31,7 @@ public class LastAlignmentMerger {
     private String hitName = null;
     private int identicalBases = 0;
     private int alignmentSize = 0;
+    private int alignmentSizeWithoutIndels = 0;
 
     // Bodge for speed - need to change way AlignmentInfo works
     int kSizes[] = {15, 17, 19, 21, 23, 25};
@@ -66,7 +67,7 @@ public class LastAlignmentMerger {
         errorKmer = "";
     }    
     
-    private void storePerfectSequenceLength() {
+    private void storePerfectKmerLength() {
         // Store perfect kmers
         if (currentPerfectKmerSize > 0) {
             reference.getStatsByType(type).addPerfectKmer(currentPerfectKmerSize);
@@ -82,11 +83,15 @@ public class LastAlignmentMerger {
             kmerCount++;
 
             if (currentPerfectKmerSize > longestPerfectKmer) {
-               longestPerfectKmer=currentPerfectKmerSize;
+               longestPerfectKmer = currentPerfectKmerSize;
             }
 
             currentPerfectKmerSize = 0;
         }
+    }
+    
+    public void addAlignment(LastAlignment a) {
+        addAlignment(a.getHitLine(), a.getQueryLine());
     }
     
     /**
@@ -175,7 +180,7 @@ public class LastAlignmentMerger {
                     
                 // If reached end, store perfect sequence length
                 if (i == (loopTo-1)) {
-                    storePerfectSequenceLength();
+                    storePerfectKmerLength();
                 }
 
                 // Mark this position and move on
@@ -183,10 +188,11 @@ public class LastAlignmentMerger {
                 covered[queryPos]= 1;
                 queryPos++;
                 hitPos++;
+                alignmentSizeWithoutIndels++;
             } else {
                 // An insertion or deletion or substitution, so store perfect sequence length, if we have some
                 if (currentPerfectKmerSize > 0) {
-                    storePerfectSequenceLength();
+                    storePerfectKmerLength();
                 }
                 
                 // Insertion
@@ -236,6 +242,7 @@ public class LastAlignmentMerger {
                     covered[queryPos] = 1;
                     queryPos++;
                     hitPos++;
+                    alignmentSizeWithoutIndels++;
             }
                 
                 // Reset current kmer
@@ -265,15 +272,16 @@ public class LastAlignmentMerger {
                                              kmerTotal,
                                              kmerCount,
                                              alignmentSize,
+                                             alignmentSizeWithoutIndels,
                                              overallQueryEnd - overallQueryStart);
 
-        ai.addkCounts(nk, kSizes, kCounts);
+        ai.addkCounts(nk, kSizes, kCounts);        
         
         overallStats.writekCounts(queryName, querySeqSize, nk, kSizes, kCounts);
         overallStats.addReadWithAlignment();
         overallStats.addReadBestKmer(longestPerfectKmer);
         
-        reference.getStatsByType(type).addAlignmentStats(querySeqSize, alignmentSize, identicalBases, "?", "?");
+        reference.getStatsByType(type).addAlignmentStats(querySeqSize, alignmentSize, alignmentSizeWithoutIndels, identicalBases, "?", "?");
         reference.getStatsByType(type).addReadBestKmer(longestPerfectKmer);       
         
         return ai;
@@ -304,6 +312,6 @@ public class LastAlignmentMerger {
     }
     
     public int getAlignmentSize() {
-        return alignmentSize;
+        return alignmentSizeWithoutIndels;
     }
 }

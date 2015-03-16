@@ -26,7 +26,7 @@ public class LastAlignmentLine {
             alnSize = Integer.parseInt(parts[3]);
             strand = parts[4];
             seqSize = Integer.parseInt(parts[5]);
-            alignment = parts[6];            
+            alignment = parts[6];
         } else {                
             System.out.println("Error: can't understand alignment file format.");
             System.exit(1);
