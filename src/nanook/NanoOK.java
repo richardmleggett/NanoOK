@@ -8,7 +8,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.3";
+    public final static String VERSION_STRING = "v0.3.1";
     
     /**
      * Entry to tool.
