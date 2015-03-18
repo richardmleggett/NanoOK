@@ -10,8 +10,8 @@ use Getopt::Long;
 
 my $sample;
 my $help_requested;
-my $basedir="/Users/leggettr/Documents/Projects/Nanopore/";
-my $reference=$basedir."/references/lambdadb";
+my $basedir=".";
+my $reference;
 my $scheduler="NONE";
 my $queue="Test128";
 my $aligner="last";
@@ -50,7 +50,7 @@ if (defined $help_requested) {
     print "Create alignments.\n\n";
     print "Usage: nanook_align.pl <-a aligner> <-s sample> [-b directory] [options]\n\n";
     print "Options:\n";
-    print "    -a | -aligner      Aligner (last, blastn)\n";
+    print "    -a | -aligner      Aligner (default last)\n";
     print "    -alignmentdir      Subdirectory for alignments (defaults to aligner name)";
     print "    -b | -basedir      Base directory containing all sample directories\n";
     print "    -no2d              Don't align 2D reads\n";
@@ -72,15 +72,27 @@ $type[$n_types++] = "Template" if not defined $no_template;
 $type[$n_types++] = "Complement" if not defined $no_complement;
 
 die "You must specify a sample name" if not defined $sample;
-die "Aligner must be last, blastn" if (($aligner ne "last") && ($aligner ne "blastn"));
+die "Aligner must be last - more support coming." if ($aligner ne "last");
+die "You must specify a reference." if not defined $reference;
+die "Base directory must be specified." if not defined $basedir;
+
+$basedir =~ s/\/$//;
 
 if (not defined $alignment_dir) {
     $alignment_dir = $aligner;
 }
 
+if ($aligner eq "last") {
+    if (not defined $aligner_params) {
+        $aligner_params = "-s 2 -T 0 -Q 0 -a 1";
+    }
+}
+
 print "Base directory: $basedir\n";
-print "Sample: $sample\n";
-print "Aligner: $aligner\n";
+print "        Sample: $sample\n";
+print "       Aligner: $aligner\n";
+print "Aligner params: $aligner_params\n";
+print "\n";
 
 if (! -d $basedir."/".$sample."/".$alignment_dir) {
     mkdir($basedir."/".$sample."/".$alignment_dir);
@@ -143,30 +155,31 @@ sub process_directory {
             my $logfile = $log_dir."/".$file.".log";
             my $command;
             
-            print "Aligning ".$inpath."\n";
-            print "      to ".$outpath."\n";
-
             if ($aligner eq "last") {
+                $outpath = $outpath.".maf";
                 $command = get_last_command($inpath, $outpath, $reference);
             } elsif ($aligner eq "blastn") {
+                $outpath = $outpath.".txt";
                 $command = get_blast_command($inpath, $outpath, $reference);
             } else {
                 print "Error: aligner $aligner not known!\n";
                 exit;
             }
+
+            print "Aligning ".$inpath."\n";
+            print "      to ".$outpath."\n";
             
             if ($scheduler eq "LSF") {
                 system("bsub -n ${num_threads} -q ${queue} -oo ${logfile} -R \"rusage[mem=8000] span[hosts=1]\" \"${command}\"");
             } elsif ($scheduler eq "PBS") {
                 print("Error: PBS not yet implemented.");
             } else {
-                #system($command);
+                system($command);
                 open(COMMAND, $command." |");
                 while(<COMMAND>) {
                     print $_;
                 }
             }
-            exit;
         }
         closedir(DIR);
     }
@@ -176,13 +189,7 @@ sub get_last_command {
     my $query = $_[0];
     my $output_file = $_[1];
     my $reference = $_[2];
-    my $command = "lastal ";
-
-    if (defined $aligner_params) {
-        $command = $command." ".$aligner_params;
-    }
-    
-    $command = $command."-s 2 -T 0 -Q 0 -a 1 ".$reference." ".$query." > ".$output_file.".maf";
+    my $command = "lastal ".$aligner_params." ".$reference." ".$query." > ".$output_file;
 
     return $command;
 }
