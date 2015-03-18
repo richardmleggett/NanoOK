@@ -30,6 +30,7 @@ public class NanoOKOptions {
     private boolean parseAlignments = true;
     private boolean plotGraphs = true;
     private boolean makeReport = true;
+    private boolean makePDF = true;
     private int maxReads = 0;
     private boolean process2DReads = true;
     private boolean processTemplateReads = true;
@@ -193,6 +194,7 @@ public class NanoOKOptions {
         File graphsDir = new File(getGraphsDir());
         File motifsDir = new File(getGraphsDir() + File.separator + "motifs");
         File latexDir = new File(getLatexDir());
+        File logsDir = new File(getLogsDir());
         
         if (!analysisDir.exists()) {
             analysisDir.mkdir();
@@ -209,6 +211,10 @@ public class NanoOKOptions {
         if (!latexDir.exists()) {
             latexDir.mkdir();
         }    
+        
+        if (!logsDir.exists()) {
+            logsDir.mkdir();
+        }
     }
     
     /**
@@ -297,6 +303,14 @@ public class NanoOKOptions {
     public String getLatexDir() {
         return baseDir + File.separator + sample + File.separator + "latex";
     } 
+
+    /**
+     * Get logs directory.
+     * @return directory name as String
+     */
+    public String getLogsDir() {
+        return baseDir + File.separator + sample + File.separator + "logs";
+    } 
     
     public boolean isNewStyleDir() {
         File passDir = new File(getFastaDir() + File.separator + "pass");
@@ -365,7 +379,15 @@ public class NanoOKOptions {
     public boolean doMakeReport() {
         return makeReport;
     }
-    
+
+    /**
+     * Check if to make report or not
+     * @return true to make report
+     */
+    public boolean doMakePDF() {
+        return makePDF;
+    }
+        
     /**
      * Get maximum number of reads (used for debugging)
      * @return maximum number of reads

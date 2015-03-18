@@ -1,11 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package nanook;
 
 /**
- *
+ * Class to merge alignments
+ * 
  * @author leggettr
  */
 public class LastAlignmentMerger {

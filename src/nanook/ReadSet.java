@@ -215,12 +215,12 @@ public class ReadSet {
                             }
 
                             if ((maxReads > 0) && (nReads >= maxReads)) {
-                                 break;
+                                break;
                             }
                         }
                     }
                 }
-                System.out.println("\r"+nReads+"/"+nFastaFiles);
+                System.out.println("\r" + nFastaFiles + "/" + nFastaFiles + " ("+(nFastaFiles - nReads)+")");
             }
         }
 
