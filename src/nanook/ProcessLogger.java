@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 
 /**
  * Execute a system process and log result to a file
+ * 
  * @author leggettr
  */
 public class ProcessLogger {        
