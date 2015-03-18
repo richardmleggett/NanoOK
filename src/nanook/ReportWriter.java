@@ -519,4 +519,12 @@ public class ReportWriter {
         writeLaTeXFooter();
         close();
     }
+    
+    public void makePDF() {
+        ProcessLogger pl = new ProcessLogger();
+        String command = "pdflatex -interaction=nonstopmode " + options.getLatexDir() + File.separator + options.getSample() + ".tex";
+        String logFilename = options.getLogsDir() + File.separator + "pdflatex_output_log.txt";
+        System.out.println("pdflatex output " + logFilename);
+        pl.runCommand(command, logFilename, false);
+    }
 }

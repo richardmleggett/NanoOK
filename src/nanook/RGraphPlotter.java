@@ -10,6 +10,9 @@ import java.util.Set;
  */
 public class RGraphPlotter {
     private NanoOKOptions options;
+    private int nScriptsToRun;
+    private int nScriptCounter = 1;
+    String logFilename;
 
     /**
      * Constructor.
@@ -17,6 +20,23 @@ public class RGraphPlotter {
      */
     public RGraphPlotter(NanoOKOptions o) {
         options = o;
+        logFilename = options.getLogsDir() + File.separator + "R_output_log.txt";
+    }
+    
+    
+    public void runScript(String scriptName, String refName) {
+        String command = "Rscript " + options.getScriptsDir() + File.separator + scriptName + " " + options.getBaseDirectory() + " " + options.getSample();
+        
+        if (refName != null) {
+            command = command + " " + refName;
+        }
+        
+        System.out.print("\r"+nScriptCounter+"/"+nScriptsToRun);
+        
+        ProcessLogger pl = new ProcessLogger();
+        pl.runCommand(command, logFilename, nScriptCounter == 1 ? false:true);
+
+        nScriptCounter++;
     }
     
     /**
@@ -24,36 +44,22 @@ public class RGraphPlotter {
      * @param references References object containing all references
      */
     public void plot(References references) {
-       String s = null;
- 
-        try {         
-            String command="Rscript "+options.getScriptsDir()+File.separator+"nanook_plot_lengths.R "+options.getBaseDirectory()+" "+options.getSample();
-            System.out.println("Executing "+command);
-            Process p = Runtime.getRuntime().exec(command);
-            p.waitFor();
-            
-            Set<String> ids = references.getAllIds();
-            for (String id : ids) {
-                String name = references.getReferenceById(id).getName();
-                command="Rscript "+options.getScriptsDir()+File.separator+"nanook_plot_alignments.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
-                System.out.println("Executing "+command);
-                p = Runtime.getRuntime().exec(command);
-                p.waitFor();                
-                
-                command="Rscript "+options.getScriptsDir()+File.separator+"nanook_plot_indels.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
-                System.out.println("Executing "+command);
-                p = Runtime.getRuntime().exec(command);
-                p.waitFor();
+        String s = null;
 
-                command="Rscript "+options.getScriptsDir()+File.separator+"nanook_plot_read_identity.R "+options.getBaseDirectory()+" "+options.getSample() + " " + name;
-                System.out.println("Executing "+command);
-                p = Runtime.getRuntime().exec(command);
-                p.waitFor();               
-            }          
-        } catch (Exception e) {
-            System.out.println("RGraphPlotter exception:");
-            e.printStackTrace();
-            System.exit(1);
-        }        
+        nScriptsToRun = 1 + (references.getNumberOfReferences() * 3);
+         
+        System.out.println("R log " + logFilename);
+        
+        runScript("nanook_plot_lengths.R ", null);
+       
+        Set<String> ids = references.getAllIds();
+        for (String id : ids) {
+            String name = references.getReferenceById(id).getName();
+            runScript("nanook_plot_alignments.R", name);
+            runScript("nanook_plot_indels.R", name);
+            runScript("nanook_plot_read_identity.R", name);
+        }          
+        
+        System.out.println("");
     }
 }

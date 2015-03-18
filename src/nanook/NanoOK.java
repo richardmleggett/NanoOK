@@ -8,7 +8,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.2";
+    public final static String VERSION_STRING = "v0.3";
     
     /**
      * Entry to tool.
@@ -72,18 +72,23 @@ public class NanoOK {
         
         // Plot graphs
         if (options.doPlotGraphs()) {
-            System.out.println("\nPlotting");
+            System.out.println("\nPlotting graphs");
             RGraphPlotter plotter = new RGraphPlotter(options);
             plotter.plot(references);                
         }
         
         // Make report
         if (options.doMakeReport()) {
-            System.out.println("\nMaking report...");
+            System.out.println("\nMaking report");
             ReportWriter rw = new ReportWriter(options, references, overallStats);
             rw.writeReport();
+
+            if (options.doMakePDF()) {
+                System.out.println("\nMaking PDF");
+                rw.makePDF();
+            }
         }
-        
-        System.out.println("Done");
+                
+        System.out.println("\nDone");
     }
 }
