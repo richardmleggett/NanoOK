@@ -1,6 +1,8 @@
 NanoOK
 ======
 
-This is pre-release software, not ready for the big bad world.
+Documentation available at https://documentation.tgac.ac.uk/display/NANOOK/NanoOK
 
-Contact richard.leggett@tgac.ac.uk if interested in beta testing.
+This is pre-release software, but we welcome comments, bug reports etc.
+
+Contact richard.leggett@tgac.ac.uk for more information.
