@@ -35,7 +35,13 @@ public class LastAlignmentMerger {
     int kCounts[] = {0, 0, 0, 0, 0, 0};
     int nk = 6;
     
-    
+    /**
+     * Constructor
+     * @param r the reference, as a ReferenceSequence object
+     * @param l the read length
+     * @param s the read set stats for this read set
+     * @param t the type number of read (defined in NanoOKOptions)
+     */
     public LastAlignmentMerger(ReferenceSequence r, int l, ReadSetStats s, int t) {
         reference = r;
         readLength = l;
@@ -87,12 +93,16 @@ public class LastAlignmentMerger {
         }
     }
     
+    /**
+     * Merge in a new alignment
+     * @param a a LastAlignment
+     */
     public void addAlignment(LastAlignment a) {
         addAlignment(a.getHitLine(), a.getQueryLine());
     }
     
     /**
-     * Compare hit string and query string base-by-base looking for matches.
+     * Merge in a new alignment
      * @param hit hit object
      * @param query query object
      * @param reference matching reference (ie. hit)
@@ -259,6 +269,10 @@ public class LastAlignmentMerger {
         reference.getStatsByType(type).addCoverage(hit.getStart(), hit.getAlnSize());    
     }  
     
+    /**
+     * Declare end of alignment merge
+     * @return an AlignmentInfo object
+     */
     public AlignmentInfo endMergeAndStoreStats() {
         AlignmentInfo ai = new AlignmentInfo(hitName,
                                              hitSeqSize,
@@ -284,30 +298,58 @@ public class LastAlignmentMerger {
         return ai;
     }
     
+    /**
+     * Get query start position of merged alignment
+     * @return start position
+     */
     public int getOverallQueryStart() {
         return overallQueryStart;
     }
 
+    /**
+     * Get query end position of merged alignment
+     * @return end position
+     */
     public int getOverallQueryEnd() {
         return overallQueryEnd;
     }
 
+    /**
+     * Get hit start position of merged alignment
+     * @return start position
+     */
     public int getOverallHitStart() {
         return overallHitStart;
     }
 
+    /**
+     * Get hit end position of merged alignment
+     * @return end position
+     */
     public int getOverallHitEnd() {
         return overallHitEnd;
     }
 
+    /**
+     * Get size of query covered by merged alignment
+     * @return size of alignment
+     */
     public int getOverallQuerySize() {
         return overallQueryEnd - overallQueryStart;
     }
 
+    /**
+     * Get size of hit covered by merged alignment
+     * @return size of hit alignment
+     */
     public int getOverallHitSize() {
         return overallHitEnd - overallHitStart;
     }
     
+    /**
+     * Get size of alignment without indels
+     * @return size
+     */
     public int getAlignmentSize() {
         return alignmentSizeWithoutIndels;
     }

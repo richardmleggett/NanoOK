@@ -63,11 +63,14 @@ public class NanoOKOptions {
         if (args.length <= 1) {
             System.out.println("Syntax nanook [options]");
             System.out.println("");
-            System.out.println("Options:");
+            System.out.println("Main options:");
             System.out.println("    -basesdir <directory> specifies base directory");
-            System.out.println("    -coveragebin <int> specifies coverage bin size (default 100)");
             System.out.println("    -reference <path> specifies path to reference database");
             System.out.println("    -sample <name> specifies name of sample");
+            System.out.println("Other options:");
+            System.out.println("    -coveragebin <int> specifies coverage bin size (default 100)");            
+            System.out.println("    -nofail to exclude analysis of reads in 'fail' folder");
+            System.out.println("    -nopass to exclude analysus of reads in 'pass' folder");            
             System.out.println("");
             System.exit(0);
         }
