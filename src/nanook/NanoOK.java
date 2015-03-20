@@ -1,5 +1,6 @@
 package nanook;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -8,7 +9,42 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.3.3";
+    public final static String VERSION_STRING = "v0.3.4";
+    
+    public static void checkDependencies() {
+        ProcessLogger pl = new ProcessLogger();
+        ArrayList<String> response;
+        String rVersion = null;
+        String pdflatexVersion = null;
+                
+        response = pl.getCommandOutput("Rscript --version", true, true);
+        for (int i=0; i<response.size(); i++) {
+            String s = response.get(i);
+            if (s.startsWith("R scripting front-end")) {
+                rVersion = s;
+            }
+        }
+        
+        if (rVersion == null) {
+            System.out.println("*** WARNING: Couldn't find Rscript - is R installed? ***");
+        } else {
+            System.out.println(rVersion);
+        }
+        
+        response = pl.getCommandOutput("pdflatex --version", true, true);
+        for (int i=0; i<response.size(); i++) {
+            String s = response.get(i);
+            if (s.startsWith("pdfTeX")) {
+                pdflatexVersion = s;
+            }
+        }
+        
+        if (pdflatexVersion == null) {
+            System.out.println("*** WARNING: Couldn't find pdflatex - is TeX installed? ***");
+        } else {
+            System.out.println(pdflatexVersion);
+        }
+    }
     
     /**
      * Entry to tool.
@@ -28,6 +64,10 @@ public class NanoOK {
         options.parseArgs(args);
         options.checkDirectoryStructure();
 
+        // Check dependencies
+        System.out.println("\nChecking dependencies");
+        checkDependencies();
+        
         // Load references
         System.out.println("\nFinding references");
         References references = new References(options);

@@ -42,7 +42,7 @@ public class NanoOKOptions {
         if (value != null) {
             scriptsDir = value;
         } else {
-            System.out.println("WARNING: You should set NANOOK_SCRIPT_DIR");
+            System.out.println("*** WARNING: You should set NANOOK_SCRIPT_DIR. Default value unlikely to work. ***\n");
         }
         
         value = System.getenv("NANOOK_BASE_DIR");
