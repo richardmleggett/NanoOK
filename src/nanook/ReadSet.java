@@ -165,7 +165,7 @@ public class ReadSet {
         int readTypes[] = new int[2];
         int nDirs = 0;
         int maxReads = options.getMaxReads();
-        String outputFilename = options.getAnalysisDir() + File.separator + options.getTypeFromInt(type) + "_nonaligned.txt";
+        String outputFilename = options.getAnalysisDir() + File.separator + "Unaligned" + File.separator + options.getTypeFromInt(type) + "_nonaligned.txt";
         AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile(outputFilename);
         
         if (options.isNewStyleDir()) {

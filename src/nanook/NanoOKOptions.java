@@ -194,6 +194,7 @@ public class NanoOKOptions {
      */
     public void checkDirectoryStructure() {
         File analysisDir = new File(getAnalysisDir());
+        File unalignedAnalysisDir = new File(getAnalysisDir()+File.separator+"Unaligned");
         File graphsDir = new File(getGraphsDir());
         File motifsDir = new File(getGraphsDir() + File.separator + "motifs");
         File latexDir = new File(getLatexDir());
@@ -201,6 +202,10 @@ public class NanoOKOptions {
         
         if (!analysisDir.exists()) {
             analysisDir.mkdir();
+        }
+        
+        if (!unalignedAnalysisDir.exists()) {
+            unalignedAnalysisDir.mkdir();
         }
 
         if (!graphsDir.exists()) {
