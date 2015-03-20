@@ -10,7 +10,7 @@ import java.io.PrintWriter;
  * 
  * @author Richard leggett
  */
-public class ReferenceSequence {
+public class ReferenceSequence implements Comparable {
     private String id = null;
     private String name = null;
     private int size = 0;
@@ -103,5 +103,10 @@ public class ReferenceSequence {
      */
     public int getBinSize() {
         return binSize;
+    }
+
+    public int compareTo(Object o) {
+        ReferenceSequence r = (ReferenceSequence)o;
+        return name.compareTo(r.getName());
     }
 }

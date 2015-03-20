@@ -83,7 +83,7 @@ public class References {
         
         return r;
     }
-        
+            
     /**
      * Return set of all reference sequence IDs.
      * @return a String set
@@ -91,6 +91,23 @@ public class References {
     public Set<String> getAllIds() {
         return referenceSequences.keySet();
     }
+    
+    /**
+     * Return sorted set of all reference sequence IDs.
+     * @return a String set
+     */
+    public ArrayList getSortedReferences() {
+        ArrayList sortedReferences = new ArrayList();
+        Set<String> keys = referenceSequences.keySet();
+        
+        for(String id : keys) {
+            sortedReferences.add(referenceSequences.get(id));
+        }    
+        Collections.sort(sortedReferences);
+        
+        return sortedReferences;
+    }
+    
     
     /**
      * Initiate writing of all statistics data files used to generate graphs.
@@ -178,23 +195,20 @@ public class References {
         pw.println("{\\footnotesize");
         pw.println("\\fontsize{9pt}{11pt}\\selectfont");
         pw.println("\\begin{tabular}{l c c c c c c c}");
-        pw.println("          &             & {\\bf Number of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest}   & {\\bf +ve/-ve} \\\\");
-        pw.println("{\\bf Id} & {\\bf Size} & {\\bf Reads}     & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} & {\\bf strand \\%} \\\\");
-        List<String> keys = new ArrayList<String>(referenceSequences.keySet());
-        Collections.sort(keys);
-        for(String id : keys) {
-            ReferenceSequence r = referenceSequences.get(id);
+        pw.println("          &             & {\\bf Number of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest} \\\\");
+        pw.println("{\\bf Id} & {\\bf Size} & {\\bf Reads}     & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} \\\\");
+        ArrayList<ReferenceSequence> sortedRefs = getSortedReferences();
+        for (int i=0; i<sortedRefs.size(); i++) {
+            ReferenceSequence r = sortedRefs.get(i);
             ReferenceSequenceStats refStats = r.getStatsByType(type);
-            pw.printf("%s & %d & %d & %.2f & %d & %.2f & %d & %.2f / %.2f \\\\\n",
+            pw.printf("%s & %d & %d & %.2f & %d & %.2f & %d \\\\\n",
                        r.getName().replaceAll("_", " "),
                        r.getSize(),
                        refStats.getNumberOfReadsWithAlignments(),
                        refStats.getMeanReadLength(),
                        refStats.getTotalAlignedBases(),
                        (double)refStats.getTotalAlignedBases() / r.getSize(),
-                       refStats.getLongestPerfectKmer(),
-                       refStats.getAlignedPositiveStrandPercent(),
-                       refStats.getAlignedNegativeStrandPercent());
+                       refStats.getLongestPerfectKmer());
         }
         pw.println("\\end{tabular}");
         pw.println("}");

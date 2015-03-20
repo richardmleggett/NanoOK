@@ -467,11 +467,11 @@ public class ReportWriter {
      * Add sections for each reference sequence.
      * @param refs reference sequences
      */
-    public void addAllReferenceSections(References refs) {
-        List<String> keys = new ArrayList<String>(refs.getAllIds());
-        Collections.sort(keys);
-        for (String id : keys) {
-            writeReferenceSection(refs.getReferenceById(id));
+    public void addAllReferenceSections() {
+        ArrayList<ReferenceSequence> sortedRefs = references.getSortedReferences();
+        for (int i=0; i<sortedRefs.size(); i++) {
+            ReferenceSequence rs = sortedRefs.get(i);
+            writeReferenceSection(rs);
         }
     }
     
@@ -507,10 +507,11 @@ public class ReportWriter {
             references.writeTexSummary(type, pw);
         }
         
-        Set<String> ids = references.getAllIds();
-        for (String id : ids) {
-            writeReferenceSection(references.getReferenceById(id));
-        }
+        addAllReferenceSections();        
+        //Set<String> ids = references.getAllIds();
+        //for (String id : ids) {
+        //    writeReferenceSection(references.getReferenceById(id));
+        //}
         
         writeMotifSection();
         writeSubstitutionErrorsSection();        
@@ -522,7 +523,7 @@ public class ReportWriter {
     
     public void makePDF() {
         ProcessLogger pl = new ProcessLogger();
-        String command = "pdflatex -interaction=nonstopmode " + options.getLatexDir() + File.separator + options.getSample() + ".tex";
+        String command = "pdflatex -interaction=nonstopmode -output-directory " +options.getLatexDir() + " " + options.getLatexDir() + File.separator + options.getSample() + ".tex";
         String logFilename = options.getLogsDir() + File.separator + "pdflatex_output_log.txt";
         System.out.println("pdflatex output " + logFilename);
         pl.runCommand(command, logFilename, false);
