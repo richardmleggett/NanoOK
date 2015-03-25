@@ -209,6 +209,14 @@ public class ReportWriter {
                 refSeq.getStatsByType(0).getPercentSubstitutionErrors(),
                 refSeq.getStatsByType(1).getPercentSubstitutionErrors(),
                 refSeq.getStatsByType(2).getPercentSubstitutionErrors());
+        pw.printf("Mean insertion size & %.2f & %.2f & %.2f \\\\\n",
+                refSeq.getStatsByType(0).getMeanInsertionSize(),
+                refSeq.getStatsByType(1).getMeanInsertionSize(),
+                refSeq.getStatsByType(2).getMeanInsertionSize());
+        pw.printf("Mean deletion size & %.2f & %.2f & %.2f \\\\\n",
+                refSeq.getStatsByType(0).getMeanDeletionSize(),
+                refSeq.getStatsByType(1).getMeanDeletionSize(),
+                refSeq.getStatsByType(2).getMeanDeletionSize());
         pw.println("\\end{tabular}");
         pw.println("}");
         pw.println("\\end{table}");     

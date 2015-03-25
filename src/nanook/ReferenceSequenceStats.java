@@ -319,6 +319,22 @@ public class ReferenceSequenceStats {
         }
         stats.addInsertionError(size, kmer);
     }
+
+    /**
+     * Get the mean deletion size
+     * @return size, as double
+     */
+    public double getMeanDeletionSize() {
+        return (double)nDeletedBases / (double)nDeletionErrors;
+    }
+
+    /**
+     * Get the mean insertion size
+     * @return size, as double
+     */
+    public double getMeanInsertionSize() {
+        return (double)nInsertedBases / (double)nInsertionErrors;
+    } 
     
     /** 
      * Store a substitution error.

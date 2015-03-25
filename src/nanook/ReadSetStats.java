@@ -369,7 +369,7 @@ public class ReadSetStats {
     public void addInsertionError(int size, String kmer) {
         motifStats.addInsertionMotifs(kmer);
         nInsertions++;
-    }
+    } 
     
     /** 
      * Store a substitution error.
