@@ -245,17 +245,13 @@ public class ReportWriter {
         includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_read_fraction_vs_alignment_identity_scatter.pdf", "}");
         includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_read_fraction_vs_alignment_identity_scatter.pdf", "}");        
         pw.println("\\end{figure}");
-        
-        pw.println("\\subsection*{" + id + " coverage}");
-        pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists("\\includegraphics[height=3cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_coverage.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_coverage.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_coverage.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_gc.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_percent_aligned_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_percent_aligned_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_percent_aligned_vs_length_scatter.pdf", "}");        
         pw.println("\\end{figure}");
-
+        
         pw.println("\\subsection*{" + id + " perfect kmers}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
@@ -270,6 +266,16 @@ public class ReportWriter {
         includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_longest_perfect_vs_length_scatter.pdf", "}");
         includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_longest_perfect_vs_length_scatter.pdf", "}");
         pw.println("\\end{figure}");
+
+        pw.println("\\subsection*{" + id + " coverage}");
+        pw.println("\\vspace{-3mm}");
+        pw.println("\\begin{figure}[H]");
+        pw.println("\\centering");
+        includeGraphicsIfExists("\\includegraphics[height=2cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_coverage.pdf", "} \\\\");
+        includeGraphicsIfExists("\\includegraphics[height=2cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_coverage.pdf", "} \\\\");
+        includeGraphicsIfExists("\\includegraphics[height=2cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_coverage.pdf", "} \\\\");
+        includeGraphicsIfExists("\\includegraphics[height=2cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_gc.pdf", "}");
+        pw.println("\\end{figure}");        
     }
     
     /**
