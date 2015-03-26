@@ -6,152 +6,68 @@ basename <- args[1];
 sample <-args[2];
 reference <- args[3];
 
-alignments_twod_filename <- paste(basename, "/", sample, "/analysis/", reference, "/", reference, "_2D_alignments.txt", sep="");
-alignments_template_filename <- paste(basename, "/", sample, "/analysis/", reference, "/", reference, "_Template_alignments.txt", sep="");
-alignments_complement_filename <- paste(basename, "/", sample, "/analysis/", reference, "/", reference, "_Complement_alignments.txt", sep="");
+types = c("2D", "Template", "Complement");
+colours = c("#68B5B9", "#CF746D", "#91A851");
 
-identity_hist_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_length_vs_identity_hist.pdf", sep="");
-identity_hist_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_length_vs_identity_hist.pdf", sep="");
-identity_hist_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_length_vs_identity_hist.pdf", sep="");
+for (t in 1:3) {
+    type = types[t];
+    colourcode = colours[t];
+    cat(type, " ", colourcode, "\n");
 
-identity_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_length_vs_identity_scatter.pdf", sep="");
-identity_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_length_vs_identity_scatter.pdf", sep="");
-identity_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_length_vs_identity_scatter.pdf", sep="");
+    input_filename <- paste(basename, "/", sample, "/analysis/", reference, "/", reference, "_",type,"_alignments.txt", sep="");
+    data_alignments = read.table(input_filename, header=TRUE);
 
-aid_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
-aid_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
-aid_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
+    # Length vs Identity histograms
+    identity_hist_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_length_vs_identity_hist.pdf", sep="")
+    pdf(identity_hist_pdf, height=4, width=6)
+    print(ggplot(data_alignments, aes(x=data_alignments$QueryPercentIdentity), xlab="Identity") + geom_histogram(fill=colourcode) + xlab("Identity %") +ylab("Count") + ggtitle(type) + theme(text = element_text(size=10)))
+    garbage <- dev.off()
+    
+    # Identity vs Length Scatter plots
+    identity_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_length_vs_identity_scatter.pdf", sep="");
+    pdf(identity_scatter_pdf, height=4, width=6)
+    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$QueryPercentIdentity), xlab="Identity") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Length") +ylab("Identity") + ggtitle(type) + theme(text = element_text(size=10)) + scale_y_continuous(limits=c(0, 100)))
+    garbage <- dev.off()
 
-qid_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_read_fraction_vs_query_identity_scatter.pdf", sep="");
-qid_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_read_fraction_vs_query_identity_scatter.pdf", sep="");
-qid_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_read_fraction_vs_query_identity_scatter.pdf", sep="");
+    # Alignment identity vs. Fraction of read aligned scatter plots
+    aid_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
+    pdf(aid_scatter_pdf, height=4, width=6)
+    print(ggplot(data_alignments, aes(x=data_alignments$PercentQueryAligned, y=data_alignments$AlignmentPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Percentage of query aligned") +ylab("Alignment identity %") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100)))
+    garbage <- dev.off()
 
-best_perf_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_longest_perfect_vs_length_scatter.pdf", sep="");
-best_perf_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_longest_perfect_vs_length_scatter.pdf", sep="");
-best_perf_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_longest_perfect_vs_length_scatter.pdf", sep="");
+    # Query identity vs. Fraction of read aligned scatter plots
+    qid_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_read_fraction_vs_query_identity_scatter.pdf", sep="");
+    pdf(qid_scatter_pdf, height=4, width=6)
+    print(ggplot(data_alignments, aes(x=data_alignments$PercentQueryAligned, y=data_alignments$QueryPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Percentage of query aligned") +ylab("Query identity %") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100)))
+    garbage <- dev.off()
 
-best_perf_zoom_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_longest_perfect_vs_length_zoom_scatter.pdf", sep="");
-best_perf_zoom_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_longest_perfect_vs_length_zoom_scatter.pdf", sep="");
-best_perf_zoom_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_longest_perfect_vs_length_zoom_scatter.pdf", sep="");
+    # Best perfect sequence vs. length scatters
+    best_perf_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_longest_perfect_vs_length_scatter.pdf", sep="");
+    pdf(best_perf_scatter_pdf, height=4, width=6)
+    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle(type) + theme(text = element_text(size=10)))
+    garbage <- dev.off()
 
-mean_perf_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_mean_perfect_vs_length_scatter.pdf", sep="");
-mean_perf_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_mean_perfect_vs_length_scatter.pdf", sep="");
-mean_perf_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_mean_perfect_vs_length_scatter.pdf", sep="");
+    # Best perfect sequence vs. length scatters zoomed
+    best_perf_zoom_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_longest_perfect_vs_length_zoom_scatter.pdf", sep="");
+    pdf(best_perf_zoom_scatter_pdf, height=4, width=6)
+    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000)))
+    garbage <- dev.off()
 
-nk21_scatter_twod_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_2D_nk21_vs_length_scatter.pdf", sep="");
-nk21_scatter_template_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Template_nk21_vs_length_scatter.pdf", sep="");
-nk21_scatter_complement_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_Complement_nk21_vs_length_scatter.pdf", sep="");
+    # Number of perfect 21mers verses length scatter
+    nk21_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_nk21_vs_length_scatter.pdf", sep="");
+    pdf(nk21_scatter_pdf, height=4, width=6)
+    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$nk21), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Read length") +ylab("Number of perfect 21mers") + ggtitle(type) + theme(text = element_text(size=10)))
+    garbage <- dev.off()
 
+    # Mean perfect sequence vs. length scatters
+    #mean_perf_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_mean_perfect_vs_length_scatter.pdf", sep="");
+    #pdf(mean_perf_scatter_pdf, height=4, width=6)
+    #print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$MeanPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Mean perfect sequence") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000)))
+    #garbage <- dev.off()
 
-alignments_twod_filename
-data_alignments_twod = read.table(alignments_twod_filename, header=TRUE)
-
-alignments_template_filename
-data_alignments_template = read.table(alignments_template_filename, header=TRUE)
-
-alignments_complement_filename
-data_alignments_complement = read.table(alignments_complement_filename, header=TRUE)
-
-# Length vs Identity histograms
-pdf(identity_hist_twod_pdf, height=4, width=6)
-ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryPercentIdentity), xlab="Identity") + geom_histogram(fill="#68B5B9") + xlab("Identity %") +ylab("Count") + ggtitle("2D") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-pdf(identity_hist_template_pdf, height=4, width=6)
-ggplot(data_alignments_template, aes(x=data_alignments_template$QueryPercentIdentity), xlab="Identity") + geom_histogram(fill="#CF746D") + xlab("Identity %") +ylab("Count") + ggtitle("Template") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-pdf(identity_hist_complement_pdf, height=4, width=6)
-ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryPercentIdentity), xlab="Identity") + geom_histogram(fill="#91A851") + xlab("Identity %") +ylab("Count") + ggtitle("Complement") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-# Identity vs Length Scatter plots
-pdf(identity_scatter_twod_pdf, height=4, width=6)
-ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryLength, y=data_alignments_twod$QueryPercentIdentity), xlab="Identity") + geom_point(shape=1, alpha = 0.4, color="#68B5B9") + xlab("Length") +ylab("Identity") + ggtitle("2D") + theme(text = element_text(size=10)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-pdf(identity_scatter_template_pdf, height=4, width=6)
-ggplot(data_alignments_template, aes(x=data_alignments_template$QueryLength, y=data_alignments_template$QueryPercentIdentity), xlab="Identity") + geom_point(shape=1, alpha = 0.4, color="#CF746D") + xlab("Length") +ylab("Identity") + ggtitle("Template") + theme(text = element_text(size=10)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-pdf(identity_scatter_complement_pdf, height=4, width=6)
-ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryLength, y=data_alignments_complement$QueryPercentIdentity), xlab="Identity") + geom_point(shape=1, alpha = 0.4, color="#91A851") + xlab("Length") +ylab("Identity") + ggtitle("Complement") + theme(text = element_text(size=10)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-# Identity vs. Fraction of read aligned scatter plots
-pdf(aid_scatter_twod_pdf, height=4, width=6)
-ggplot(data_alignments_twod, aes(x=data_alignments_twod$PercentQueryAligned, y=data_alignments_twod$AlignmentPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color="#68B5B9") + xlab("Percentage of query aligned") +ylab("Alignment identity %") + ggtitle("2D") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-pdf(aid_scatter_template_pdf, height=4, width=6)
-ggplot(data_alignments_template, aes(x=data_alignments_template$PercentQueryAligned, y=data_alignments_template$AlignmentPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color="#CF746D") + xlab("Percentage of query aligned") +ylab("Alignment identity %") + ggtitle("Template") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-pdf(aid_scatter_complement_pdf, height=4, width=6)
-ggplot(data_alignments_complement, aes(x=data_alignments_complement$PercentQueryAligned, y=data_alignments_complement$AlignmentPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color="#91A851") + xlab("Percentage of query aligned") +ylab("Alignment identity %") + ggtitle("Complement") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-pdf(qid_scatter_twod_pdf, height=4, width=6)
-ggplot(data_alignments_twod, aes(x=data_alignments_twod$PercentQueryAligned, y=data_alignments_twod$QueryPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color="#68B5B9") + xlab("Percentage of query aligned") +ylab("Query identity %") + ggtitle("2D") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-pdf(qid_scatter_template_pdf, height=4, width=6)
-ggplot(data_alignments_template, aes(x=data_alignments_template$PercentQueryAligned, y=data_alignments_template$QueryPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color="#CF746D") + xlab("Percentage of query aligned") +ylab("Query identity %") + ggtitle("Template") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-pdf(qid_scatter_complement_pdf, height=4, width=6)
-ggplot(data_alignments_complement, aes(x=data_alignments_complement$PercentQueryAligned, y=data_alignments_complement$QueryPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color="#91A851") + xlab("Percentage of query aligned") +ylab("Query identity %") + ggtitle("Complement") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100))
-garbage <- dev.off()
-
-# Best perfect sequence vs. length scatters
-pdf(best_perf_scatter_twod_pdf, height=4, width=6)
-ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryLength, y=data_alignments_twod$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#68B5B9") + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("2D") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-pdf(best_perf_scatter_template_pdf, height=4, width=6)
-ggplot(data_alignments_template, aes(x=data_alignments_template$QueryLength, y=data_alignments_template$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#CF746D") + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("Template") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-pdf(best_perf_scatter_complement_pdf, height=4, width=6)
-ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryLength, y=data_alignments_complement$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#91A851") + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("Complement") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-# Best perfect sequence vs. length scatters zoomed
-pdf(best_perf_zoom_scatter_twod_pdf, height=4, width=6)
-ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryLength, y=data_alignments_twod$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#68B5B9") + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("2D") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000))
-garbage <- dev.off()
-
-pdf(best_perf_zoom_scatter_template_pdf, height=4, width=6)
-ggplot(data_alignments_template, aes(x=data_alignments_template$QueryLength, y=data_alignments_template$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#CF746D") + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("Template") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000))
-garbage <- dev.off()
-
-pdf(best_perf_zoom_scatter_complement_pdf, height=4, width=6)
-ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryLength, y=data_alignments_complement$LongestPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#91A851") + xlab("Read length") +ylab("Longest perfect sequence") + ggtitle("Complement") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000))
-garbage <- dev.off()
-
-# Number of perfect 21mers verses length scatter
-pdf(nk21_scatter_twod_pdf, height=4, width=6)
-ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryLength, y=data_alignments_twod$nk21), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#68B5B9") + xlab("Read length") +ylab("Number of perfect 21mers") + ggtitle("2D") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-pdf(nk21_scatter_template_pdf, height=4, width=6)
-ggplot(data_alignments_template, aes(x=data_alignments_template$QueryLength, y=data_alignments_template$nk21), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#CF746D") + xlab("Read length") +ylab("Number of perfect 21mers") + ggtitle("Template") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-pdf(nk21_scatter_complement_pdf, height=4, width=6)
-ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryLength, y=data_alignments_complement$nk21), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color="#91A851") + xlab("Read length") +ylab("Number of perfect 21mers") + ggtitle("Complement") + theme(text = element_text(size=10))
-garbage <- dev.off()
-
-
-# Mean perfect sequence vs. length scatters
-#pdf(mean_perf_scatter_twod_pdf, height=4, width=6)
-#ggplot(data_alignments_twod, aes(x=data_alignments_twod$QueryLength, y=data_alignments_twod$MeanPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Mean perfect sequence") + ggtitle("2D") + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 10000))
-#garbage <- dev.off()
-
-#pdf(mean_perf_scatter_template_pdf, height=4, width=6)
-#ggplot(data_alignments_template, aes(x=data_alignments_template$QueryLength, y=data_alignments_template$MeanPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Mean perfect sequence") + ggtitle("Template") + theme(text = element_text(size=10))
-#garbage <- dev.off()
-
-#pdf(mean_perf_scatter_complement_pdf, height=4, width=6)
-#ggplot(data_alignments_complement, aes(x=data_alignments_complement$QueryLength, y=data_alignments_complement$MeanPerfectKmer), xlab="Read length") + geom_point(shape=1, alpha = 0.4) + xlab("Read length") +ylab("Mean perfect sequence") + ggtitle("Complement") + theme(text = element_text(size=10))
-#garbage <- dev.off()
+    # Percentage of read aligned vs read length
+    output_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_percent_aligned_vs_length_scatter.pdf", sep="");
+    pdf(output_pdf, height=4, width=6)
+    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$PercentQueryAligned), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Read length") +ylab("Percentage of query aligned") + ggtitle(type) + theme(text = element_text(size=10)))
+    garbage <- dev.off()
+}
