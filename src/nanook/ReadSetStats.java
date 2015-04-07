@@ -25,6 +25,7 @@ public class ReadSetStats {
     private int n90 = 0;
     private int n90Count = 0;
     private int[] lengths = new int[NanoOKOptions.MAX_READ_LENGTH];
+    private Hashtable<String,Integer> readLengths = new Hashtable();
     private int nReads = 0;
     private int nReadFiles = 0;
     private int nPassFiles = 0;
@@ -248,8 +249,31 @@ public class ReadSetStats {
         
         basesSum += l;
         nReads++;
+        
+        if (readLengths.containsKey(id)) {
+            System.out.println("Error: Read ID "+id+" occurs more than once.");
+        } else {
+            readLengths.put(id, l);
+        }
     }    
         
+    /**
+     * Get length of read
+     * @param id of read
+     * @return length, in bases
+     */
+    public int getReadLength(String id) {
+        int length = -1;
+        
+        Integer l = readLengths.get(id);
+        
+        if (l != null) {
+            length = l.intValue();
+        }
+        
+        return length;
+    }
+    
     /**
      * Store a read with an alignment.
      */

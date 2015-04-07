@@ -72,7 +72,7 @@ $type[$n_types++] = "Template" if not defined $no_template;
 $type[$n_types++] = "Complement" if not defined $no_complement;
 
 die "You must specify a sample name" if not defined $sample;
-die "Aligner must be last - more support coming." if ($aligner ne "last");
+die "Aligner must be last - more support coming." if (($aligner ne "last") && ($aligner ne "bwa"));
 die "You must specify a reference." if not defined $reference;
 die "Base directory must be specified." if not defined $basedir;
 
@@ -82,9 +82,11 @@ if (not defined $alignment_dir) {
     $alignment_dir = $aligner;
 }
 
-if ($aligner eq "last") {
-    if (not defined $aligner_params) {
+if (not defined $aligner_params) {
+    if ($aligner eq "last") {
         $aligner_params = "-s 2 -T 0 -Q 0 -a 1";
+    } elsif ($aligner eq "bwa") {
+        $aligner_params = "-x ont2d"
     }
 }
 
@@ -161,6 +163,9 @@ sub process_directory {
             } elsif ($aligner eq "blastn") {
                 $outpath = $outpath.".txt";
                 $command = get_blast_command($inpath, $outpath, $reference);
+            } elsif ($aligner eq "bwa") {
+                $outpath = $outpath.".sam";
+                $command = get_bwa_command($inpath, $outpath, $reference);
             } else {
                 print "Error: aligner $aligner not known!\n";
                 exit;
@@ -173,6 +178,8 @@ sub process_directory {
                 system("bsub -n ${num_threads} -q ${queue} -oo ${logfile} -R \"rusage[mem=8000] span[hosts=1]\" \"${command}\"");
             } elsif ($scheduler eq "PBS") {
                 print("Error: PBS not yet implemented.");
+            } elsif ($scheduler eq "screen") {
+                print $command, "\n";
             } else {
                 system($command);
                 open(COMMAND, $command." |");
@@ -191,6 +198,15 @@ sub get_last_command {
     my $reference = $_[2];
     my $command = "lastal ".$aligner_params." ".$reference." ".$query." > ".$output_file;
 
+    return $command;
+}
+
+sub get_bwa_command {
+    my $query = $_[0];
+    my $output_file = $_[1];
+    my $reference = $_[2];
+    my $command = "bwa mem ".$aligner_params." ".$reference." ".$query." > ".$output_file;
+    
     return $command;
 }
 

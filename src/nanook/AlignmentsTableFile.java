@@ -89,7 +89,7 @@ public class AlignmentsTableFile {
         count++;
     }
     
-    public void writeMergedAlignment(String alignmentFilename, LastAlignmentMerger merger, AlignmentInfo stat) {
+    public void writeMergedAlignment(String alignmentFilename, AlignmentMerger merger, AlignmentInfo stat) {
         String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
                 stat.getQueryName(),

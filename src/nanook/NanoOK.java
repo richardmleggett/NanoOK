@@ -11,6 +11,9 @@ import java.util.Set;
 public class NanoOK {
     public final static String VERSION_STRING = "v0.3.4";
     
+    /**
+     * Check for program dependencies - R, pdflatex
+     */
     public static void checkDependencies() {
         ProcessLogger pl = new ProcessLogger();
         ArrayList<String> response;
@@ -45,6 +48,44 @@ public class NanoOK {
             System.out.println(pdflatexVersion);
         }
     }
+
+    /**
+     * Test logo plotting
+     */
+    public static void testLogo() {
+        SequenceLogo logo = new SequenceLogo();
+        logo.drawImage();
+        logo.saveImage("/Users/leggettr/Desktop/logo.png");
+    }
+    
+    /**
+     * Test SequenceReader class
+     */
+    public static void testSequenceReader() {
+        SequenceReader r = new SequenceReader(true);
+        r.indexFASTAFile("/Users/leggettr/Documents/Projects/Nanopore/test.fasta");
+        String s = r.getSubSequence("gi|223667766|ref|NZ_DS264586.1|", 0, 499);
+        System.out.println("String (0,499) = ["+s+"]");
+        s = r.getSubSequence("gi|223667766|ref|NZ_DS264586.1|", 0, 9);
+        System.out.println("String (0,9) = ["+s+"]");
+        s = r.getSubSequence("gi|223667766|ref|NZ_DS264586.1|", 200, 209);
+        System.out.println("String (200,209) = ["+s+"]");
+        s = r.getSubSequence("gi|223667766|ref|NZ_DS264586.1|", 200, 214);
+        System.out.println("String (200,214) = ["+s+"]");
+    }
+    
+    /**
+     * Test parser
+     * @param options
+     * @param overallStats
+     * @param references 
+     */
+    public static void testParser(NanoOKOptions options, OverallStats overallStats, References references) {
+        AlignmentFileParser p = new LastParser(0, options, overallStats.getStatsByType(0), references);
+        AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile("blob.txt");
+        p.parseFile("/Users/leggettr/Documents/Projects/Nanopore/N79681_EvenMC_R7_06082014/last/2D/N79681_EvenMC_R7_0608215_5314_1_ch319_file116_strand.fast5_BaseCalled_2D.fasta.maf", nonAlignedSummary);
+        //System.exit(0);
+    }
     
     /**
      * Entry to tool.
@@ -54,11 +95,6 @@ public class NanoOK {
         System.out.println("\nNanoOK " + VERSION_STRING + "\n");
         NanoOKOptions options = new NanoOKOptions();
         OverallStats overallStats = new OverallStats(options);
-
-        //SequenceLogo logo = new SequenceLogo();
-        //logo.drawImage();
-        //logo.saveImage("/Users/leggettr/Desktop/logo.png");
-        //System.exit(0);
         
         // Parse command line
         options.parseArgs(args);
@@ -71,21 +107,27 @@ public class NanoOK {
         // Load references
         System.out.println("\nFinding references");
         References references = new References(options);
-                
-        //AlignmentFileParser p = new LastParser(0, options, overallStats.getStatsByType(0), references);
-        //AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile("blob.txt");
-        //p.parseFile("/Users/leggettr/Documents/Projects/Nanopore/N79681_EvenMC_R7_06082014/last/2D/N79681_EvenMC_R7_0608215_5314_1_ch319_file116_strand.fast5_BaseCalled_2D.fasta.maf", nonAlignedSummary);
-        //System.exit(0);
         
         // Parse all reads sets       
         if (options.doParseAlignments()) {
             ReadLengthsSummaryFile summary = new ReadLengthsSummaryFile(options.getLengthSummaryFilename());
+            AlignmentFileParser parser = null;
             summary.open(options.getSample());
+            
             for (int type = 0; type<3; type++) {
-                AlignmentFileParser parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
+                // Choose parser
+                if (options.getAligner().equals(("last"))) {
+                    parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
+                } else if (options.getAligner().equals("bwa")) {
+                    parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                
+                } else {
+                    System.out.println("Aligner unknown!\n");
+                    System.exit(1);
+                }
+                
                 ReadSet readSet = new ReadSet(type, options, references, parser, overallStats.getStatsByType(type));
-                readSet.gatherLengthStats();
-                readSet.parseAlignmentFiles();
+                readSet.processReads();
+                readSet.processAlignments();
                 summary.addReadSetStats(overallStats.getStatsByType(type));
                 overallStats.getStatsByType(type).closeKmersFile();
             }
@@ -95,8 +137,7 @@ public class NanoOK {
             System.out.println("\nWriting analysis files");
             Set<String> ids = references.getAllIds();
             int allCount = ids.size() * 3;
-            int counter = 1;
-            
+            int counter = 1;            
             for (String id : ids) {
                 for (int type=0; type<3; type++) {
                     System.out.print("\r"+counter+"/"+allCount);
@@ -105,7 +146,6 @@ public class NanoOK {
                     counter++;
                 }
             }
-
             references.closeAlignmentFiles();
             System.out.println("");
         }

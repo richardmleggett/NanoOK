@@ -24,6 +24,8 @@ public class NanoOKOptions {
     private String referenceFile=null;
     private String sample=null;
     private String scriptsDir="/Users/leggettr/Documents/github/nanotools/scripts";
+    private String aligner="last";
+    private String alignerExtension=".maf";
     private int coverageBinSize = 100;
     private boolean processPassReads = true;
     private boolean processFailReads = true;
@@ -101,6 +103,9 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-nopass")) {
                 processPassReads = false;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-aligner")) {
+                aligner = args[i+1];
+                i+=2;
             } else {                
                 System.out.println("Unknown paramter: " + args[i]);
                 System.exit(0);
@@ -119,8 +124,22 @@ public class NanoOKOptions {
             System.out.println("Error: You must specify a sample");
             System.exit(1);
         }
+        
+        if (aligner.equals("bwa")) {
+            alignerExtension = ".sam";
+        } else if (aligner.equals("last")) {
+            alignerExtension = ".maf";
+        }
     }
         
+    public String getAligner() {
+        return aligner;
+    }
+    
+    public String getAlignerExtension() {
+        return alignerExtension;
+    }
+    
     /**
      * Get base directory name.
      * @return directory name as String
@@ -300,8 +319,8 @@ public class NanoOKOptions {
      * Get LAST directory.
      * @return directory name as String
      */
-    public String getLastDir() {
-        return baseDir + File.separator + sample + File.separator + "last";
+    public String getAlignerDir() {
+        return baseDir + File.separator + sample + File.separator + aligner;
     } 
 
     /**

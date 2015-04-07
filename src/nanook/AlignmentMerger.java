@@ -5,7 +5,7 @@ package nanook;
  * 
  * @author leggettr
  */
-public class LastAlignmentMerger {
+public class AlignmentMerger {
     private ReferenceSequence reference;
     private ReadSetStats overallStats;    
     private int readLength;
@@ -24,7 +24,7 @@ public class LastAlignmentMerger {
     private int overallHitEnd = -1;
     private int hitSeqSize = 0;
     private int querySeqSize = 0;
-    private String queryName =null;
+    private String queryName = null;
     private String hitName = null;
     private int identicalBases = 0;
     private int alignmentSize = 0;
@@ -42,7 +42,7 @@ public class LastAlignmentMerger {
      * @param s the read set stats for this read set
      * @param t the type number of read (defined in NanoOKOptions)
      */
-    public LastAlignmentMerger(ReferenceSequence r, int l, ReadSetStats s, int t) {
+    public AlignmentMerger(ReferenceSequence r, int l, ReadSetStats s, int t) {
         reference = r;
         readLength = l;
         overallStats = s;
@@ -95,46 +95,35 @@ public class LastAlignmentMerger {
     
     /**
      * Merge in a new alignment
-     * @param a a LastAlignment
+     * @param a a Alignment
      */
-    public void addAlignment(LastAlignment a) {
-        addAlignment(a.getHitLine(), a.getQueryLine());
-    }
-    
-    /**
-     * Merge in a new alignment
-     * @param hit hit object
-     * @param query query object
-     * @param reference matching reference (ie. hit)
-     * @return 
-     */
-    public void addAlignment(LastAlignmentLine hit, LastAlignmentLine query) {
-        String hitSeq = hit.getAlignment();
-        String querySeq = query.getAlignment();
+    public void addAlignment(Alignment a) {
+        String hitSeq = a.getHitString();
+        String querySeq = a.getQueryString();
         int hitSize = hitSeq.length();
         int querySize = querySeq.length();
         int loopFrom = 0;
         int loopTo = hitSize <= querySize ? hitSize:querySize;
-        int queryPos = query.getStart();
-        int hitPos = hit.getStart();
+        int queryPos = a.getQueryStart();
+        int hitPos = a.getHitStart();
         String currentKmer = "";
         AlignmentInfo ai;
 
         // Deal with hit and query names
         if (queryName == null) {
-            queryName = query.getName();
-            hitName = hit.getName();
-            querySeqSize = query.getSeqSize();
-            hitSeqSize = hit.getSeqSize();
+            queryName = a.getQueryName();
+            hitName = a.getHitName();
+            querySeqSize = a.getQuerySequenceSize();
+            hitSeqSize = a.getHitSequenceSize();
         }
         
-        if (! hitName.equals(hit.getName())) {
-            System.out.println("Error: hit name doesn't match!");
+        if (! hitName.equals(a.getHitName())) {
+            System.out.println("Hit name ("+hitName+") doesn't match ("+a.getHitName()+")!");
             System.exit(1);
         }
 
-        if (! queryName.equals(query.getName())) {
-            System.out.println("Error: hit name doesn't match!");
+        if (! queryName.equals(a.getQueryName())) {
+            System.out.println("Query name ("+queryName+") doesn't match ("+a.getQueryName()+")!");
             System.exit(1);
         }
         
@@ -266,7 +255,7 @@ public class LastAlignmentMerger {
             overallHitEnd = hitPos;
         }
 
-        reference.getStatsByType(type).addCoverage(hit.getStart(), hit.getAlnSize());    
+        reference.getStatsByType(type).addCoverage(a.getHitStart(), a.getHitAlignmentSize());    
     }  
     
     /**

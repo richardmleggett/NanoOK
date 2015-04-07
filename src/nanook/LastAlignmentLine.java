@@ -50,6 +50,14 @@ public class LastAlignmentLine {
     }
     
     /**
+     * Get end position of alignment
+     * @return end position
+     */
+    public int getEnd() {
+        return start + alnSize - 1;
+    }
+    
+    /**
      * Get alignment size.
      * @return alignment size, in bases
      */

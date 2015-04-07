@@ -39,50 +39,22 @@ public class ReadSet {
      * @param filename filename of FASTA file
      */
     private void readFasta(String filename) {
-        try
-        {
-            BufferedReader br = new BufferedReader(new FileReader(filename));
-            String line;
-            String id = null;
-            int contigLength = 0;
-            int readsInThisFile = 0;
-                        
-            do {
-                line = br.readLine();
+        SequenceReader sr = new SequenceReader(false);
+        int nReadsInFile = sr.indexFASTAFile(filename);
 
-                if ((line == null) || (line.startsWith(">"))) {                    
-                    if (id != null) {
-                        stats.addLength(id, contigLength);
-                        readsInThisFile++;
-                        
-                        if (readsInThisFile > 1) {
-                            System.out.println("Warning: File "+filename+" has more than 1 read.");
-                        }
-                    }
-                    
-                    if (line != null) {
-                        String[] parts = line.substring(1).split("(\\s+)");
-                        id = parts[0];
-                    }                   
-                    
-                    contigLength = 0;
-                } else if (line != null) {
-                    contigLength += line.length();
-                }                
-            } while (line != null);
+        if (nReadsInFile > 1) {
+            System.out.println("Warning: File "+filename+" has more than 1 read.");
+        }
 
-            br.close();
-        } catch (Exception e) {
-            System.out.println("readFasta Exception:");
-            e.printStackTrace();
-            System.exit(1);
+        for (int i=0; i<sr.getSequenceCount(); i++) {
+            stats.addLength(sr.getID(i), sr.getLength(i));
         }
     }
     
     /**
      * Gather length statistics on all files in this read set.
      */
-    public void gatherLengthStats() {
+    public void processReads() {
         String dirs[] = new String[2];
         int readTypes[] = new int[2];
         int maxReads = options.getMaxReads();
@@ -126,7 +98,7 @@ public class ReadSet {
             
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
-                        if (file.getName().endsWith(".fasta")) {
+                        if (file.getName().endsWith(".fasta")) {                            
                             readFasta(file.getPath());
                             stats.addReadFile(dirIndex, readTypes[dirIndex]);
                             nFastaFiles++;
@@ -157,7 +129,7 @@ public class ReadSet {
      * Parse all alignment files for this read set.
      * Code in common with gatherLengthStats - combine?
      */
-    public void parseAlignmentFiles() {
+    public void processAlignments() {
         int nReads = 0;
         int nReadsWithAlignments = 0;
         int nReadsWithoutAlignments = 0;
@@ -170,18 +142,18 @@ public class ReadSet {
         
         if (options.isNewStyleDir()) {
             if (options.doProcessPassReads()) {
-                dirs[nDirs] = options.getLastDir() + File.separator + "pass";
+                dirs[nDirs] = options.getAlignerDir() + File.separator + "pass";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
                 nDirs++;
             }
             
             if (options.doProcessFailReads()) {
-                dirs[nDirs] = options.getLastDir() + File.separator + "fail";
+                dirs[nDirs] = options.getAlignerDir() + File.separator + "fail";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
                 nDirs++;
             }
         } else {
-            dirs[nDirs] = options.getLastDir();
+            dirs[nDirs] = options.getAlignerDir();
             readTypes[nDirs] = NanoOKOptions.READTYPE_COMBINED;
             nDirs++;
         }
@@ -199,12 +171,28 @@ public class ReadSet {
                 System.out.println("Parsing from " + inputDir);            
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
-                        if (file.getName().endsWith(".maf")) {
+                        if (file.getName().endsWith(options.getAlignerExtension())) {
                             String pathname = inputDir + File.separator + file.getName();
                             int nAlignments = parser.parseFile(pathname, nonAlignedSummary);
 
                             if (nAlignments > 0) {
                                 nReadsWithAlignments++;
+                                parser.sortAlignments();
+                                ArrayList<Alignment> al = parser.getHighestScoringSet();
+                                
+                                for (int i=0; i<al.size(); i++) {
+                                    Alignment a = al.get(i);
+                                }
+                                
+                                String readReferenceName = al.get(0).getHitName();
+                                ReferenceSequence readReference = references.getReferenceById(readReferenceName);
+                                AlignmentMerger merger = new AlignmentMerger(readReference, al.get(0).getQuerySequenceSize(), stats, type);
+                                for (int i=0; i<al.size(); i++) {
+                                    Alignment a = al.get(i);
+                                    merger.addAlignment(a);
+                                }
+                                AlignmentInfo stat = merger.endMergeAndStoreStats();
+                                readReference.getStatsByType(type).getAlignmentsTableFile().writeMergedAlignment(file.getName(), merger, stat);  
                             } else {
                                 nReadsWithoutAlignments++;
                             }
