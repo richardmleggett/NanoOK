@@ -295,13 +295,17 @@ public class ReferenceSequenceStats {
      * @param stats - ReadSetStats associated with the error
      */
     public void addDeletionError(int size, String kmer, ReadSetStats stats) {
-        nDeletionErrors++;
-        nDeletedBases += size;
-        deletionSizes[size]++;
-        if (size > largestDeletion) {
-            largestDeletion = size;
+        if (size >= MAX_INDEL) {
+            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error\n");
+        } else {
+            nDeletionErrors++;
+            nDeletedBases += size;
+            deletionSizes[size]++;
+            if (size > largestDeletion) {
+                largestDeletion = size;
+            }
+            stats.addDeletionError(size, kmer);
         }
-        stats.addDeletionError(size, kmer);
     }
     
     /** 
@@ -311,13 +315,17 @@ public class ReferenceSequenceStats {
      * @param stats - ReadSetStats associated with the error
      */
     public void addInsertionError(int size, String kmer, ReadSetStats stats) {
-        nInsertionErrors++;
-        nInsertedBases += size;
-        insertionSizes[size]++;
-        if (size > largestInsertion) {
-            largestInsertion = size;
+        if (size >= MAX_INDEL) {
+            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error\n");
+        } else {
+            nInsertionErrors++;
+            nInsertedBases += size;
+            insertionSizes[size]++;
+            if (size > largestInsertion) {
+                largestInsertion = size;
+            }
+            stats.addInsertionError(size, kmer);
         }
-        stats.addInsertionError(size, kmer);
     }
 
     /**

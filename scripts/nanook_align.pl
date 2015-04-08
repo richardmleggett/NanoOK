@@ -17,6 +17,7 @@ my $queue="Test128";
 my $aligner="last";
 my $num_threads=1;
 my $alignment_dir;
+my $read_dir;
 my $aligner_params;
 my $n_types = 0;
 my $no_template;
@@ -57,6 +58,8 @@ if (defined $help_requested) {
     print "    -notemplate        Don't align Template reads\n";
     print "    -nocomplement      Don't align Complement reads\n";
     print "    -numthreads        Number of threasd per alignment\n";
+    print "    -passonly          Only pass reads\n";
+    print "    -failonly          Only fail reads\n";
     print "    -p | -params       Extra parameters for aligner\n";
     print "    -q | -queue        Scheduler queue (if running)\n";
     print "    -r | -reference    Path to reference\n";
@@ -72,9 +75,19 @@ $type[$n_types++] = "Template" if not defined $no_template;
 $type[$n_types++] = "Complement" if not defined $no_complement;
 
 die "You must specify a sample name" if not defined $sample;
-die "Aligner must be last - more support coming." if (($aligner ne "last") && ($aligner ne "bwa"));
 die "You must specify a reference." if not defined $reference;
 die "Base directory must be specified." if not defined $basedir;
+
+if (($reference =~ /.fa$/) || ($reference =~ /.fasta$/)) {
+    if (($aligner eq "last") || ($aligner eq "bwa")) {
+        $reference =~ s/.fa$//;
+        $reference =~ s/.fasta//;
+    }
+} else {
+    die "Error: Reference must be path to the .fa or .fasta file.\n";
+}
+
+print $reference, "\n";
 
 $basedir =~ s/\/$//;
 
@@ -85,8 +98,18 @@ if (not defined $alignment_dir) {
 if (not defined $aligner_params) {
     if ($aligner eq "last") {
         $aligner_params = "-s 2 -T 0 -Q 0 -a 1";
+        $read_dir = $basedir."/".$sample."/fasta";
     } elsif ($aligner eq "bwa") {
-        $aligner_params = "-x ont2d"
+        $aligner_params = "-x ont2d";
+        $read_dir = $basedir."/".$sample."/fasta";
+    } elsif ($aligner eq "marginalign") {
+        $aligner_params = "";
+        $read_dir = $basedir."/".$sample."/fastq";
+    } elsif ($aligner eq "blasr") {
+        $aligner_params = "";
+        $read_dir = $basedir."/".$sample."/fasta";
+    } else {
+        die "Aligner not yet supported\n";
     }
 }
 
@@ -108,26 +131,28 @@ if (! -d $basedir."/".$sample."/logs/".$alignment_dir) {
     mkdir($basedir."/".$sample."/logs/".$alignment_dir);
 }
 
-my $in_dir = $basedir."/".$sample."/fasta";
-
-if ((-d $in_dir."/pass") && (-d $in_dir."/fail")) {
+if ((-d $read_dir."/pass") && (-d $read_dir."/fail")) {
     print "Got pass/fail directory\n";
-    process_directory($basedir."/".$sample."/fasta/pass", $basedir."/".$sample."/".$alignment_dir."/pass", $basedir."/".$sample."/logs/".$alignment_dir."/pass");
-    process_directory($basedir."/".$sample."/fasta/fail", $basedir."/".$sample."/".$alignment_dir."/fail", $basedir."/".$sample."/logs/".$alignment_dir."/fail");
+    if (not defined $fail_only) {
+        process_directory($read_dir."/pass", $basedir."/".$sample."/".$alignment_dir."/pass", $basedir."/".$sample."/logs/".$alignment_dir."/pass");
+    }
+    if (not defined $pass_only) {
+        process_directory($read_dir."/fail", $basedir."/".$sample."/".$alignment_dir."/fail", $basedir."/".$sample."/logs/".$alignment_dir."/fail");
+    }
 } else {
     print "Got all-in-one directory\n";
-    process_directory($basedir."/".$sample."/fasta", $basedir."/".$sample."/".$alignment_dir, $basedir."/".$sample."/logs/".$alignment_dir);
+    process_directory($read_dir, $basedir."/".$sample."/".$alignment_dir, $basedir."/".$sample."/logs/".$alignment_dir);
 }
 
 print "DONE\n";
 
 sub process_directory {
-    my $fasta_dir = $_[0];
+    my $reads_dir = $_[0];
     my $align_dir = $_[1];
     my $log_dir = $_[2];
  
     print "Processing directory\n";
-    print "FASTA files: $fasta_dir\n";
+    print "Input files: $reads_dir\n";
     print "Alignment files: $align_dir\n";
     
     if (! -d $align_dir) {
@@ -139,7 +164,7 @@ sub process_directory {
     }
     
     for (my $i=0; $i<$n_types; $i++) {
-        my $input_dir=$fasta_dir."/".$type[$i];
+        my $input_dir=$reads_dir."/".$type[$i];
         my $output_dir=$align_dir."/".$type[$i];
 
         print " Input dir: $input_dir\n";
@@ -151,7 +176,7 @@ sub process_directory {
         
         opendir(DIR, $input_dir) or die $!;
         while (my $file = readdir(DIR)) {
-            next unless (($file =~ m/\.fasta$/) || ($file =~ m/\.fa$/));
+            next unless (($file =~ m/\.fasta$/) || ($file =~ m/\.fa$/) || ($file =~ m/\.fastq$/) || ($file =~ m/\.fq$/));
             my $inpath = $input_dir."/".$file;
             my $outpath = $output_dir."/".$file;
             my $logfile = $log_dir."/".$file.".log";
@@ -166,6 +191,11 @@ sub process_directory {
             } elsif ($aligner eq "bwa") {
                 $outpath = $outpath.".sam";
                 $command = get_bwa_command($inpath, $outpath, $reference);
+            } elsif ($aligner eq "marginalign") {
+                $command = get_marginalign_command($inpath, $outpath, $reference);
+            } elsif ($aligner eq "blasr") {
+                $outpath = $outpath.".sam";
+                $command = get_blasr_command($inpath, $outpath, $reference);
             } else {
                 print "Error: aligner $aligner not known!\n";
                 exit;
@@ -206,6 +236,35 @@ sub get_bwa_command {
     my $output_file = $_[1];
     my $reference = $_[2];
     my $command = "bwa mem ".$aligner_params." ".$reference." ".$query." > ".$output_file;
+    
+    return $command;
+}
+
+sub get_blasr_command {
+    my $query = $_[0];
+    my $output_file = $_[1];
+    my $reference = $_[2];
+    my $command = "blasr ".$query." ".$reference." -sam -out ".$output_file;
+    
+    if (length($aligner_params) > 0) {
+        $command = $command." ".$aligner_params;
+    }
+    
+    return $command;
+}
+
+sub get_marginalign_command {
+    my $query = $_[0];
+    my $output_file = $_[1].".sam";
+    my $jobtree = $_[1].".jobTree";
+    my $reference = $_[2];
+    my $command = "rm -rf ".$jobtree." ; marginAlign ";
+    
+    if (length($aligner_params) > 0) {
+        $command = $command." ".$aligner_params." ";
+    }
+
+    $command = $command.$query." ".$reference." ".$output_file." --jobTree ".$jobtree;
     
     return $command;
 }

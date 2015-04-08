@@ -6,7 +6,8 @@ import java.util.ArrayList;
 
 /**
  * Read FASTA files
- * @author leggettr
+ * 
+ * @author Richard Leggett
  */
 public class SequenceReader {
     private ArrayList<String> seqIDs = new ArrayList();

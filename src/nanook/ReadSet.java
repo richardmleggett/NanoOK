@@ -7,7 +7,7 @@ import java.util.*;
 /**
  * Represents a read set (Template reads, Complement reads, or 2D reads).
  * 
- * @author leggettr
+ * @author Richard Leggett
  */
 public class ReadSet {
     private NanoOKOptions options;

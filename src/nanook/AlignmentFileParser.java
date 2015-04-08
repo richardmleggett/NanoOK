@@ -3,7 +3,7 @@ package nanook;
 import java.util.ArrayList;
 
 /**
- * Abstract class used for parsers of alignment files.
+ * Interface for parsers of alignment files.
  * 
  * @author Richard Leggett
  */

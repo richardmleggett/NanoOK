@@ -4,9 +4,14 @@
  */
 package nanook;
 
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Represent and parse a CIGAR string
- * @author leggettr
+ * 
+ * @author Richard Leggett
  */
 public class CIGARString {
     private StringBuilder queryString = new StringBuilder("");
@@ -37,17 +42,90 @@ public class CIGARString {
         hitStart = hs;
         hitFilename = hf;
         hitReference = hr;
+        
+        //trimCIGAR(cs, qseq);
     }
     
-    public void processString() {
+    /**
+     * Attempt at handling marginAlign CIGAR strings
+     * Needs work!
+     * @param cs
+     * @param qseq
+     * @return 
+     */
+    private String trimCIGAR(String cs, String qseq) {
+        //System.out.println("Old cigar: "+cs);
+
+        boolean foundStart = false;
+        int trimQueryStart = 0;
+        int trimCigarStart = 0;
+        int trimCigarEnd = 0;
+        int trimQueryEnd = 0;        
+        Pattern outPattern = Pattern.compile("(\\d+)\\S");
+        Matcher outMatcher = outPattern.matcher(cs);
+        ArrayList<String> tags = new ArrayList();
+        while (outMatcher.find()) {
+            tags.add(outMatcher.group(0));
+        }
+
+        
+        for (int i=0; i<tags.size(); i++) {
+            String tag = tags.get(i);
+            int n = Integer.parseInt(tag.substring(0, tag.length()-1));
+            String c = tag.substring(tag.length()-1);
+
+            if (c.equals("I")) { 
+                queryStart += n;
+                trimQueryStart += n;
+                trimCigarStart += tag.length();
+            } else if (c.equals("D")) {
+                hitStart += n;
+                trimCigarStart += tag.length();
+            } else {
+                break;
+            }
+        }        
+
+        for (int i=tags.size()-1; i>0; i--) {
+            String tag = tags.get(i);
+            int n = Integer.parseInt(tag.substring(0, tag.length()-1));
+            String c = tag.substring(tag.length()-1);
+
+            if (c.equals("I")) { 
+                trimQueryEnd += n;
+                trimCigarEnd += tag.length();
+            } else if (c.equals("D")) {
+                trimCigarEnd += tag.length();
+            } else {
+                break;
+            }
+        }        
+        
+        cigarString = cs.substring(trimCigarStart, cs.length()-trimCigarEnd);
+        querySeq = qseq.substring(trimQueryStart, qseq.length()-trimQueryEnd);
+        
+        //System.out.println("New cigar: "+cigarString);
+        return cigarString;
+    }
+    
+    public boolean processString() {
         String value = "";        
         SequenceReader r = new SequenceReader(true);
         r.indexFASTAFile(hitFilename);
-        String hitSeq = r.getSubSequence(hitReference.getId(), hitStart, hitStart+(3*querySeq.length()/2));
+        int l = (3*querySeq.length())/2;
+        String hitSeq = r.getSubSequence(hitReference.getId(), hitStart, hitStart+l);
         int hitPtr = 0;
         int queryPtr = 0;
         boolean displayResult = false;
         boolean donePreClipping = false;
+        int tagCtr = 0;
+        int i = 0;
+        boolean continueParsing = true;
+        int totalCount = 0;
+        int delCount = 0;
+        int insCount = 0;
+        int matchCount = 0;
+        boolean processed = true;
         
         //System.out.println("  Hit: "+hitSeq.length()+" "+hitSeq);
         //System.out.println("Query: "+querySeq.length()+" "+querySeq);
@@ -55,7 +133,8 @@ public class CIGARString {
         hitAlnSize = 0;
         queryAlnSize = 0;
         hitAlnSize = 0;
-        for (int i=0; i<cigarString.length(); i++) {
+        while ((i<cigarString.length()) && (continueParsing)) {
+        //for (int i=0; i<cigarString.length(); i++) {
             //System.out.println("hitPtr="+hitPtr+" queryPtr="+queryPtr);
             //System.out.println("Query: " + queryString.toString());
             //System.out.println("  Hit: " + hitString.toString());
@@ -64,6 +143,7 @@ public class CIGARString {
                 value = value + c;
             } else {
                 int n = Integer.parseInt(value);
+                totalCount += n;
                 //System.out.println(n + " " + c);
                 switch(c) {
                     case 'M':
@@ -76,24 +156,39 @@ public class CIGARString {
                         queryAlnSize += n;
                         hitAlnSize += n;
                         donePreClipping = true;
+                        matchCount+=n;
                         break;
                     case 'I':
-                        queryString.append(querySeq.substring(queryPtr, queryPtr + n));
-                        for (int j=0; j<n; j++) {
-                            hitString.append('-'); 
+                        if (n > 100) {
+                            System.out.println("Error: large I ("+n+") ignored");
+                            processed = false;
+                            continueParsing = false;
+                        } else {
+                            queryString.append(querySeq.substring(queryPtr, queryPtr + n));
+                            for (int j=0; j<n; j++) {
+                                hitString.append('-'); 
+                            }
+                            queryPtr += n;
+                            queryAlnSize += n;
                         }
-                        queryPtr += n;
-                        queryAlnSize += n;
                         donePreClipping = true;
+                        insCount+=n;
                         break;
                     case 'D':
-                        hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
-                        for (int j=0; j<n; j++) {
-                            queryString.append('-'); 
+                        if (n > 100) {
+                            System.out.println("Error: large D ("+n+") ignored");
+                            processed = false;
+                            continueParsing = false;
+                        } else {
+                            hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
+                            for (int j=0; j<n; j++) {
+                                queryString.append('-'); 
+                            }
+                            hitPtr += n;
+                            hitAlnSize += n;
                         }
-                        hitPtr += n;
-                        hitAlnSize += n;
                         donePreClipping = true;
+                        delCount+=n;
                         break;
                     case 'N':
                         System.out.println("Warning: encountered N in CIGAR format!\n");
@@ -130,10 +225,17 @@ public class CIGARString {
                         break;
                     default:
                         System.out.println("Unrecognised character in CIGAR string: "+c);
+                        processed = false;
                         break;
                 }
                 value="";
+                tagCtr++;
+                //System.out.println("qseq="+querySeq.length()+" matchCount="+matchCount+" insCount="+insCount+" delCount="+delCount+" totalCount="+totalCount);
+                //System.out.println("Query: "+queryString.toString());
+                //System.out.println("  Hit: "+hitString.toString());
             }
+            
+            i++;
         }
         
         //if (displayResult) {
@@ -142,6 +244,7 @@ public class CIGARString {
             //System.out.println("  Hit: " + hitString.toString());
             //System.exit(1);
         //}        
+        return processed;
     }
     
     public int getQueryStart() {

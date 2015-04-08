@@ -17,8 +17,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
- * @author leggettr
+ * Parser for SAM format files.
+ * 
+ * @author Richard Leggett
  */
 public class SAMParser implements AlignmentFileParser {
     private NanoOKOptions options;
@@ -60,6 +61,10 @@ public class SAMParser implements AlignmentFileParser {
         }
     }
     
+    /**
+     * Process @PG tag in SAM file
+     * @param s 
+     */
     private void processProgramTag(String s) {
         Pattern pattern = Pattern.compile("(\\s+)ID:(\\S+)(\\s+)");
         Matcher matcher = pattern.matcher(s);
@@ -68,6 +73,12 @@ public class SAMParser implements AlignmentFileParser {
         }
     }
     
+    /**
+     * Process an alignment line from a SAM file
+     * @param s the line
+     * @param outputFilename .maf file to write
+     * @return ]
+     */
     private Alignment processAlignmentLine(String s, String outputFilename) {
         String[] cols = s.split("\t");
         String queryName = cols[0];
@@ -85,35 +96,40 @@ public class SAMParser implements AlignmentFileParser {
         int queryStart;
         Alignment al = null;
         
+        if (options.getAligner().equals("blasr")) {
+            queryName = cols[0].substring(0, cols[0].lastIndexOf("/"));
+        }
+        
         if (mapped) {
             ReferenceSequence readReference = references.getReferenceById(hitName);
             if (readReference != null) {        
                 int readLength = overallStats.getReadLength(queryName);
                 if (readLength != -1) {
                     CIGARString cs = new CIGARString(cigar, seq, leafName, hitStart, options.getReferenceFile()+ ".fasta", readReference);
-                    cs.processString();
-                    //System.out.println("hitName "+hitName);
-                    al = new Alignment(mapQuality,
-                                       queryName, 
-                                       readLength,
-                                       cs.getQueryStart(),
-                                       cs.getQueryAlnSize(),
-                                       cs.getQueryString(),
-                                       hitName,
-                                       readReference.getSize(),
-                                       hitStart,
-                                       cs.getHitAlnSize(),
-                                       cs.getHitString(),
-                                       false); 
-                    
-                    // Check for reverse complement
-                    if ((flags & 0x10) == 0x10) {
-                        al.setQueryStrand("-");
+                    if (cs.processString()) {
+                        //System.out.println("hitName "+hitName);
+                        al = new Alignment(mapQuality,
+                                           queryName, 
+                                           readLength,
+                                           cs.getQueryStart(),
+                                           cs.getQueryAlnSize(),
+                                           cs.getQueryString(),
+                                           hitName,
+                                           readReference.getSize(),
+                                           hitStart,
+                                           cs.getHitAlnSize(),
+                                           cs.getHitString(),
+                                           false); 
+
+                        // Check for reverse complement
+                        if ((flags & 0x10) == 0x10) {
+                            al.setQueryStrand("-");
+                        }
+
+                        al.writeMafFile(outputFilename);
                     }
-                    
-                    al.writeMafFile(outputFilename);
                 } else {
-                    System.out.println("Error: can't find read length for "+hitName);
+                    System.out.println("Error: can't find read length for ["+queryName+"]");
                     System.exit(1);
                 }
             } else {

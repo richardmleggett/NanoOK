@@ -9,7 +9,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.3.4";
+    public final static String VERSION_STRING = "v0.4";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -120,6 +120,10 @@ public class NanoOK {
                     parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
                 } else if (options.getAligner().equals("bwa")) {
                     parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                
+                //} else if (options.getAligner().equals("marginalign")) {
+                //    parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
+                } else if (options.getAligner().equals("blasr")) {
+                    parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
                 } else {
                     System.out.println("Aligner unknown!\n");
                     System.exit(1);

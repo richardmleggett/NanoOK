@@ -5,6 +5,7 @@ import java.util.*;
 
 /**
  * Represents the set of references (sequences) used for the analysis.
+ * 
  * @author Richard Leggett
  */
 public class References {

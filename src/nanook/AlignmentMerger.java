@@ -3,7 +3,7 @@ package nanook;
 /**
  * Class to merge alignments
  * 
- * @author leggettr
+ * @author Richard Leggett
  */
 public class AlignmentMerger {
     private ReferenceSequence reference;

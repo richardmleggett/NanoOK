@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- *
- * @author leggettr
+ * Generic class to represent alignment
+ * @author Richard Leggett
  */
 public class Alignment implements Comparable {
     private int score;
