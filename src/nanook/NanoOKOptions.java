@@ -126,17 +126,24 @@ public class NanoOKOptions {
             System.exit(1);
         }
         
-        if (aligner.equals("bwa")) {
-            alignerExtension = ".sam";
-        } else if (aligner.equals("last")) {
-            alignerExtension = ".maf";
-        } else if (aligner.equals("marginalign")) {
-            alignerExtension = ".sam";
-        } else if (aligner.equals("blasr")) {
-            alignerExtension = ".sam";
-        } else {
-            System.out.println("Error: aligner not known\n");
-            System.exit(1);
+        // Add new aligners here
+        switch (aligner) {
+            case "bwa":
+                alignerExtension = ".sam";
+                break;
+            case "last":
+                alignerExtension = ".maf";
+                break;
+            case "marginalign":
+                alignerExtension = ".sam";
+                break;
+            case "blasr":
+                alignerExtension = ".sam";
+                break;
+            default:
+                System.out.println("Error: aligner not known\n");
+                System.exit(1);
+                break;
         }
     }
         

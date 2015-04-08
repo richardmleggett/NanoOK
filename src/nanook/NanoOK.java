@@ -115,18 +115,26 @@ public class NanoOK {
             summary.open(options.getSample());
             
             for (int type = 0; type<3; type++) {
-                // Choose parser
-                if (options.getAligner().equals(("last"))) {
-                    parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
-                } else if (options.getAligner().equals("bwa")) {
-                    parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                
-                //} else if (options.getAligner().equals("marginalign")) {
-                //    parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
-                } else if (options.getAligner().equals("blasr")) {
-                    parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
-                } else {
-                    System.out.println("Aligner unknown!\n");
-                    System.exit(1);
+                // Add new aligners here
+                switch(options.getAligner()) {
+                    case "last":
+                        parser = new LastParser(type, options, overallStats.getStatsByType(type), references);
+                        break;
+                    case "bwa":
+                        parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                
+                        break;
+                    case "blasr":
+                        parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
+                        break;
+                    case "marginalign":
+                        //parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
+                        System.out.println("Error: marginAlign support not yet completed");
+                        System.exit(1);
+                        break;
+                    default:
+                        System.out.println("Aligner unknown!\n");
+                        System.exit(1);
+                        break;                      
                 }
                 
                 ReadSet readSet = new ReadSet(type, options, references, parser, overallStats.getStatsByType(type));
