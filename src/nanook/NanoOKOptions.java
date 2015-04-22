@@ -149,12 +149,7 @@ public class NanoOKOptions {
                 System.out.println("Error: aligner not known\n");
                 System.exit(1);
                 break;
-        }
-        
-        // Remove extension on reference file
-        if (referenceFile.endsWith(".fa") || referenceFile.endsWith(".fasta")) {
-            referenceFile = referenceFile.substring(0, referenceFile.lastIndexOf('.'));
-        }
+        }        
     }
         
     public String getAligner() {

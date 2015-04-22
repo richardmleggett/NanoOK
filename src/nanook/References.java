@@ -49,7 +49,7 @@ public class References {
                     longestId = values[0].length();
                 }
                 
-                gcp.parseSequence(o.getReferenceFile() + ".fasta", values[0], options.getAnalysisDir() + File.separator + values[2] + File.separator + values[2] + "_gc.txt", refSeq.getBinSize());            
+                gcp.parseSequence(o.getReferenceFile(), values[0], options.getAnalysisDir() + File.separator + values[2] + File.separator + values[2] + "_gc.txt", refSeq.getBinSize());            
                 line = br.readLine();
             }
             br.close();
@@ -151,9 +151,10 @@ public class References {
     {
         sizesFile = new File(options.getReferenceFile()+".sizes");
         if (! sizesFile.exists()) {
-            sizesFile = new File(options.getReferenceFile()+".fasta.sizes");
-            if (!sizesFile.exists()) {
-                sizesFile = new File(options.getReferenceFile()+".fa.sizes");
+            int extensionIndex = options.getReferenceFile().lastIndexOf('.');
+            if (extensionIndex > 0) {
+                String minusExtension = options.getReferenceFile().substring(0, extensionIndex);
+                sizesFile = new File(minusExtension + ".sizes");
             }
         }
         

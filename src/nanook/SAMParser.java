@@ -105,7 +105,7 @@ public class SAMParser implements AlignmentFileParser {
             if (readReference != null) {        
                 int readLength = overallStats.getReadLength(queryName);
                 if (readLength != -1) {
-                    CIGARString cs = new CIGARString(cigar, seq, leafName, hitStart, options.getReferenceFile()+ ".fasta", readReference);
+                    CIGARString cs = new CIGARString(cigar, seq, leafName, hitStart, options.getReferenceFile(), readReference);
                     if (cs.processString()) {
                         //System.out.println("hitName "+hitName);
                         al = new Alignment(mapQuality,
