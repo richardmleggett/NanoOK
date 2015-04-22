@@ -67,13 +67,13 @@ public class ReadSet {
         stats.openLengthsFile();
 
         if (options.isNewStyleDir()) {
-            if (options.doProcessPassReads()) {
+            if (options.isProcessingPassReads()) {
                 dirs[nDirs] = options.getFastaDir() + File.separator + "pass";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
                 nDirs++;
             }
             
-            if (options.doProcessFailReads()) {
+            if (options.isProcessingFailReads()) {
                 dirs[nDirs] = options.getFastaDir() + File.separator + "fail";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
                 nDirs++;
@@ -141,13 +141,13 @@ public class ReadSet {
         AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile(outputFilename);
         
         if (options.isNewStyleDir()) {
-            if (options.doProcessPassReads()) {
+            if (options.isProcessingPassReads()) {
                 dirs[nDirs] = options.getAlignerDir() + File.separator + "pass";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
                 nDirs++;
             }
             
-            if (options.doProcessFailReads()) {
+            if (options.isProcessingFailReads()) {
                 dirs[nDirs] = options.getAlignerDir() + File.separator + "fail";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
                 nDirs++;

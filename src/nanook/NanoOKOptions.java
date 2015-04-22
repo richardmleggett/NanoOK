@@ -14,6 +14,7 @@ public class NanoOKOptions {
     public final static int TYPE_TEMPLATE = 0;
     public final static int TYPE_COMPLEMENT = 1;
     public final static int TYPE_2D = 2;
+    public final static int TYPE_ALL = -1;
     public final static int TYPE_INSERTION = 0;
     public final static int TYPE_DELETION = 1;
     public final static int TYPE_SUBSTITUTION = 2;
@@ -104,6 +105,10 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-nopass")) {
                 processPassReads = false;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-2donly")) {
+                processTemplateReads = false;
+                processComplementReads = false;
+                i++;
             } else if (args[i].equalsIgnoreCase("-aligner")) {
                 aligner = args[i+1];
                 i+=2;
@@ -144,6 +149,11 @@ public class NanoOKOptions {
                 System.out.println("Error: aligner not known\n");
                 System.exit(1);
                 break;
+        }
+        
+        // Remove extension on reference file
+        if (referenceFile.endsWith(".fa") || referenceFile.endsWith(".fasta")) {
+            referenceFile = referenceFile.substring(0, referenceFile.lastIndexOf('.'));
         }
     }
         
@@ -386,7 +396,7 @@ public class NanoOKOptions {
      * Check if processing "pass" reads.
      * @return true to process
      */
-    public boolean doProcessPassReads() {
+    public boolean isProcessingPassReads() {
         return processPassReads;
     }
 
@@ -394,10 +404,51 @@ public class NanoOKOptions {
      * Check if processing "fail" reads.
      * @return true to process
      */
-    public boolean doProcessFailReads() {
+    public boolean isProcessingFailReads() {
         return processFailReads;
     }
+    
+    public boolean isProcessingComplementReads() {
+        return processComplementReads;
+    }
+    
+    public boolean isProcessingTemplateReads() {
+        return processTemplateReads;
+    }
 
+    public boolean isProcessing2DReads() {
+        return process2DReads;
+    }
+    
+    public boolean isProcessingReadType(int type) {
+        boolean r = false;
+        
+        switch(type) {
+            case TYPE_ALL:
+                r = true;
+                break;
+            case TYPE_TEMPLATE:
+                r = processTemplateReads;
+                break;
+            case TYPE_COMPLEMENT:
+                r = processComplementReads;
+                break;
+            case TYPE_2D:
+                r = process2DReads;
+                break;
+        }         
+        
+        return r;
+    }
+    
+    public int getNumberOfTypes() {
+        int t = 0;
+        if (processTemplateReads) t++;
+        if (processComplementReads) t++;
+        if (process2DReads) t++;
+        return t;
+    }
+    
     /**
      * Check if to parse alignments or not
      * @return true to parse

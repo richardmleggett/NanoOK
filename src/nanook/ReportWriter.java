@@ -87,8 +87,10 @@ public class ReportWriter {
             pw.println("{\\bf Type} & {\\bf Pass} & {\\bf Fail} \\\\");
     
             for (int type = 0; type<3; type++) {
-                ReadSetStats r = overallStats.getStatsByType(type);           
-                pw.printf("%s & %d & %d  \\\\\n", r.getTypeString(), r.getNumberOfPassFiles(), r.getNumberOfFailFiles());
+                if (options.isProcessingReadType(type)) {
+                    ReadSetStats r = overallStats.getStatsByType(type);           
+                    pw.printf("%s & %d & %d  \\\\\n", r.getTypeString(), r.getNumberOfPassFiles(), r.getNumberOfFailFiles());
+                }
             }
             
             pw.println("\\end{tabular}");
@@ -101,6 +103,12 @@ public class ReportWriter {
      * Add the read lengths section.
      */
     public void addLengthsSection() {
+        String graphWidth = "width=.3\\linewidth";
+        
+        if (options.getNumberOfTypes() == 1) {
+            graphWidth = "width=.4\\linewidth";
+        }
+        
         pw.println("\\subsection*{Read lengths}");
         pw.println("\\vspace{-3mm}");
                         
@@ -111,8 +119,10 @@ public class ReportWriter {
         pw.println("{\\bf Type} & {\\bf NumReads} & {\\bf TotalBases} & {\\bf Mean} & {\\bf Longest} & {\\bf Shortest} & {\\bf N50} & {\\bf N50Count} & {\\bf N90} & {\\bf N90Count} \\\\");
 
         for (int type = 0; type<3; type++) {
-            ReadSetStats r = overallStats.getStatsByType(type);           
-            pw.printf("%s & %d & %d & %.2f & %d & %d & %d & %d & %d & %d \\\\\n", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
+            if (options.isProcessingReadType(type)) {
+                ReadSetStats r = overallStats.getStatsByType(type);           
+                pw.printf("%s & %d & %d & %.2f & %d & %d & %d & %d & %d & %d \\\\\n", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
+            }
         }
 
         pw.println("\\end{tabular}");
@@ -121,9 +131,17 @@ public class ReportWriter {
         pw.println("\\vspace{-10mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_Template_lengths.pdf}");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_Complement_lengths.pdf}");
-        pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_2D_lengths.pdf}");
+        
+        
+        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Template_lengths.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Complement_lengths.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_2D_lengths.pdf", "}");
+        
+        
+        //pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_Template_lengths.pdf}");
+        //pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_Complement_lengths.pdf}");
+        //pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_2D_lengths.pdf}");
         pw.println("\\end{figure}");
     
     }
@@ -157,15 +175,17 @@ public class ReportWriter {
      * @param filename the file
      * @param postTex LaTeX after filename
      */
-    private void includeGraphicsIfExists(String preTex, String filename, String postTex) {
-        File f = new File(filename);
-        
-        if (f.exists()) {
-            pw.print(preTex);
-            pw.print(filename);
-            pw.println(postTex);            
-        } else {
-            pw.print(" ");
+    private void includeGraphicsIfExists(int type, String preTex, String filename, String postTex) {
+        if (options.isProcessingReadType(type)) {
+            File f = new File(filename);
+
+            if (f.exists()) {
+                pw.print(preTex);
+                pw.print(filename);
+                pw.println(postTex);            
+            } else {
+                pw.print(" ");
+            }
         }
     }
     
@@ -175,8 +195,14 @@ public class ReportWriter {
      */
     public void writeReferenceSection(ReferenceSequence refSeq) {
         String id = refSeq.getName().replaceAll("_", " ");
-
-        pw.println("\\clearpage");
+        String[] lines = new String[10];
+        String newLineTag=" \\\\";
+        String graphSize;        
+        
+        if (options.getNumberOfTypes() == 1) {
+            newLineTag = "";
+        }
+                
         pw.println("\\subsection*{" + id + " error analysis}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{table}[H]");
@@ -184,97 +210,147 @@ public class ReportWriter {
         pw.println("\\fontsize{9pt}{11pt}\\selectfont");
         pw.println("\\begin{tabular}{l c c c}");       
         
-        pw.println(" & Template & Complement & 2D \\\\");
-        pw.printf("Overall identity (minus indels) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-                refSeq.getStatsByType(0).getReadPercentIdentical(),
-                refSeq.getStatsByType(1).getReadPercentIdentical(),
-                refSeq.getStatsByType(2).getReadPercentIdentical());                
-        pw.printf("Aligned identity (minus indels) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-                refSeq.getStatsByType(0).getAlignedPercentIdenticalWithoutIndels(),
-                refSeq.getStatsByType(1).getAlignedPercentIdenticalWithoutIndels(),
-                refSeq.getStatsByType(2).getAlignedPercentIdenticalWithoutIndels());                
-        pw.printf("Identical bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-                refSeq.getStatsByType(0).getAlignedPercentIdentical(),
-                refSeq.getStatsByType(1).getAlignedPercentIdentical(),
-                refSeq.getStatsByType(2).getAlignedPercentIdentical());
-        pw.printf("Inserted bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-                refSeq.getStatsByType(0).getPercentInsertionErrors(),
-                refSeq.getStatsByType(1).getPercentInsertionErrors(),
-                refSeq.getStatsByType(2).getPercentInsertionErrors());
-        pw.printf("Deleted bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-                refSeq.getStatsByType(0).getPercentDeletionErrors(),
-                refSeq.getStatsByType(1).getPercentDeletionErrors(),
-                refSeq.getStatsByType(2).getPercentDeletionErrors());
-        pw.printf("Substitutions per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-                refSeq.getStatsByType(0).getPercentSubstitutionErrors(),
-                refSeq.getStatsByType(1).getPercentSubstitutionErrors(),
-                refSeq.getStatsByType(2).getPercentSubstitutionErrors());
-        pw.printf("Mean insertion size & %.2f & %.2f & %.2f \\\\\n",
-                refSeq.getStatsByType(0).getMeanInsertionSize(),
-                refSeq.getStatsByType(1).getMeanInsertionSize(),
-                refSeq.getStatsByType(2).getMeanInsertionSize());
-        pw.printf("Mean deletion size & %.2f & %.2f & %.2f \\\\\n",
-                refSeq.getStatsByType(0).getMeanDeletionSize(),
-                refSeq.getStatsByType(1).getMeanDeletionSize(),
-                refSeq.getStatsByType(2).getMeanDeletionSize());
+        
+        lines[0] = "";
+        lines[1] = "Overall identity (minus indels)";
+        lines[2] = "Aligned identity (minus indels)";
+        lines[3] = "Identical bases per 100 aligned bases";
+        lines[4] = "Inserted bases per 100 aligned bases";
+        lines[5] = "Deleted bases per 100 aligned bases";
+        lines[6] = "Substitutions per 100 aligned bases";
+        lines[7] = "Mean insertion size";
+        lines[8] = "Mean deletion size";
+        for (int type=0; type<3; type++) {
+            if (options.isProcessingReadType(type)) {
+                lines[0] += " & " + NanoOKOptions.getTypeFromInt(type);
+                lines[1] += String.format(" & %.2f\\%%", refSeq.getStatsByType(type).getReadPercentIdentical());
+                lines[2] += String.format(" & %.2f\\%%", refSeq.getStatsByType(type).getAlignedPercentIdenticalWithoutIndels());
+                lines[3] += String.format(" & %.2f\\%%", refSeq.getStatsByType(type).getAlignedPercentIdentical());
+                lines[4] += String.format(" & %.2f\\%%", refSeq.getStatsByType(type).getPercentInsertionErrors());
+                lines[5] += String.format(" & %.2f\\%%", refSeq.getStatsByType(type).getPercentDeletionErrors());
+                lines[6] += String.format(" & %.2f\\%%", refSeq.getStatsByType(type).getPercentSubstitutionErrors());
+                lines[7] += String.format(" & %.2f", refSeq.getStatsByType(type).getMeanInsertionSize());
+                lines[8] += String.format(" & %.2f", refSeq.getStatsByType(type).getMeanDeletionSize());
+            }
+        }
+        
+       for (int i=0; i<=8; i++) {
+           lines[i] += " \\\\";
+           pw.println(lines[i]);
+       }
+        
+        //pw.println(" & Template & Complement & 2D \\\\");
+        //pw.printf("Overall identity (minus indels) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
+        //        refSeq.getStatsByType(0).getReadPercentIdentical(),
+        //        refSeq.getStatsByType(1).getReadPercentIdentical(),
+        //        refSeq.getStatsByType(2).getReadPercentIdentical());                
+        //pw.printf("Aligned identity (minus indels) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
+        //        refSeq.getStatsByType(0).getAlignedPercentIdenticalWithoutIndels(),
+        //        refSeq.getStatsByType(1).getAlignedPercentIdenticalWithoutIndels(),
+        //        refSeq.getStatsByType(2).getAlignedPercentIdenticalWithoutIndels());                
+        //pw.printf("Identical bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
+        //        refSeq.getStatsByType(0).getAlignedPercentIdentical(),
+        //        refSeq.getStatsByType(1).getAlignedPercentIdentical(),
+        //        refSeq.getStatsByType(2).getAlignedPercentIdentical());
+        //pw.printf("Inserted bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
+        //        refSeq.getStatsByType(0).getPercentInsertionErrors(),
+        //        refSeq.getStatsByType(1).getPercentInsertionErrors(),
+        //        refSeq.getStatsByType(2).getPercentInsertionErrors());
+        //pw.printf("Deleted bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
+        //        refSeq.getStatsByType(0).getPercentDeletionErrors(),
+        //        refSeq.getStatsByType(1).getPercentDeletionErrors(),
+        //        refSeq.getStatsByType(2).getPercentDeletionErrors());
+        //pw.printf("Substitutions per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
+        //        refSeq.getStatsByType(0).getPercentSubstitutionErrors(),
+        //        refSeq.getStatsByType(1).getPercentSubstitutionErrors(),
+        //        refSeq.getStatsByType(2).getPercentSubstitutionErrors());
+        //pw.printf("Mean insertion size & %.2f & %.2f & %.2f \\\\\n",
+        //        refSeq.getStatsByType(0).getMeanInsertionSize(),
+        //        refSeq.getStatsByType(1).getMeanInsertionSize(),
+        //        refSeq.getStatsByType(2).getMeanInsertionSize());
+        //pw.printf("Mean deletion size & %.2f & %.2f & %.2f \\\\\n",
+        //        refSeq.getStatsByType(0).getMeanDeletionSize(),
+        //        refSeq.getStatsByType(1).getMeanDeletionSize(),
+        //        refSeq.getStatsByType(2).getMeanDeletionSize());
         pw.println("\\end{tabular}");
         pw.println("}");
         pw.println("\\end{table}");     
+
+        if (options.getNumberOfTypes() == 1) {
+            graphSize = "width=.4\\linewidth";
+        } else {
+            graphSize = "height=3.5cm";
+        }        
         
+        pw.println("\\vspace{-5mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_insertions.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_insertions.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_insertions.pdf", "} \\\\");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_deletions.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_deletions.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_deletions.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_insertions.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_insertions.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_insertions.pdf", "}"+newLineTag);
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_deletions.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_deletions.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_deletions.pdf", "}");
         pw.println("\\end{figure}");
         
         pw.println("\\subsection*{" + id + " read identity}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_hist.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_hist.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_hist.pdf", "} \\\\");        
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_scatter.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_scatter.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_scatter.pdf", "} \\\\");        
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_read_fraction_vs_alignment_identity_scatter.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_read_fraction_vs_alignment_identity_scatter.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_read_fraction_vs_alignment_identity_scatter.pdf", "}");        
-        pw.println("\\end{figure}");
-        pw.println("\\begin{figure}[H]");
-        pw.println("\\centering");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_percent_aligned_vs_length_scatter.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_percent_aligned_vs_length_scatter.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[height=3.5cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_percent_aligned_vs_length_scatter.pdf", "}");        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_hist.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_hist.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_hist.pdf", "}"+newLineTag);        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_scatter.pdf", "}"+newLineTag);        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_read_fraction_vs_alignment_identity_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_read_fraction_vs_alignment_identity_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_read_fraction_vs_alignment_identity_scatter.pdf", "}");        
+        if (options.getNumberOfTypes() > 1) {
+            pw.println("\\end{figure}");
+            pw.println("\\begin{figure}[H]");
+            pw.println("\\centering");
+        }
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_percent_aligned_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_percent_aligned_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_percent_aligned_vs_length_scatter.pdf", "}");        
         pw.println("\\end{figure}");
         
+        if (options.getNumberOfTypes() == 1) {
+            graphSize = "width=.4\\linewidth";
+        } else {
+            graphSize = "width=.3\\linewidth";
+        }
+
         pw.println("\\subsection*{" + id + " perfect kmers}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_cumulative_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_cumulative_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_cumulative_perfect_kmers.pdf", "}");        
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_best_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_best_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_best_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_longest_perfect_vs_length_scatter.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_longest_perfect_vs_length_scatter.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_longest_perfect_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_cumulative_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_cumulative_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_cumulative_perfect_kmers.pdf", "}");        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_best_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_best_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_best_perfect_kmers.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_longest_perfect_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_longest_perfect_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_longest_perfect_vs_length_scatter.pdf", "}");
         pw.println("\\end{figure}");
+
+        if (options.getNumberOfTypes() == 1) {
+            graphSize = "width=.7\\linewidth";
+        } else {
+            graphSize = "height=2cm";
+        }
 
         pw.println("\\subsection*{" + id + " coverage}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists("\\includegraphics[height=2cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_coverage.pdf", "} \\\\");
-        includeGraphicsIfExists("\\includegraphics[height=2cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_coverage.pdf", "} \\\\");
-        includeGraphicsIfExists("\\includegraphics[height=2cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_coverage.pdf", "} \\\\");
-        includeGraphicsIfExists("\\includegraphics[height=2cm]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_gc.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_coverage.pdf", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_coverage.pdf", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_coverage.pdf", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_ALL, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_gc.pdf", "}");
         pw.println("\\end{figure}");        
     }
     
@@ -283,29 +359,31 @@ public class ReportWriter {
      * @param listType either TYPE_TOP or TYPE_BOTTOM
      * @param k kmer size
      */
-    public void writeMotifRange(int listType, int k) {
+    public void writeMotifRange(int listType, int k, int colCount) {
         ArrayList<Map.Entry<String, Double>>[] insertionMotifs = new ArrayList[3];
         ArrayList<Map.Entry<String, Double>>[] deletionMotifs = new ArrayList[3];
         ArrayList<Map.Entry<String, Double>>[] substitutionMotifs = new ArrayList[3];
         String logoTypeString = new String("Unknown");
         
         for (int type=0; type<3; type++) {
-            String typeString;
-            if (listType == KmerMotifStatistic.TYPE_TOP) {
-                typeString = overallStats.getStatsByType(type).getTypeString() + "_top";
-            } else if (listType == KmerMotifStatistic.TYPE_BOTTOM) {
-                typeString = overallStats.getStatsByType(type).getTypeString() + "_bottom";
-            } else {
-                typeString = overallStats.getStatsByType(type).getTypeString() + "_unknown";
-            }
-            
-            insertionMotifs[type] = overallStats.getStatsByType(type).getMotifStatistics().getSortedInsertionMotifPercentages(k);                
-            deletionMotifs[type] = overallStats.getStatsByType(type).getMotifStatistics().getSortedDeletionMotifPercentages(k);
-            substitutionMotifs[type] = overallStats.getStatsByType(type).getMotifStatistics().getSortedSubstitutionMotifPercentages(k);
+            if (options.isProcessingReadType(type)) {
+                String typeString;
+                if (listType == KmerMotifStatistic.TYPE_TOP) {
+                    typeString = overallStats.getStatsByType(type).getTypeString() + "_top";
+                } else if (listType == KmerMotifStatistic.TYPE_BOTTOM) {
+                    typeString = overallStats.getStatsByType(type).getTypeString() + "_bottom";
+                } else {
+                    typeString = overallStats.getStatsByType(type).getTypeString() + "_unknown";
+                }
 
-            overallStats.getStatsByType(type).getMotifStatistics().writeInsertionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_insertion_" + typeString + "_k" + k + ".png", k);
-            overallStats.getStatsByType(type).getMotifStatistics().writeDeletionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_deletion_" + typeString + "_k" + k + ".png", k);
-            overallStats.getStatsByType(type).getMotifStatistics().writeSubstitutionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_substitution_" + typeString + "_k" + k + ".png", k);
+                insertionMotifs[type] = overallStats.getStatsByType(type).getMotifStatistics().getSortedInsertionMotifPercentages(k);                
+                deletionMotifs[type] = overallStats.getStatsByType(type).getMotifStatistics().getSortedDeletionMotifPercentages(k);
+                substitutionMotifs[type] = overallStats.getStatsByType(type).getMotifStatistics().getSortedSubstitutionMotifPercentages(k);
+
+                overallStats.getStatsByType(type).getMotifStatistics().writeInsertionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_insertion_" + typeString + "_k" + k + ".png", k);
+                overallStats.getStatsByType(type).getMotifStatistics().writeDeletionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_deletion_" + typeString + "_k" + k + ".png", k);
+                overallStats.getStatsByType(type).getMotifStatistics().writeSubstitutionLogoImage(listType, options.getGraphsDir() + File.separator + "motifs" + File.separator + "logo_substitution_" + typeString + "_k" + k + ".png", k);
+            }
         }
 
         for (int i=0; i<10; i++) {
@@ -315,33 +393,35 @@ public class ReportWriter {
                 pw.print("-"+(10-i));
             }
             for (int type=0; type<3; type++) {
-                int insertionPos = i;
-                int deletionPos = i;
-                int substitutionPos = i;
-                
-                if (listType == KmerMotifStatistic.TYPE_BOTTOM) {
-                    insertionPos = insertionMotifs[type].size() - 10 + i;
-                    deletionPos = deletionMotifs[type].size() - 10 + i;
-                    substitutionPos = substitutionMotifs[type].size() - 10 + i;
-                }               
-                
-                if ((insertionMotifs[type].size() > insertionPos) && (insertionPos >=0)) {
-                    pw.printf(" & %s (%.2f\\%%)", insertionMotifs[type].get(insertionPos).getKey(), insertionMotifs[type].get(insertionPos).getValue());
-                } else {
-                    pw.print(" &");
-                }
+                if (options.isProcessingReadType(type)) {
+                    int insertionPos = i;
+                    int deletionPos = i;
+                    int substitutionPos = i;
+                    
+                    if (listType == KmerMotifStatistic.TYPE_BOTTOM) {
+                        insertionPos = insertionMotifs[type].size() - 10 + i;
+                        deletionPos = deletionMotifs[type].size() - 10 + i;
+                        substitutionPos = substitutionMotifs[type].size() - 10 + i;
+                    }               
 
-                if ((deletionMotifs[type].size() > deletionPos) && (deletionPos >=0)) {
-                    pw.printf(" & %s (%.2f\\%%)", deletionMotifs[type].get(deletionPos).getKey(), deletionMotifs[type].get(deletionPos).getValue());
-                } else {
-                    pw.print(" &");
-                }
+                    if ((insertionMotifs[type].size() > insertionPos) && (insertionPos >=0)) {
+                        pw.printf(" & %s (%.2f\\%%)", insertionMotifs[type].get(insertionPos).getKey(), insertionMotifs[type].get(insertionPos).getValue());
+                    } else {
+                        pw.print(" &");
+                    }
 
-                if ((substitutionMotifs[type].size() > substitutionPos) && (substitutionPos >=0)) {
-                    pw.printf(" & %s (%.2f\\%%)", substitutionMotifs[type].get(substitutionPos).getKey(), substitutionMotifs[type].get(substitutionPos).getValue());
-                } else {
-                    pw.print(" &");
-                }                    
+                    if ((deletionMotifs[type].size() > deletionPos) && (deletionPos >=0)) {
+                        pw.printf(" & %s (%.2f\\%%)", deletionMotifs[type].get(deletionPos).getKey(), deletionMotifs[type].get(deletionPos).getValue());
+                    } else {
+                        pw.print(" &");
+                    }
+
+                    if ((substitutionMotifs[type].size() > substitutionPos) && (substitutionPos >=0)) {
+                        pw.printf(" & %s (%.2f\\%%)", substitutionMotifs[type].get(substitutionPos).getKey(), substitutionMotifs[type].get(substitutionPos).getValue());
+                    } else {
+                        pw.print(" &");
+                    }           
+                }
             }
             
             if (i == 0) {
@@ -356,23 +436,25 @@ public class ReportWriter {
             pw.println("\\\\");
         }
 
-        pw.println("\\cline{1-10}");
+        pw.println("\\cline{1-"+colCount+"}");
         pw.println("\\rule{0pt}{0.6cm}");
         pw.print(" ");
 
         for (int type=0; type<3; type++) {
-            String typeString;
-            if (listType == KmerMotifStatistic.TYPE_TOP) {
-                typeString = overallStats.getStatsByType(type).getTypeString() + "_top";
-            } else if (listType == KmerMotifStatistic.TYPE_BOTTOM) {
-                typeString = overallStats.getStatsByType(type).getTypeString() + "_bottom";
-            } else {
-                typeString = overallStats.getStatsByType(type).getTypeString() + "_unknown";
-            }
+            if (options.isProcessingReadType(type)) {
+                String typeString;
+                if (listType == KmerMotifStatistic.TYPE_TOP) {
+                    typeString = overallStats.getStatsByType(type).getTypeString() + "_top";
+                } else if (listType == KmerMotifStatistic.TYPE_BOTTOM) {
+                    typeString = overallStats.getStatsByType(type).getTypeString() + "_bottom";
+                } else {
+                    typeString = overallStats.getStatsByType(type).getTypeString() + "_unknown";
+                }
 
-            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_insertion_" + typeString + "_k" + k + ".png}");
-            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_deletion_" + typeString + "_k" + k + ".png}");
-            pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_substitution_" + typeString + "_k" + k + ".png}");
+                pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_insertion_" + typeString + "_k" + k + ".png}");
+                pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_deletion_" + typeString + "_k" + k + ".png}");
+                pw.print(" & \\includegraphics[height=0.5cm]{" + options.getGraphsDir()+File.separator + "motifs" + File.separator + "logo_substitution_" + typeString + "_k" + k + ".png}");
+            }
         }
 
         pw.println(" \\\\");
@@ -381,26 +463,47 @@ public class ReportWriter {
     /**
      * Write motif section of report.
      */
-    public void writeMotifSection() {
-        pw.println("\\clearpage");
+    public void writeMotifSection() {        
         pw.println("\\subsection*{Error motif analysis}");
         
-        for (int k=3; k<=5; k++) {             
+        for (int k=3; k<=5; k++) {   
+            int colCount = 1;
+
             pw.println("\\subsection*{"+k+"-mer analysis}");
             pw.println("\\vspace{-3mm}");
             pw.println("\\begin{table}[H]");
             pw.println("{\\footnotesize");
             pw.println("\\fontsize{6pt}{8pt}\\selectfont");
             pw.println("\\tabcolsep=0.15cm");
-            pw.println("\\begin{tabular}{|c|c c c|c c c|c c c|c}");
-            pw.println("\\cline{1-10}");
-            pw.println("& \\multicolumn{3}{c|}{Template} & \\multicolumn{3}{c|}{Complement} & \\multicolumn{3}{c|}{2D} & \\\\");
-            pw.println("Rank & Insertion & Deletion & Substitution & Insertion & Deletion & Substitution & Insertion & Deletion & Substitution & \\\\");
-            pw.println("\\cline{1-10}");
-            writeMotifRange(KmerMotifStatistic.TYPE_TOP, k);
-            pw.println("\\cline{1-10}");
-            writeMotifRange(KmerMotifStatistic.TYPE_BOTTOM, k);
-            pw.println("\\cline{1-10}");
+            pw.print("\\begin{tabular}{|c");
+            for (int type=0; type<3; type++) {                
+                if (options.isProcessingReadType(type)) {
+                    pw.print("|c c c");
+                    colCount+=3;
+                }
+            }
+            pw.println("|c}");
+            pw.println("\\cline{1-"+colCount+"}");
+            //pw.println("& \\multicolumn{3}{c|}{Template} & \\multicolumn{3}{c|}{Complement} & \\multicolumn{3}{c|}{2D} & \\\\");
+            for (int type=0; type<3; type++) {                
+                if (options.isProcessingReadType(type)) {
+                    pw.print(" & \\multicolumn{3}{c|}{" + NanoOKOptions.getTypeFromInt(type) + "}");
+                }
+            }            
+            pw.println(" & \\\\");
+            //pw.println("Rank & Insertion & Deletion & Substitution & Insertion & Deletion & Substitution & Insertion & Deletion & Substitution & \\\\");
+            pw.print("Rank");
+            for (int type=0; type<3; type++) {
+                if (options.isProcessingReadType(type)) {
+                    pw.print(" & Insertion & Deletion & Substitution");
+                }
+            }
+            pw.println(" & \\\\");
+            pw.println("\\cline{1-"+colCount+"}");
+            writeMotifRange(KmerMotifStatistic.TYPE_TOP, k, colCount);
+            pw.println("\\cline{1-"+colCount+"}");
+            writeMotifRange(KmerMotifStatistic.TYPE_BOTTOM, k, colCount);
+            pw.println("\\cline{1-"+colCount+"}");
             pw.println("\\end{tabular}");
             pw.println("}");
             pw.println("\\end{table}");  
@@ -434,16 +537,38 @@ public class ReportWriter {
      */
     public void writeSubstitutionErrorsSection()
     {
-        pw.println("\\subsection*{Substitutions}");
+        pw.println("\\subsection*{All reference substitutions}");
         pw.println("\\vspace{-3mm}");
 
         pw.println("\\begin{table}[H]");
         pw.println("{\\footnotesize");
         pw.println("\\fontsize{8pt}{10pt}\\selectfont");
-        pw.println("\\begin{tabular}{|c c|c c c c|c c c c|c c c c|}");
+        //pw.println("\\begin{tabular}{|c c|c c c c|c c c c|c c c c|}");
+        pw.print("\\begin{tabular}{|c c");
+        for (int type=0; type<3; type++) {                
+            if (options.isProcessingReadType(type)) {
+                pw.print("|c c c c");
+            }
+        }
+        pw.println("|}");
         pw.println("\\hline");
-        pw.println(" & & \\multicolumn{4}{c|}{Template substituted \\%} & \\multicolumn{4}{c|}{Complement substituted \\%} & \\multicolumn{4}{c|}{2D substituted \\%} \\\\");
-        pw.println(" & & a & c & g & t & a & c & g & t & a & c & g & t \\\\");
+        //pw.println(" & & \\multicolumn{4}{c|}{Template substituted \\%} & \\multicolumn{4}{c|}{Complement substituted \\%} & \\multicolumn{4}{c|}{2D substituted \\%} \\\\");
+        pw.print(" &");
+        for (int type=0; type<3; type++) {                
+            if (options.isProcessingReadType(type)) {
+                pw.print(" & \\multicolumn{4}{c|}{" + NanoOKOptions.getTypeFromInt(type) + " substituted \\%}");
+            }
+        }       
+        pw.println(" \\\\");
+        //pw.println(" & & a & c & g & t & a & c & g & t & a & c & g & t \\\\");
+        pw.print(" &");
+        for (int type=0; type<3; type++) {                
+            if (options.isProcessingReadType(type)) {
+                pw.print(" & a & c & g & t");
+            }
+        }
+        pw.println(" \\\\");
+        
         pw.println("\\hline");
 
         for (int r=0; r<4; r++) {
@@ -454,11 +579,13 @@ public class ReportWriter {
             }
             pw.print(intToBase(r));
             for (int type=0; type<3; type++) {
-                int subs[][] = overallStats.getStatsByType(type).getSubstitutionErrors();
-                double nSubstitutions = (double)overallStats.getStatsByType(type).getNumberOfSubstitutions();
-                for (int s=0; s<4; s++) {
-                    double pc = (100.0 * (double)subs[r][s]) / nSubstitutions;
-                    pw.printf(" & %.2f", pc);
+                if (options.isProcessingReadType(type)) {
+                    int subs[][] = overallStats.getStatsByType(type).getSubstitutionErrors();
+                    double nSubstitutions = (double)overallStats.getStatsByType(type).getNumberOfSubstitutions();
+                    for (int s=0; s<4; s++) {
+                        double pc = (100.0 * (double)subs[r][s]) / nSubstitutions;
+                        pw.printf(" & %.2f", pc);
+                    }
                 }
             }
         pw.println("\\\\");
@@ -470,12 +597,21 @@ public class ReportWriter {
     }
     
     private void writeOverallKmerSection() {
-        pw.println("\\subsection*{All reference perfect kmers}");
+        String graphWidth = "width=.3\\linewidth";
+
+        if (options.getNumberOfTypes() == 1) {
+            graphWidth = "width=.5\\linewidth";
+        }
+ 
+        pw.println("\\subsection*{All reference 21mer analysis}");
         pw.println("\\vspace{-3mm}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + "all_Template_21mers.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + "all_Complement_21mers.pdf", "}");
-        includeGraphicsIfExists("\\includegraphics[width=.3\\linewidth]{", options.getGraphsDir() + File.separator + "all_2D_21mers.pdf", "}");                
-    }
+        pw.println("\\begin{figure}[H]");
+        pw.println("\\centering");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Template_21mers.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Complement_21mers.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_2D_21mers.pdf", "}");                
+        pw.println("\\end{figure}");        
+   }
     
     /**
      * Add sections for each reference sequence.
@@ -485,6 +621,10 @@ public class ReportWriter {
         ArrayList<ReferenceSequence> sortedRefs = references.getSortedReferences();
         for (int i=0; i<sortedRefs.size(); i++) {
             ReferenceSequence rs = sortedRefs.get(i);
+            if ((options.getNumberOfTypes() > 1) || (references.getNumberOfReferences() > 1)) {
+                pw.println("\\clearpage");
+            }        
+
             writeReferenceSection(rs);
         }
     }
@@ -514,11 +654,13 @@ public class ReportWriter {
 
         options.initialiseAlignmentSummaryFile();
         
-        for (int type=0; type<3; type++) {            
-            writeAlignmentsSection(overallStats.getStatsByType(type));            
-            references.writeReferenceStatFiles(type);
-            references.writeReferenceSummary(type);
-            references.writeTexSummary(type, pw);
+        for (int type=0; type<3; type++) {
+            if (options.isProcessingReadType(type)) {
+                writeAlignmentsSection(overallStats.getStatsByType(type));            
+                references.writeReferenceStatFiles(type);
+                references.writeReferenceSummary(type);
+                references.writeTexSummary(type, pw);
+            }
         }
         
         addAllReferenceSections();        
@@ -527,9 +669,12 @@ public class ReportWriter {
         //    writeReferenceSection(references.getReferenceById(id));
         //}
         
-        writeMotifSection();
-        writeSubstitutionErrorsSection();        
+        if ((options.getNumberOfTypes() > 1) || (references.getNumberOfReferences() > 1)) {
+            pw.println("\\clearpage");
+        }
         writeOverallKmerSection();
+        writeSubstitutionErrorsSection();           
+        writeMotifSection();
         
         writeLaTeXFooter();
         close();

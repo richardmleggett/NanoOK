@@ -9,6 +9,7 @@ my $basedir="/Users/leggettr/Documents/Projects/Nanopore";
 my $reference;
 my $getname;
 my $bin_size = 500;
+my %ids;
 
 &GetOptions(
 'n|getname'       => \$getname,
@@ -53,6 +54,12 @@ while(<REFERENCE>) {
         $current_length = 0;
 
         print $id, "\n";
+        
+        if (defined $ids{$id}) {
+            die "Error: Duplicate sequence ID: $id\n";
+        } else {
+            $ids{$id} = 1;
+        }
 
         #$current_gc_position = 0;
         #$current_gc_length = 0;

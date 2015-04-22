@@ -127,9 +127,9 @@ public class NanoOK {
                         parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
                         break;
                     case "marginalign":
-                        //parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
-                        System.out.println("Error: marginAlign support not yet completed");
-                        System.exit(1);
+                        parser = new SAMParser(type, options, overallStats.getStatsByType(type), references);                                    
+                        //System.out.println("Error: marginAlign support not yet completed");
+                        //System.exit(1);
                         break;
                     default:
                         System.out.println("Aligner unknown!\n");

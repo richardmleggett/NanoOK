@@ -52,7 +52,7 @@ if (defined $help_requested) {
     print "Usage: nanook_align.pl <-a aligner> <-s sample> [-b directory] [options]\n\n";
     print "Options:\n";
     print "    -a | -aligner      Aligner (default last)\n";
-    print "    -alignmentdir      Subdirectory for alignments (defaults to aligner name)";
+    print "    -alignmentdir      Subdirectory for alignments (defaults to aligner name)\n";
     print "    -b | -basedir      Base directory containing all sample directories\n";
     print "    -no2d              Don't align 2D reads\n";
     print "    -notemplate        Don't align Template reads\n";
@@ -192,6 +192,7 @@ sub process_directory {
                 $outpath = $outpath.".sam";
                 $command = get_bwa_command($inpath, $outpath, $reference);
             } elsif ($aligner eq "marginalign") {
+                $outpath = $outpath.".sam";
                 $command = get_marginalign_command($inpath, $outpath, $reference);
             } elsif ($aligner eq "blasr") {
                 $outpath = $outpath.".sam";
@@ -255,7 +256,7 @@ sub get_blasr_command {
 
 sub get_marginalign_command {
     my $query = $_[0];
-    my $output_file = $_[1].".sam";
+    my $output_file = $_[1];
     my $jobtree = $_[1].".jobTree";
     my $reference = $_[2];
     my $command = "rm -rf ".$jobtree." ; marginAlign ";
