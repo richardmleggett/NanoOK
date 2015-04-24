@@ -1,0 +1,10 @@
+#!/bin/sh
+
+JAVA_ARGS="-Xmx4096m"
+
+if [ -z "$NANOOK_SCRIPT_DIR" ] ; then
+    echo "Error: You must set NANOOK_SCRIPT_DIR before running."
+else
+    exec java ${JAVA_ARGS} -jar ${NANOOK_SCRIPT_DIR}/NanoOK.jar "$@"
+fi
+
