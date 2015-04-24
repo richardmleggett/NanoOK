@@ -3,3 +3,4 @@ build.xml
 manifest.mf
 nbproject
 dist/README.TXT
+dist/NanoOK.jar
