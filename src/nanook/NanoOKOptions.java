@@ -331,8 +331,16 @@ public class NanoOKOptions {
      * Get FASTA directory.
      * @return directory name as String
      */
-    public String getFastaDir() {
-        return baseDir + File.separator + sample + File.separator + "fasta";
+    public String getReadDir() {
+        String dir;
+        
+        if (alignerUsesFASTQ()) {
+            dir = baseDir + File.separator + sample + File.separator + "fastq";
+        } else {
+            dir = baseDir + File.separator + sample + File.separator + "fasta";
+        }
+        
+        return dir;
     } 
 
     /**
@@ -360,8 +368,8 @@ public class NanoOKOptions {
     } 
     
     public boolean isNewStyleDir() {
-        File passDir = new File(getFastaDir() + File.separator + "pass");
-        File failDir = new File(getFastaDir() + File.separator + "pass");
+        File passDir = new File(getReadDir() + File.separator + "pass");
+        File failDir = new File(getReadDir() + File.separator + "pass");
         boolean rc = false;
         
         if (passDir.exists() && passDir.isDirectory() && failDir.exists() && failDir.isDirectory()) {
@@ -482,5 +490,19 @@ public class NanoOKOptions {
      */
     public int getMaxReads() {
         return maxReads;
-    }    
+    }
+    
+    /**
+     * Does the aligner chosen use FASTQ queries?
+     * @return true if FASTQ, false if FASTA
+     */
+    public boolean alignerUsesFASTQ() {
+        boolean r = false;
+        
+        if (aligner.equals("marginalign")) {
+            r = true;
+        }
+        
+        return r;
+    }
 }

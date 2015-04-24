@@ -138,7 +138,12 @@ public class NanoOK {
                 }
                 
                 ReadSet readSet = new ReadSet(type, options, references, parser, overallStats.getStatsByType(type));
-                readSet.processReads();
+                int nReads = readSet.processReads();
+                if (nReads < 1) {
+                    System.out.println("Error: unable to find any reads to process.\n");
+                    System.exit(1);
+                }                
+                
                 readSet.processAlignments();
                 summary.addReadSetStats(overallStats.getStatsByType(type));
                 overallStats.getStatsByType(type).closeKmersFile();

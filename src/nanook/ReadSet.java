@@ -35,12 +35,18 @@ public class ReadSet {
     }
         
     /**
-     * Parse a FASTA file, noting length of reads etc.
+     * Parse a FASTA or FASTQ file, noting length of reads etc.
      * @param filename filename of FASTA file
      */
-    private void readFasta(String filename) {
+    private void readQueryFile(String filename) {
         SequenceReader sr = new SequenceReader(false);
-        int nReadsInFile = sr.indexFASTAFile(filename);
+        int nReadsInFile;
+        
+        if (options.alignerUsesFASTQ()) {
+            nReadsInFile = sr.indexFASTQFile(filename);
+        } else {
+            nReadsInFile = sr.indexFASTAFile(filename);
+        }
 
         if (nReadsInFile > 1) {
             System.out.println("Warning: File "+filename+" has more than 1 read.");
@@ -50,11 +56,32 @@ public class ReadSet {
             stats.addLength(sr.getID(i), sr.getLength(i));
         }
     }
+
+    /**
+     * Check if filename has valid read extension 
+     * @param f flename
+     * @return true if valid for chosen aligner
+     */
+    private boolean isValidReadExtension(String f) {
+        boolean r = false;
+        
+        if (options.alignerUsesFASTQ()) {
+            if ((f.endsWith(".fastq")) || (f.endsWith(".fq"))) {
+                r = true;
+            }
+        } else {
+            if ((f.endsWith(".fasta")) || (f.endsWith(".fa"))) {
+                r = true;
+            }
+        }
+        
+        return r;
+    }
     
     /**
      * Gather length statistics on all files in this read set.
      */
-    public void processReads() {
+    public int processReads() {
         String dirs[] = new String[2];
         int readTypes[] = new int[2];
         int maxReads = options.getMaxReads();
@@ -68,18 +95,18 @@ public class ReadSet {
 
         if (options.isNewStyleDir()) {
             if (options.isProcessingPassReads()) {
-                dirs[nDirs] = options.getFastaDir() + File.separator + "pass";
+                dirs[nDirs] = options.getReadDir() + File.separator + "pass";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
                 nDirs++;
             }
             
             if (options.isProcessingFailReads()) {
-                dirs[nDirs] = options.getFastaDir() + File.separator + "fail";
+                dirs[nDirs] = options.getReadDir() + File.separator + "fail";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
                 nDirs++;
             }
         } else {
-            dirs[nDirs] = options.getFastaDir();
+            dirs[nDirs] = options.getReadDir();
             readTypes[nDirs] = NanoOKOptions.READTYPE_COMBINED;
             nDirs++;
         }
@@ -98,8 +125,8 @@ public class ReadSet {
             
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
-                        if (file.getName().endsWith(".fasta")) {                            
-                            readFasta(file.getPath());
+                        if (isValidReadExtension(file.getName())) {
+                            readQueryFile(file.getPath());
                             stats.addReadFile(dirIndex, readTypes[dirIndex]);
                             nFastaFiles++;
 
@@ -122,7 +149,9 @@ public class ReadSet {
         stats.closeLengthsFile();
              
         //System.out.println("Calculating...");
-        stats.calculateStats();        
+        stats.calculateStats();    
+        
+        return nFastaFiles;
     }
     
     /**

@@ -21,6 +21,57 @@ public class SequenceReader {
         cacheSequence = cache;
     }
     
+    public int indexFASTQFile(String filename) {
+        currentFilename = filename;
+        
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            String line;
+            String id = null;
+            int contigLength = 0;
+            int readsInThisFile = 0;
+            boolean gotRead;
+                    
+            do {
+                String sh = br.readLine();
+                String s = br.readLine();
+                String qh = br.readLine();
+                String q = br.readLine();
+                gotRead = false;
+                if ((sh != null) && (s != null) && (qh != null) & (q != null)) {
+                    if (sh.startsWith("@")) {
+                        if (qh.startsWith("+")) {
+                            String sequenceHeader = sh.trim();
+                            String seq = s.trim();
+                            String[] parts = sequenceHeader.substring(1).split("(\\s+)");
+                            id = parts[0];
+                            
+                            if (id != null) {
+                                seqIDs.add(id);
+                                seqLengths.add(seq.length());
+                                if (cacheSequence) {
+                                    sequence.add(seq);
+                                }
+                                nSeqs++;                        
+                                gotRead = true;
+                            }
+
+                        }
+                    }
+                }
+            } while (gotRead);
+
+            br.close();
+        } catch (Exception e) {
+            System.out.println("readFasta Exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }
+                                 
+        return nSeqs;
+    }
+    
     /**
      * Parse a FASTA file
      * @param filename filename of FASTA file
@@ -47,7 +98,9 @@ public class SequenceReader {
                     if (id != null) {
                         seqIDs.add(id);
                         seqLengths.add(contigLength);
-                        sequence.add(seq);
+                        if (cacheSequence) {
+                            sequence.add(seq);
+                        }
                         nSeqs++;                        
                     }
                     

@@ -20,6 +20,7 @@ public class CIGARString {
     private String cigarString;
     private String querySeq;
     private String queryFilename;
+    private String queryID;
     private ReferenceSequence hitReference;
     private int queryStart;
     private int hitStart;
@@ -35,10 +36,11 @@ public class CIGARString {
      * @param hf
      * @param hr 
      */
-    public CIGARString(String cs, String qseq, String qf, int hs, String hf, ReferenceSequence hr) {
+    public CIGARString(String cs, String qseq, String qf, String qi, int hs, String hf, ReferenceSequence hr) {
         cigarString = cs;
         querySeq = qseq;
         queryFilename = qf;
+        queryID = qi;
         hitStart = hs;
         hitFilename = hf;
         hitReference = hr;
@@ -160,7 +162,7 @@ public class CIGARString {
                         break;
                     case 'I':
                         if (n > 100) {
-                            System.out.println("Error: large I ("+n+") ignored");
+                            System.out.println("\nError: large I ("+n+") - read "+queryID+" ignored");
                             processed = false;
                             continueParsing = false;
                         } else {
@@ -176,7 +178,7 @@ public class CIGARString {
                         break;
                     case 'D':
                         if (n > 100) {
-                            System.out.println("Error: large D ("+n+") ignored");
+                            System.out.println("Error: large D ("+n+") - read "+queryID+" ignored");
                             processed = false;
                             continueParsing = false;
                         } else {
