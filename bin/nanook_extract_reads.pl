@@ -30,6 +30,8 @@ if (defined $help_requested) {
     print "Options:\n";
     print "    -s | -sample       Sample name\n";
     print "    -b | -basedir      Base directory containing all sample directories\n";
+    print "    -a | -fasta        FASTA file output\n";
+    print "    -q | -fastq        FASTQ file output\n";
     print "\n";
     print "Sample directories should be inside the base directory. Within each sample\n";
     print "directory, there should be a fast5 directory containing the input files.\n";
@@ -191,7 +193,8 @@ sub output_reads {
     my $data_offset = index($data, "DATA {");
     if ($data_offset > 0) {
         my $payload = substr($data, $data_offset);
-        if ($payload =~ /@(\S+)(\s*)(\S+)(\s*)\+(\s*)(\S+)/) {
+        
+        if ($payload =~ /@(.+)\n(\s*)(\S+)\n(\s*)\+\n(\s*)(\S+)\n/) {
             if (defined $output_fastq_files) {
                 #print "Writing $out_fastq\n";
                 open(OUTPUTFASTQ, ">".$out_fastq) or die "Can't open $out_fastq\n";
