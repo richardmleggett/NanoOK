@@ -13,12 +13,14 @@ my $help_requested;
 my $basedir="/Users/leggettr/Documents/Projects/Nanopore/";
 my $output_fastq_files;
 my $output_fasta_files;
+my $fix_ids;
 
 &GetOptions(
 'a|fasta'     => \$output_fasta_files,
 'b|basedir:s' => \$basedir,
 'q|fastq'     => \$output_fastq_files,
 's|sample:s'  => \$sample,
+'f|fixids'    => \$fix_ids,
 'h|help'      => \$help_requested
 );
 
@@ -32,6 +34,7 @@ if (defined $help_requested) {
     print "    -b | -basedir      Base directory containing all sample directories\n";
     print "    -a | -fasta        FASTA file output\n";
     print "    -q | -fastq        FASTQ file output\n";
+    print "    -f | -fixids       To fix non-unique UUIDs\n";
     print "\n";
     print "Sample directories should be inside the base directory. Within each sample\n";
     print "directory, there should be a fast5 directory containing the input files.\n";
@@ -195,20 +198,34 @@ sub output_reads {
         my $payload = substr($data, $data_offset);
         
         if ($payload =~ /@(.+)\n(\s*)(\S+)\n(\s*)\+\n(\s*)(\S+)\n/) {
+            my $id = $1;
+            my $seq = $3;
+            my $qual = $6;
+
+            if ($id =~ /^00000000-0000-0000-0000-000000000000/) {
+                if (defined $fix_ids) {
+                    $id =~ s/00000000-0000-0000-0000-000000000000_//;
+                    $id =~ s/ /_/g;
+                    print "New ID: $id\n";
+                } else {
+                    print "Warning: $id is non-unqiue. Recommend re-running with -fixids option.\n";
+                }
+            }
+            
             if (defined $output_fastq_files) {
                 #print "Writing $out_fastq\n";
                 open(OUTPUTFASTQ, ">".$out_fastq) or die "Can't open $out_fastq\n";
-                print OUTPUTFASTQ "@".$1."\n";
-                print OUTPUTFASTQ $3."\n";
-                print OUTPUTFASTQ "+\n".$6."\n";
+                print OUTPUTFASTQ "@".$id."\n";
+                print OUTPUTFASTQ $seq."\n";
+                print OUTPUTFASTQ "+\n".$qual."\n";
                 close(OUTPUTFASTQ);
             }
             
             if (defined $output_fasta_files) {
                 #print "Writing $out_fasta\n";
                 open(OUTPUTFASTA, ">".$out_fasta) or die "Can't open $out_fasta\n";
-                print OUTPUTFASTA ">".$1."\n";
-                print OUTPUTFASTA $3."\n";
+                print OUTPUTFASTA ">".$id."\n";
+                print OUTPUTFASTA $seq."\n";
                 close(OUTPUTFASTA);
             }
         }
