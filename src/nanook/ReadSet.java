@@ -53,7 +53,15 @@ public class ReadSet {
         }
 
         for (int i=0; i<sr.getSequenceCount(); i++) {
-            stats.addLength(sr.getID(i), sr.getLength(i));
+            String id = sr.getID(i);
+            
+            if (id.startsWith("00000000-0000-0000-0000-000000000000")) {
+                System.out.println("Error:\n"+filename);
+                System.out.println("The reads in this file do not have unique IDs because they were generated when MinKNOW was producing UUIDs, but Metrichor was not using them. To fix, run nanook_extract with the -fixids option.");
+                System.exit(1);
+            }
+            
+            stats.addLength(id, sr.getLength(i));
         }
     }
 
