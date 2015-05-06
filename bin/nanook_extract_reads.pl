@@ -10,7 +10,7 @@ use Getopt::Long;
 
 my $sample;
 my $help_requested;
-my $basedir="/Users/leggettr/Documents/Projects/Nanopore/";
+my $basedir=".";
 my $output_fastq_files;
 my $output_fasta_files;
 my $fix_ids;
@@ -98,10 +98,10 @@ sub process_directory {
 
     print "Processing reads\n";
     print "       In: ", $input_dir, "\n";
-    print "Out FASTQ: ", $output_fastq, "\n";
-    print "Out FASTA: ", $output_fasta, "\n";
-
+    
     if (defined $output_fastq_files) {
+        print "Out FASTQ: ", $output_fastq, "\n";
+
         if (! -d $output_fastq) {
             mkdir($output_fastq);
         }
@@ -120,6 +120,7 @@ sub process_directory {
     }
 
     if (defined $output_fasta_files) {
+        print "Out FASTA: ", $output_fasta, "\n";
         if (! -d $output_fasta) {
             mkdir($output_fasta);
         }

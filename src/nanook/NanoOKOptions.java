@@ -21,7 +21,7 @@ public class NanoOKOptions {
     public final static int READTYPE_COMBINED = 0;
     public final static int READTYPE_PASS = 1;
     public final static int READTYPE_FAIL = 2;
-    private String baseDir="/Users/leggettr/Documents/Projects/Nanopore";
+    private String baseDir=".";
     private String referenceFile=null;
     private String sample=null;
     private String scriptsDir="/Users/leggettr/Documents/github/nanotools/scripts";
@@ -84,16 +84,16 @@ public class NanoOKOptions {
         makeReport = true;
                         
         while (i < (args.length)) {
-            if (args[i].equalsIgnoreCase("-basedir")) {
+            if ((args[i].equalsIgnoreCase("-basedir")) || (args[i].equalsIgnoreCase("-b"))) {
                 baseDir = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-coveragebin")) {
                 coverageBinSize = Integer.parseInt(args[i+1]);
                 i+=2;
-            } else if (args[i].equalsIgnoreCase("-reference")) {
+            } else if ((args[i].equalsIgnoreCase("-reference")) || (args[i].equalsIgnoreCase("-r"))) {
                 referenceFile = args[i+1];
                 i+=2;
-            } else if (args[i].equalsIgnoreCase("-sample")) {
+            } else if ((args[i].equalsIgnoreCase("-sample")) |  (args[i].equalsIgnoreCase("-s"))) {
                 sample = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-maxreads")) {
