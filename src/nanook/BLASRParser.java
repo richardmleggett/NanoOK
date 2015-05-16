@@ -8,30 +8,33 @@ package nanook;
  *
  * @author leggettr
  */
-public class LastParser extends MAFParser implements AlignmentFileParser {
-    private String alignmentParams = "-s 2 -T 0 -Q 0 -a 1";
+public class BLASRParser extends SAMParser implements AlignmentFileParser {
+    private String alignmentParams = "";
     
-    public LastParser(NanoOKOptions o, References r) {
+    public BLASRParser(NanoOKOptions o, References r) {
         super(o, r);
     }
     
     public String getProgramID() {
-        return "last";
+        return "blasr";
     }
     
     public int getReadFormat() {
         return NanoOKOptions.FASTA;
-    }
+    }    
     
     public void setAlignmentParams(String p) {
         alignmentParams = p;
     }
         
     public String getRunCommand(String query, String output, String reference) {
-        reference = reference.replaceAll("\\.fasta$", "");
-        reference = reference.replaceAll("\\.fa$", "");
+        String command = "blasr " + query + " " + reference + " -sam -out " + output;
+    
+        if (alignmentParams.length() > 0) {
+            command = command + alignmentParams;
+        }
         
-        return "lastal -o "+ output + " " + alignmentParams + " " + reference + " " + query;
+        return command;
     }
     
     public boolean outputsToStdout() {

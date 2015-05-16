@@ -21,12 +21,10 @@ import java.util.regex.Pattern;
  * 
  * @author Richard Leggett
  */
-public class SAMParser implements AlignmentFileParser {
+public abstract class SAMParser {
     private NanoOKOptions options;
-    private ReadSetStats overallStats;
     private References references;
     private ReportWriter report;
-    private int type = 0;    
     private String programID = null;
     ArrayList<Alignment> alignments;
     private Hashtable<String,Integer> referenceSizes;
@@ -38,12 +36,19 @@ public class SAMParser implements AlignmentFileParser {
      * @param nonAlignedSummaryFile an AlignmentTableFile to output details of anything that doesn't align to
      * @return number of alignments parsed
      */
-    public SAMParser(int t, NanoOKOptions o, ReadSetStats s, References r) {
+    public SAMParser(NanoOKOptions o, References r) {
         options = o;
-        overallStats = s;
         references = r;
-        type = t;
     }
+    
+    /**
+     * Get file extension of alignment files
+     * @return 
+     */
+    public String getAlignmentFileExtension() {
+        return ".sam";
+    }
+
     
     private void processReferenceTag(String s) {
         Pattern pattern = Pattern.compile("@SQ(\\s+)SN:(\\S+)(\\s+)LN:(\\S+)");
@@ -79,7 +84,7 @@ public class SAMParser implements AlignmentFileParser {
      * @param outputFilename .maf file to write
      * @return ]
      */
-    private Alignment processAlignmentLine(String s, String outputFilename) {
+    private Alignment processAlignmentLine(String s, String outputFilename, ReadSetStats overallStats) {
         String[] cols = s.split("\t");
         String queryName = cols[0];
         int flags = Integer.parseInt(cols[1]);
@@ -140,7 +145,7 @@ public class SAMParser implements AlignmentFileParser {
         return al;
     }
     
-    public int parseFile(String filename, AlignmentsTableFile nonAlignedSummaryFile) {
+    public int parseFile(String filename, AlignmentsTableFile nonAlignedSummaryFile, ReadSetStats overallStats) {
         alignments = new ArrayList();
         referenceSizes = new Hashtable();
         leafName = new File(filename).getName();
@@ -161,7 +166,7 @@ public class SAMParser implements AlignmentFileParser {
                     } else if (line.startsWith("@PG")) {
                         processProgramTag(line);
                     } else if (!line.startsWith("@")) {
-                        Alignment al = processAlignmentLine(line, filename+".last");
+                        Alignment al = processAlignmentLine(line, filename+".last", overallStats);
                         if (al != null) {
                             alignments.add(al);
                         }                         

@@ -5,7 +5,7 @@ package nanook;
  * 
  * @author Richard Leggett
  */
-public class LastAlignmentLine {
+public class MAFAlignmentLine {
     private String name;
     private int start;
     private int alnSize;
@@ -17,7 +17,7 @@ public class LastAlignmentLine {
      * Constructor.
      * @param s - alignment line string
      */
-    public LastAlignmentLine(String s) {
+    public MAFAlignmentLine(String s) {
         String[] parts = s.split("\\s+");
 
         if (parts.length == 7) {

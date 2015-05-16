@@ -61,7 +61,7 @@ public class AlignmentsTableFile {
      * @param queryLine query object
      * @param stat AlignmentInfo statistics
      */
-    public void writeAlignment(String alignmentFilename, LastAlignmentLine hitLine, LastAlignmentLine queryLine, AlignmentInfo stat) {
+    public void writeAlignment(String alignmentFilename, MAFAlignmentLine hitLine, MAFAlignmentLine queryLine, AlignmentInfo stat) {
         String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
                 queryLine.getName(),

@@ -46,6 +46,8 @@ my @type;
 );
 
 print "\nnanook_align\n\n";
+print "This tool has been replaced with the command nanook align <options>\n";
+exit;
 
 if (defined $help_requested) {
     print "Create alignments.\n\n";

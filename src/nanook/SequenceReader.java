@@ -2,7 +2,11 @@ package nanook;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Read FASTA files
@@ -72,21 +76,39 @@ public class SequenceReader {
         return nSeqs;
     }
     
+    private String parseFASTAHeader(String line, String id) {
+        String name = id;
+        Pattern p = Pattern.compile(">gi\\|(\\S+)\\|(\\S+)\\|(\\S+)\\| (\\S+) (\\S+)");
+        Matcher m = p.matcher(line);
+        
+        if (m.find()) {
+            name = m.group(4) + "_" + m.group(5);
+        }
+        
+        return name;
+    }
+    
     /**
      * Parse a FASTA file
      * @param filename filename of FASTA file
      */
-    public int indexFASTAFile(String filename) {
+    public int indexFASTAFile(String filename, String indexFilename, boolean storeIds) {
         currentFilename = filename;
         
         try
         {
-            BufferedReader br = new BufferedReader(new FileReader(filename));
+            BufferedReader br = new BufferedReader(new FileReader(filename)); 
+            PrintWriter pw = null;
             String line;
             String id = null;
+            String name = null;
             int contigLength = 0;
             int readsInThisFile = 0;
             String seq = "";
+            
+            if (indexFilename != null) {
+                pw = new PrintWriter(new FileWriter(indexFilename, false)); 
+            }
                         
             do {
                 line = br.readLine();
@@ -96,8 +118,15 @@ public class SequenceReader {
 
                 if ((line == null) || (line.startsWith(">"))) {                    
                     if (id != null) {
-                        seqIDs.add(id);
-                        seqLengths.add(contigLength);
+                        if (storeIds) {
+                            seqIDs.add(id);
+                            seqLengths.add(contigLength);
+                        }
+                        
+                        if (pw != null) {
+                            pw.printf("%s\t%d\t%s\n", id, contigLength, name);
+                        }
+                        
                         if (cacheSequence) {
                             sequence.add(seq);
                         }
@@ -107,6 +136,7 @@ public class SequenceReader {
                     if (line != null) {
                         String[] parts = line.substring(1).split("(\\s+)");
                         id = parts[0];
+                        name = parseFASTAHeader(line, id);
                     }                   
                     
                     contigLength = 0;
@@ -120,6 +150,9 @@ public class SequenceReader {
             } while (line != null);
 
             br.close();
+            if (pw != null) {
+                pw.close();
+            }                
         } catch (Exception e) {
             System.out.println("readFasta Exception:");
             e.printStackTrace();

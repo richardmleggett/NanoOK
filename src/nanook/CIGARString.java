@@ -113,7 +113,7 @@ public class CIGARString {
     public boolean processString() {
         String value = "";        
         SequenceReader r = new SequenceReader(true);
-        r.indexFASTAFile(hitFilename);
+        r.indexFASTAFile(hitFilename, null, true);
         int l = (3*querySeq.length())/2;
         String hitSeq = r.getSubSequence(hitReference.getId(), hitStart, hitStart+l);
         int hitPtr = 0;

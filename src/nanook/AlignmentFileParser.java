@@ -1,6 +1,7 @@
 package nanook;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Interface for parsers of alignment files.
@@ -8,23 +9,62 @@ import java.util.ArrayList;
  * @author Richard Leggett
  */
 
-public abstract interface AlignmentFileParser {    
+public interface AlignmentFileParser {    
+    /**
+     * Get identifier for the alignment program
+     * @return ID in lower case e.g. "last"
+     */
+    public String getProgramID();
+    
+    /**
+     * Get file extension of alignments
+     * @return 
+     */
+    public String getAlignmentFileExtension();
+    
+    /**
+     * Get format of input reads expected
+     * @return NanoOKOptions.FASTA or NanoOKOptions.FASTQ
+     */
+    public int getReadFormat();
+
+    /**
+     * Set alignment parameters to run executable
+     * @return 
+     */
+    public void setAlignmentParams(String p);
+    
+    /**
+     * Get command to run aligner
+     * @param query query file
+     * @param output output file
+     * @param reference reference file
+     * @return 
+     */
+    public String getRunCommand(String query, String output, String reference);
+        
     /**
      * Parse an alignment file.
      * @param filename the filename of the alignments file
      * @param summaryFile the name of an alignments table summary file to write
      * @return 
      */
-    abstract int parseFile(String filename, AlignmentsTableFile summaryFile);
+    int parseFile(String filename, AlignmentsTableFile summaryFile, ReadSetStats overallStats);
     
     /**
      * Sort alignments by score
      */
-    abstract void sortAlignments();
+    void sortAlignments();
     
     /**
      * Get highest scoring set of alignments (ie. highest scoring reference)
-     * @return an ArrayList of Alignment objects
+     * @return an List of Alignment objects
      */
-    abstract ArrayList getHighestScoringSet();
+    List<Alignment> getHighestScoringSet();
+    
+    /**
+     * Return true if this aligner outputs to Stdout and not a file
+     * @return true or false
+     */
+    public boolean outputsToStdout();
 }

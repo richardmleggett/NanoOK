@@ -42,10 +42,10 @@ public class ReadSet {
         SequenceReader sr = new SequenceReader(false);
         int nReadsInFile;
         
-        if (options.alignerUsesFASTQ()) {
+        if (options.getReadFormat() == NanoOKOptions.FASTQ) {
             nReadsInFile = sr.indexFASTQFile(filename);
         } else {
-            nReadsInFile = sr.indexFASTAFile(filename);
+            nReadsInFile = sr.indexFASTAFile(filename, null, true);
         }
 
         if (nReadsInFile > 1) {
@@ -73,7 +73,7 @@ public class ReadSet {
     private boolean isValidReadExtension(String f) {
         boolean r = false;
         
-        if (options.alignerUsesFASTQ()) {
+        if (options.getReadFormat() == NanoOKOptions.FASTQ) {
             if ((f.endsWith(".fastq")) || (f.endsWith(".fq"))) {
                 r = true;
             }
@@ -166,7 +166,7 @@ public class ReadSet {
      * Parse all alignment files for this read set.
      * Code in common with gatherLengthStats - combine?
      */
-    public void processAlignments() {
+    public int processAlignments() {
         int nReads = 0;
         int nReadsWithAlignments = 0;
         int nReadsWithoutAlignments = 0;
@@ -208,14 +208,14 @@ public class ReadSet {
                 System.out.println("Parsing from " + inputDir);            
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
-                        if (file.getName().endsWith(options.getAlignerExtension())) {
+                        if (file.getName().endsWith(parser.getAlignmentFileExtension())) {
                             String pathname = inputDir + File.separator + file.getName();
-                            int nAlignments = parser.parseFile(pathname, nonAlignedSummary);
+                            int nAlignments = parser.parseFile(pathname, nonAlignedSummary, stats);
 
                             if (nAlignments > 0) {
                                 nReadsWithAlignments++;
                                 parser.sortAlignments();
-                                ArrayList<Alignment> al = parser.getHighestScoringSet();
+                                List<Alignment> al = parser.getHighestScoringSet();
                                 
                                 for (int i=0; i<al.size(); i++) {
                                     Alignment a = al.get(i);
@@ -251,6 +251,8 @@ public class ReadSet {
 
         nonAlignedSummary.closeFile();
         stats.writeSummaryFile(options.getAlignmentSummaryFilename());
+        
+        return nReadsWithAlignments;
     }
     
     /**

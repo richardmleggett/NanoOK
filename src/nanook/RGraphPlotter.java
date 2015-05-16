@@ -34,7 +34,7 @@ public class RGraphPlotter {
         System.out.print("\r"+nScriptCounter+"/"+nScriptsToRun);
         
         ProcessLogger pl = new ProcessLogger();
-        pl.runCommand(command, logFilename, nScriptCounter == 1 ? false:true);
+        pl.runAndLogCommand(command, logFilename, nScriptCounter == 1 ? false:true);
 
         nScriptCounter++;
     }

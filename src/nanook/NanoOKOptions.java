@@ -11,6 +11,11 @@ public class NanoOKOptions {
     public final static int MAX_KMER = 5000;
     public final static int MAX_READ_LENGTH = 1000000;
     public final static int MAX_READS = 1000000;
+    public final static int MODE_EXTRACT = 1;
+    public final static int MODE_ALIGN = 2;
+    public final static int MODE_ANALYSE = 3;
+    public final static int FASTA = 1;
+    public final static int FASTQ = 2;
     public final static int TYPE_TEMPLATE = 0;
     public final static int TYPE_COMPLEMENT = 1;
     public final static int TYPE_2D = 2;
@@ -26,7 +31,8 @@ public class NanoOKOptions {
     private String sample=null;
     private String scriptsDir="/Users/leggettr/Documents/github/nanotools/scripts";
     private String aligner="last";
-    private String alignerExtension=".maf";
+    private String alignerParams="";
+    private String scheduler="system";
     private int coverageBinSize = 100;
     private boolean processPassReads = true;
     private boolean processFailReads = true;
@@ -38,6 +44,11 @@ public class NanoOKOptions {
     private boolean process2DReads = true;
     private boolean processTemplateReads = true;
     private boolean processComplementReads = true;
+    private boolean fixIDs = false;
+    private int runMode = 0;
+    private int readFormat = FASTA;
+    private int numThreads = 1;
+    private String jobQueue = "";
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_SCRIPT_DIR");
@@ -64,13 +75,20 @@ public class NanoOKOptions {
         int i=0;
         
         if (args.length <= 1) {
-            System.out.println("\nSyntax nanook [options]");
+            System.out.println("\nSyntax nanook <extract|align|analyse> -s <sample> [options]");
             System.out.println("");
             System.out.println("Main options:");
-            System.out.println("    -basesdir <directory> specifies base directory");
-            System.out.println("    -reference <path> specifies path to reference database");
-            System.out.println("    -sample <name> specifies name of sample");
-            System.out.println("Other options:");
+            System.out.println("    -b|-basedir <directory> specifies base directory (default .)");
+            System.out.println("    -s|-sample <name> specifies name of sample");
+            System.out.println("Extract options:");
+            System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
+            System.out.println("    -q|-fastq specifies FASTQ file extraction");
+            System.out.println("Alignment options:");
+            System.out.println("    -r|-reference <path> specifies path to reference database");
+            System.out.println("    -aligner <name> specifies the aligner (default last)"); 
+            System.out.println("    -alignerparams <params> specifies paramters to the aligner");
+            System.out.println("Analysis options:");
+            System.out.println("    -r|-reference <path> specifies path to reference database");
             System.out.println("    -aligner <name> specifies the aligner (default last)");            
             System.out.println("    -coveragebin <int> specifies coverage bin size (default 100)");            
             System.out.println("    -nofail to exclude analysis of reads in 'fail' folder");
@@ -83,6 +101,18 @@ public class NanoOKOptions {
         plotGraphs = true;
         makeReport = true;
                         
+        if (args[i].equals("extract")) {
+            runMode = MODE_EXTRACT;
+        } else if (args[i].equals("align")) {
+            runMode = MODE_ALIGN;
+        } else if (args[i].equals("analyse")) {
+            runMode = MODE_ANALYSE;
+        } else {
+            System.out.println("Unknonwn mode " + args[i] + " - must be extract, align or analyse");
+            System.exit(1);
+        }
+        i++;
+        
         while (i < (args.length)) {
             if ((args[i].equalsIgnoreCase("-basedir")) || (args[i].equalsIgnoreCase("-b"))) {
                 baseDir = args[i+1];
@@ -105,15 +135,40 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-nopass")) {
                 processPassReads = false;
                 i++;
+            } else if ((args[i].equalsIgnoreCase("-fasta")) || (args[i].equalsIgnoreCase("-a"))) {
+                if (runMode == MODE_EXTRACT) { 
+                    readFormat = FASTA;
+                }
+                i++;
+            } else if ((args[i].equalsIgnoreCase("-fastq")) || (args[i].equalsIgnoreCase("-q"))) {
+                if (runMode == MODE_EXTRACT) { 
+                    readFormat = FASTQ;
+                }
+                i++;
             } else if (args[i].equalsIgnoreCase("-2donly")) {
                 processTemplateReads = false;
                 processComplementReads = false;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-fixids")) {
+                fixIDs = true;
+                i++;
             } else if (args[i].equalsIgnoreCase("-aligner")) {
                 aligner = args[i+1];
                 i+=2;
+            } else if (args[i].equalsIgnoreCase("-alignerparams")) {
+                alignerParams = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-scheduler")) {
+                scheduler = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-queue")) {
+                jobQueue = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-numthreads")) {
+                numThreads = Integer.parseInt(args[i+1]);
+                i+=2;
             } else {                
-                System.out.println("Unknown paramter: " + args[i]);
+                System.out.println("Unknown parameter: " + args[i]);
                 System.exit(0);
             }            
         }
@@ -122,42 +177,34 @@ public class NanoOKOptions {
             System.out.println("Error: You must specify a base directory");
             System.exit(1);
         }
-        if (referenceFile == null) {
-            System.out.println("Error: You must specify a reference");
-            System.exit(1);
+        
+        if ((runMode == MODE_ALIGN) || (runMode == MODE_ANALYSE)) {
+            if (referenceFile == null) {
+                System.out.println("Error: You must specify a reference");
+                System.exit(1);
+            }
+            if (!referenceFile.endsWith(".fa") && !referenceFile.endsWith(".fasta")) {
+                System.out.println("Error: reference must specify a .fa or .fasta file");
+                System.exit(1);
+            }
         }
+        
         if (sample == null) {
             System.out.println("Error: You must specify a sample");
             System.exit(1);
-        }
-        
-        // Add new aligners here
-        switch (aligner) {
-            case "bwa":
-                alignerExtension = ".sam";
-                break;
-            case "last":
-                alignerExtension = ".maf";
-                break;
-            case "marginalign":
-                alignerExtension = ".sam";
-                break;
-            case "blasr":
-                alignerExtension = ".sam";
-                break;
-            default:
-                System.out.println("Error: aligner not known\n");
-                System.exit(1);
-                break;
-        }        
+        }      
     }
         
     public String getAligner() {
         return aligner;
     }
     
-    public String getAlignerExtension() {
-        return alignerExtension;
+    public String getAlignerParams() {
+        return alignerParams;
+    }
+    
+    public void setReadFormat(int f) {
+        readFormat = f;
     }
     
     /**
@@ -327,6 +374,18 @@ public class NanoOKOptions {
         return baseDir + File.separator + sample + File.separator + "graphs";
     } 
 
+    public String getFastaDir() {
+        return baseDir + File.separator + sample + File.separator + "fasta";
+    }
+
+    public String getFastqDir() {
+        return baseDir + File.separator + sample + File.separator + "fastq";
+    }    
+    
+    public String getFast5Dir() {
+        return baseDir + File.separator + sample + File.separator + "fast5";
+    }
+    
     /**
      * Get FASTA directory.
      * @return directory name as String
@@ -334,10 +393,10 @@ public class NanoOKOptions {
     public String getReadDir() {
         String dir;
         
-        if (alignerUsesFASTQ()) {
-            dir = baseDir + File.separator + sample + File.separator + "fastq";
+        if (readFormat == FASTQ) {
+            dir = getFastqDir();
         } else {
-            dir = baseDir + File.separator + sample + File.separator + "fasta";
+            dir = getFastaDir(); 
         }
         
         return dir;
@@ -368,8 +427,8 @@ public class NanoOKOptions {
     } 
     
     public boolean isNewStyleDir() {
-        File passDir = new File(getReadDir() + File.separator + "pass");
-        File failDir = new File(getReadDir() + File.separator + "pass");
+        File passDir = new File(getFast5Dir() + File.separator + "pass");
+        File failDir = new File(getFast5Dir() + File.separator + "pass");
         boolean rc = false;
         
         if (passDir.exists() && passDir.isDirectory() && failDir.exists() && failDir.isDirectory()) {
@@ -492,17 +551,27 @@ public class NanoOKOptions {
         return maxReads;
     }
     
-    /**
-     * Does the aligner chosen use FASTQ queries?
-     * @return true if FASTQ, false if FASTA
-     */
-    public boolean alignerUsesFASTQ() {
-        boolean r = false;
-        
-        if (aligner.equals("marginalign")) {
-            r = true;
-        }
-        
-        return r;
+    public int getReadFormat() {
+        return readFormat;
     }
-}
+        
+    public int getRunMode() {
+        return runMode;
+    }
+    
+    public boolean fixIDs() {
+        return fixIDs;
+    }
+    
+    public String getScheduler() {
+        return scheduler;
+    }
+    
+    public int getNumberOfThreads() {
+        return numThreads;
+    }
+    
+    public String getQueue() {
+        return jobQueue;
+    }
+ }

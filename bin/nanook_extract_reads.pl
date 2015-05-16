@@ -26,6 +26,9 @@ my $fix_ids;
 
 print "\nnanotools_extract_reads\n\n";
 
+print "This tool has been replaced with the command nanook extract <options>\n\n";
+exit;
+
 if (defined $help_requested) {
     print "Extract FASTA and FASTQ files from Nanopore reads.\n\n";
     print "Usage: nanotools_extract_reads.pl <-s sample> [-b directory]\n\n";

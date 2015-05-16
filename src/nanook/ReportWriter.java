@@ -685,6 +685,6 @@ public class ReportWriter {
         String command = "pdflatex -interaction=nonstopmode -output-directory " +options.getLatexDir() + " " + options.getLatexDir() + File.separator + options.getSample() + ".tex";
         String logFilename = options.getLogsDir() + File.separator + "pdflatex_output_log.txt";
         System.out.println("pdflatex output " + logFilename);
-        pl.runCommand(command, logFilename, false);
+        pl.runAndLogCommand(command, logFilename, false);
     }
 }

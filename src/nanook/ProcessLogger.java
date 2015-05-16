@@ -12,6 +12,10 @@ import java.util.ArrayList;
  * @author leggettr
  */
 public class ProcessLogger {
+    private boolean writeStdio = true;
+    private boolean writeStderr = true;
+    private boolean writeHeadings = true;
+    
     public ArrayList getCommandOutput(String command, boolean stdin, boolean stderr) {
         ArrayList outputLines = new ArrayList();
         
@@ -42,31 +46,51 @@ public class ProcessLogger {
         return outputLines;
     }    
     
-    public void runCommand(String command, String logFilename, boolean fAppend) {
+    public void runCommand(String command) {
+        ArrayList<String> response = getCommandOutput(command, true, true);
+        for (int i=0; i<response.size(); i++) {
+            System.out.println(response.get(i));
+        }        
+    }
+    
+    public void runAndLogCommand(String command, String logFilename, boolean fAppend) {
         try {         
             PrintWriter pw = new PrintWriter(new FileWriter(logFilename, fAppend)); 
             Process p = Runtime.getRuntime().exec(command);            
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
-            if (fAppend) {
+            if (fAppend && writeHeadings) {
                 pw.println("\n---\n");
             }
 
-            pw.println("Running "+command);
+            if (writeHeadings) {
+                pw.println("Running "+command);
+            }
 
             // read the output from the command
-            pw.println("\nStdout:");
-            String s = null;
-            while ((s = stdInput.readLine()) != null) {
-                pw.println(s);
+            if (writeHeadings) {
+                pw.println("\nStdout:");
+            }
+            
+            if (writeStdio) {
+                String s = null;
+                while ((s = stdInput.readLine()) != null) {
+                    pw.println(s);
+                }
             }
 
             // read any errors from the attempted command
-            pw.println("\nStderr:");
-            while ((s = stdError.readLine()) != null) {
-                pw.println(s);
-            }       
+            if (writeHeadings) {
+                pw.println("\nStderr:");
+            }
+            
+            if (writeStderr) {
+                String s = null;
+                while ((s = stdError.readLine()) != null) {
+                    pw.println(s);
+                }       
+            }
             
             pw.close();
             
@@ -77,5 +101,11 @@ public class ProcessLogger {
             e.printStackTrace();
             System.exit(1);
         }        
-    }        
+    }   
+    
+    public void setWriteFormat(boolean headings, boolean io, boolean err) {
+        writeHeadings = headings;
+        writeStdio = io;
+        writeStderr = err;
+    }    
 }
