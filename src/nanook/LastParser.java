@@ -31,10 +31,11 @@ public class LastParser extends MAFParser implements AlignmentFileParser {
         reference = reference.replaceAll("\\.fasta$", "");
         reference = reference.replaceAll("\\.fa$", "");
         
-        return "lastal -o "+ output + " " + alignmentParams + " " + reference + " " + query;
+        return "lastal " + alignmentParams + " " + reference + " " + query;
+        //return "lastal -o "+ output + " " + alignmentParams + " " + reference + " " + query;
     }
     
     public boolean outputsToStdout() {
-        return false;
+        return true;
     }
 }
