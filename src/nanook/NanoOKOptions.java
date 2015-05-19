@@ -77,17 +77,20 @@ public class NanoOKOptions {
         if (args.length <= 1) {
             System.out.println("\nSyntax nanook <extract|align|analyse> -s <sample> [options]");
             System.out.println("");
-            System.out.println("Main options:");
+            System.out.println("Standard options:");
             System.out.println("    -b|-basedir <directory> specifies base directory (default .)");
             System.out.println("    -s|-sample <name> specifies name of sample");
-            System.out.println("Extract options:");
+            System.out.println("");
+            System.out.println("'extract' options:");
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
-            System.out.println("Alignment options:");
+            System.out.println("");
+            System.out.println("'align' options:");
             System.out.println("    -r|-reference <path> specifies path to reference database");
             System.out.println("    -aligner <name> specifies the aligner (default last)"); 
             System.out.println("    -alignerparams <params> specifies paramters to the aligner");
-            System.out.println("Analysis options:");
+            System.out.println("");
+            System.out.println("'analyse' options:");
             System.out.println("    -r|-reference <path> specifies path to reference database");
             System.out.println("    -aligner <name> specifies the aligner (default last)");            
             System.out.println("    -coveragebin <int> specifies coverage bin size (default 100)");            

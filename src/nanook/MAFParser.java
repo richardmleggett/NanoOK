@@ -55,7 +55,8 @@ public abstract class MAFParser {
                 line = br.readLine();
                 if (line != null) {
                     if (line.startsWith("a score=")) {
-                        int score = Integer.parseInt(line.substring(8));
+                        String[] fields = line.substring(8).split(" ");
+                        int score = Integer.parseInt(fields[0]);
                         MAFAlignmentLine hitLine = new MAFAlignmentLine(br.readLine());
                         MAFAlignmentLine queryLine = new MAFAlignmentLine(br.readLine());
                         Alignment al = new Alignment(score,
