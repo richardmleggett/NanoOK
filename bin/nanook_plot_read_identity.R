@@ -26,19 +26,19 @@ for (t in 1:3) {
     # Identity vs Length Scatter plots
     identity_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_length_vs_identity_scatter.pdf", sep="");
     pdf(identity_scatter_pdf, height=4, width=6)
-    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$QueryPercentIdentity), xlab="Identity") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Length") +ylab("Identity") + ggtitle(type) + theme(text = element_text(size=10)) + scale_y_continuous(limits=c(0, 100)))
+    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$QueryPercentIdentity), xlab="Identity") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Length") +ylab("Identity %") + ggtitle(type) + theme(text = element_text(size=10)) + scale_y_continuous(limits=c(0, 100)))
     garbage <- dev.off()
 
     # Alignment identity vs. Fraction of read aligned scatter plots
     aid_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
     pdf(aid_scatter_pdf, height=4, width=6)
-    print(ggplot(data_alignments, aes(x=data_alignments$PercentQueryAligned, y=data_alignments$AlignmentPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Percentage of query aligned") +ylab("Alignment identity %") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100)))
+    print(ggplot(data_alignments, aes(x=data_alignments$PercentQueryAligned, y=data_alignments$AlignmentPercentIdentity), xlab="Percentage of read aligned") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Percentage of read aligned") +ylab("Identity %") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100)))
     garbage <- dev.off()
 
     # Query identity vs. Fraction of read aligned scatter plots
     qid_scatter_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_read_fraction_vs_query_identity_scatter.pdf", sep="");
     pdf(qid_scatter_pdf, height=4, width=6)
-    print(ggplot(data_alignments, aes(x=data_alignments$PercentQueryAligned, y=data_alignments$QueryPercentIdentity), xlab="Percentage of query aligned") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Percentage of query aligned") +ylab("Query identity %") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100)))
+    print(ggplot(data_alignments, aes(x=data_alignments$PercentQueryAligned, y=data_alignments$QueryPercentIdentity), xlab="Percentage of read aligned") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Percentage of read aligned") +ylab("Identity %") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100)))
     garbage <- dev.off()
 
     # Best perfect sequence vs. length scatters
@@ -68,6 +68,6 @@ for (t in 1:3) {
     # Percentage of read aligned vs read length
     output_pdf <- paste(basename, "/", sample, "/graphs/", reference, "/", reference, "_",type,"_percent_aligned_vs_length_scatter.pdf", sep="");
     pdf(output_pdf, height=4, width=6)
-    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$PercentQueryAligned), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Read length") +ylab("Percentage of query aligned") + ggtitle(type) + theme(text = element_text(size=10)))
+    print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$PercentQueryAligned), xlab="Read length") + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Read length") +ylab("Percentage of read aligned") + ggtitle(type) + theme(text = element_text(size=10)))
     garbage <- dev.off()
 }

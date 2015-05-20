@@ -108,7 +108,7 @@ public class NanoOKOptions {
             runMode = MODE_EXTRACT;
         } else if (args[i].equals("align")) {
             runMode = MODE_ALIGN;
-        } else if (args[i].equals("analyse")) {
+        } else if (args[i].equals("analyse") || args[i].equals("analyze")) {
             runMode = MODE_ANALYSE;
         } else {
             System.out.println("Unknonwn mode " + args[i] + " - must be extract, align or analyse");
