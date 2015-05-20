@@ -94,8 +94,9 @@ public class NanoOKOptions {
             System.out.println("    -r|-reference <path> specifies path to reference database");
             System.out.println("    -aligner <name> specifies the aligner (default last)");            
             System.out.println("    -coveragebin <int> specifies coverage bin size (default 100)");            
-            System.out.println("    -nofail to exclude analysis of reads in 'fail' folder");
-            System.out.println("    -nopass to exclude analysus of reads in 'pass' folder");            
+            System.out.println("    -passonly to analyse only pass reads");
+            System.out.println("    -failonly to analyse only fail reads");            
+            System.out.println("    -2donly to analyse only 2D reads"); 
             System.out.println("");
             System.exit(0);
         }
@@ -132,11 +133,13 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-maxreads")) {
                 maxReads = Integer.parseInt(args[i+1]);
                 i+=2;
-            } else if (args[i].equalsIgnoreCase("-nofail")) {
+            } else if (args[i].equalsIgnoreCase("-nofail") || args[i].equalsIgnoreCase("-passonly")) {
+                processPassReads = true;
                 processFailReads = false;  
                 i++;
-            } else if (args[i].equalsIgnoreCase("-nopass")) {
+            } else if (args[i].equalsIgnoreCase("-nopass") || args[i].equalsIgnoreCase("-failonly")) {
                 processPassReads = false;
+                processFailReads = true;
                 i++;
             } else if ((args[i].equalsIgnoreCase("-fasta")) || (args[i].equalsIgnoreCase("-a"))) {
                 if (runMode == MODE_EXTRACT) { 
