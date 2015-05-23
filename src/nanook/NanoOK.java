@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.12.2";
+    public final static String VERSION_STRING = "v0.12.3";
     
     /**
      * Check for program dependencies - R, pdflatex

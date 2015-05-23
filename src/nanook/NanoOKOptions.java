@@ -26,6 +26,7 @@ public class NanoOKOptions {
     public final static int READTYPE_COMBINED = 0;
     public final static int READTYPE_PASS = 1;
     public final static int READTYPE_FAIL = 2;
+    public final static int MIN_ALIGNMENTS = 10;
     private String baseDir=".";
     private String referenceFile=null;
     private String sample=null;

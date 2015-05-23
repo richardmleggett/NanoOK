@@ -621,11 +621,17 @@ public class ReportWriter {
         ArrayList<ReferenceSequence> sortedRefs = references.getSortedReferences();
         for (int i=0; i<sortedRefs.size(); i++) {
             ReferenceSequence rs = sortedRefs.get(i);
+            int totalAlignments = rs.getStatsByType(NanoOKOptions.TYPE_TEMPLATE).getNumberOfReadsWithAlignments() +
+                                  rs.getStatsByType(NanoOKOptions.TYPE_COMPLEMENT).getNumberOfReadsWithAlignments() + 
+                                  rs.getStatsByType(NanoOKOptions.TYPE_2D).getNumberOfReadsWithAlignments();
+                        
             if ((options.getNumberOfTypes() > 1) || (references.getNumberOfReferences() > 1)) {
                 pw.println("\\clearpage");
             }        
-
-            writeReferenceSection(rs);
+            
+            if (totalAlignments > NanoOKOptions.MIN_ALIGNMENTS) {
+                writeReferenceSection(rs);
+            }
         }
     }
     
