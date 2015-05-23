@@ -17,11 +17,13 @@ public class AlignmentsTableFile {
      * @param f filename of output file
      */
     public AlignmentsTableFile(String f) {
-        filename = f;
-        
+        filename = f;        
+        writeHeader();
+    }
+    
+    private void openFile(boolean append) {
         try {
-            pw = new PrintWriter(new FileWriter(filename));
-            writeHeader();
+            pw = new PrintWriter(new FileWriter(filename, append));
         } catch (IOException e) {
             System.out.println("AlignmentsTableFile exception");
             e.printStackTrace();
@@ -32,6 +34,7 @@ public class AlignmentsTableFile {
      * Write header row to file.
      */
     private void writeHeader() {
+        openFile(false);
         pw.print("Filename\t");
         pw.print("QueryName\t");
         pw.print("QueryStart\t");
@@ -52,6 +55,7 @@ public class AlignmentsTableFile {
         pw.print("PercentQueryAligned\t");
         pw.print("nk15\tnk17\tnk19\tnk21\tnk23\tnk25");
         pw.println("");
+        pw.close();
     }
     
     /**
@@ -83,8 +87,9 @@ public class AlignmentsTableFile {
                 stat.getPercentQueryAligned(),
                 stat.getkCounts());
         
+        openFile(true);
         pw.println(outputLine);
-        pw.flush();
+        pw.close();
         
         count++;
     }
@@ -111,8 +116,9 @@ public class AlignmentsTableFile {
                 stat.getPercentQueryAligned(),
                 stat.getkCounts());
         
+        openFile(true);
         pw.println(outputLine);
-        pw.flush();
+        pw.close();
         
         count++;
     }    
@@ -122,15 +128,8 @@ public class AlignmentsTableFile {
      * @param alignmentFilename - alignment filename
      */
     public void writeNoAlignmentMessage(String alignmentFilename) {
+        openFile(true);
         pw.println(alignmentFilename+"\tNO ALIGNMENTS");
-    }
-
-    /**
-     * Close file.
-     */
-    public void closeFile() {
-        pw.flush();
         pw.close();
-        //System.out.println("File closed");
     }
 }

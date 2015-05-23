@@ -54,16 +54,7 @@ public class ReferenceSequence implements Comparable {
             referenceStats[t].openAlignmentsTableFile(analysisDir + File.separator + name + File.separator + name + "_" + NanoOKOptions.getTypeFromInt(t) + "_alignments.txt");
         }
     }
-    
-    /**
-     * Close all alignment summary files.
-     */
-    public void closeAlignmentSummaryFiles() {
-        for (int t=0; t<3; t++) {
-            referenceStats[t].getAlignmentsTableFile().closeFile();
-        }
-    }
-    
+        
     /**
      * Get stats for a particular type (Template, Complement, 2D).
      * @param t integer type

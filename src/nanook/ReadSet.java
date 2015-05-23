@@ -249,7 +249,6 @@ public class ReadSet {
             }
         }
 
-        nonAlignedSummary.closeFile();
         stats.writeSummaryFile(options.getAlignmentSummaryFilename());
         
         return nReadsWithAlignments;

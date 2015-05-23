@@ -56,14 +56,7 @@ public class ReferenceSequenceStats {
     public void openAlignmentsTableFile(String filename) {
         atf = new AlignmentsTableFile(filename);
     }
-    
-    /**
-     * Close the alignments table file.
-     */
-    public void closeAlignmentsTableFile() {
-        atf.closeFile();
-    }
-    
+        
     /**
      * Get the associated AlignmentsTableFile object
      * @return an AlignmentsTableFile

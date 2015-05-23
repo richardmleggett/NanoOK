@@ -59,17 +59,6 @@ public class References {
             System.exit(1);
         }
     }    
-
-    /**
-     * Close alignment summary files for all references.
-     */
-    public void closeAlignmentFiles() {
-        Set<String> keys = referenceSequences.keySet();
-        for(String id : keys) {
-            ReferenceSequence ref = referenceSequences.get(id);
-            ref.closeAlignmentSummaryFiles();
-        }
-    }
     
     /**
      * Get a ReferenceSequence object from sequence ID.
