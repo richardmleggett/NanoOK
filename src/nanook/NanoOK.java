@@ -48,6 +48,8 @@ public class NanoOK {
         } else {
             System.out.println(pdflatexVersion);
         }
+        
+        System.out.println("");
     }
 
     /**

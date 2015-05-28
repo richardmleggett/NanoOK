@@ -81,6 +81,7 @@ public class NanoOKOptions {
             System.out.println("Standard options:");
             System.out.println("    -b|-basedir <directory> specifies base directory (default .)");
             System.out.println("    -s|-sample <name> specifies name of sample");
+            System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
             System.out.println("");
             System.out.println("'extract' options:");
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
@@ -119,16 +120,16 @@ public class NanoOKOptions {
         i++;
         
         while (i < (args.length)) {
-            if ((args[i].equalsIgnoreCase("-basedir")) || (args[i].equalsIgnoreCase("-b"))) {
+            if (args[i].equalsIgnoreCase("-basedir") || args[i].equalsIgnoreCase("-b")) {
                 baseDir = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-coveragebin")) {
                 coverageBinSize = Integer.parseInt(args[i+1]);
                 i+=2;
-            } else if ((args[i].equalsIgnoreCase("-reference")) || (args[i].equalsIgnoreCase("-r"))) {
+            } else if (args[i].equalsIgnoreCase("-reference") || args[i].equalsIgnoreCase("-r")) {
                 referenceFile = args[i+1];
                 i+=2;
-            } else if ((args[i].equalsIgnoreCase("-sample")) |  (args[i].equalsIgnoreCase("-s"))) {
+            } else if (args[i].equalsIgnoreCase("-sample") |  args[i].equalsIgnoreCase("-s")) {
                 sample = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-maxreads")) {
@@ -142,12 +143,12 @@ public class NanoOKOptions {
                 processPassReads = false;
                 processFailReads = true;
                 i++;
-            } else if ((args[i].equalsIgnoreCase("-fasta")) || (args[i].equalsIgnoreCase("-a"))) {
+            } else if (args[i].equalsIgnoreCase("-fasta") || args[i].equalsIgnoreCase("-a")) {
                 if (runMode == MODE_EXTRACT) { 
                     readFormat = FASTA;
                 }
                 i++;
-            } else if ((args[i].equalsIgnoreCase("-fastq")) || (args[i].equalsIgnoreCase("-q"))) {
+            } else if (args[i].equalsIgnoreCase("-fastq") || args[i].equalsIgnoreCase("-q")) {
                 if (runMode == MODE_EXTRACT) { 
                     readFormat = FASTQ;
                 }
@@ -171,7 +172,7 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-queue")) {
                 jobQueue = args[i+1];
                 i+=2;
-            } else if (args[i].equalsIgnoreCase("-numthreads")) {
+            } else if (args[i].equalsIgnoreCase("-numthreads") || args[i].equalsIgnoreCase("-t")) {
                 numThreads = Integer.parseInt(args[i+1]);
                 i+=2;
             } else {                

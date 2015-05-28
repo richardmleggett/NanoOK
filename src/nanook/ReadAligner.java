@@ -8,14 +8,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.concurrent.*;
 
 /**
  *
  * @author leggettr
  */
 public class ReadAligner {
-    NanoOKOptions options;
-    AlignmentFileParser parser;
+    private NanoOKOptions options;
+    private AlignmentFileParser parser;
+    private ExecutorService executor;
     
     /**
      * Constructor
@@ -24,6 +26,8 @@ public class ReadAligner {
     public ReadAligner(NanoOKOptions o, AlignmentFileParser afp) {    
         options = o;
         parser = afp;
+        
+        executor = Executors.newFixedThreadPool(options.getNumberOfThreads());
     }
     
     private void checkAndMakeDir(String dir) {
@@ -51,7 +55,7 @@ public class ReadAligner {
     public boolean isValidReadFile(String filename) {
         boolean isValid = false;
         
-        System.out.println(filename);
+        //System.out.println(filename);
         
         if (parser.getReadFormat() == NanoOKOptions.FASTA) {
             if (filename.endsWith(".fa") || filename.endsWith(".fasta")) {
@@ -64,55 +68,6 @@ public class ReadAligner {
         }            
         
         return isValid;
-    }
-    
-    private void runCommandLSF(String command, String outPath, String log) {
-        // outPath only non-null if aligner will only write to screen (yes, BWA, I'm talking about you)
-        if (outPath != null) {
-             command = command + " > " + outPath;    
-        }        
-        
-        // Make the LSF command
-        String lsfCommand = "bsub -n " + options.getNumberOfThreads() + " -q " + options.getQueue() + " -oo " + log + " -R \"rusage[mem=8000] span[hosts=1]\" \"" + command + "\"";
-        System.out.println(command);
-        //pl = new ProcessLogger();
-        //response = pl.getCommandOutput(lsfCommand, true, true);                
-    }
-    
-    private void runCommandLocal(String command, String outPath) {
-        ProcessLogger pl = new ProcessLogger();
-        
-        // outPath only non-null if aligner will only write to screen (yes, BWA, I'm talking about you)
-        if (outPath != null) {
-            pl.setWriteFormat(false, true, false);
-            pl.runAndLogCommand(command, outPath, false);
-        } else {
-            pl.runCommand(command);
-        }
-    }
-    
-    /**
-     * Run the alignment command
-     * @param command
-     * @param outPath
-     * @param log 
-     */
-    private void runCommand(String command, String outPath, String log) {        
-        switch(options.getScheduler()) {
-            case "screen":
-                System.out.println(command);
-                break;
-            case "lsf":
-                runCommandLSF(command, outPath, log);
-                break;
-            case "system":
-                runCommandLocal(command, outPath);
-                break;
-            default:
-                System.out.println("Error: scheduler " + options.getScheduler() + " not recognised.");
-                System.exit(1);
-                break;
-        }
     }
     
     private void checkReferenceSizesFile(String referenceFile) {
@@ -146,7 +101,7 @@ public class ReadAligner {
             } else if (listOfFiles.length <= 0) {
                 System.out.println("Directory "+inputDirName+" empty");
             } else {
-                System.out.println("\nProcessing from "+inputDirName);
+                //System.out.println("\nProcessing from "+inputDirName);
 
                 int readCount = 0;
                 for (File file : listOfFiles) {
@@ -155,12 +110,8 @@ public class ReadAligner {
                             String inPath = inputDirName + File.separator + file.getName();
                             String outPath = outputDirName + File.separator + file.getName() + parser.getAlignmentFileExtension();
                             String logFile = logDirName + File.separator + file.getName() + ".log";
-                            String command = parser.getRunCommand(inPath, outPath, reference);
-                            
-                            System.out.println("Aligning "+inPath);
-                            System.out.println("      to "+outPath);
-                            
-                            runCommand(command, parser.outputsToStdout() ? outPath:null, logFile);
+                            String command = parser.getRunCommand(inPath, outPath, reference);                            
+                            executor.execute(new SystemCommandRunnable(options, "Aligning "+inPath+"\n      to "+outPath, command, parser.outputsToStdout() ? outPath:null, logFile));
                             readCount++;
                         }
                     }
@@ -195,6 +146,11 @@ public class ReadAligner {
             }
         } else {
             processDirectory(options.getReadDir(), options.getAlignerDir(), options.getLogsDir() + File.separator + options.getAligner());
+        }        
+        
+        // That's all - wait for all threads to finish
+        executor.shutdown();
+        while (!executor.isTerminated()) {
         }        
 
         System.out.println("DONE");
