@@ -44,13 +44,37 @@ public class ProcessLogger {
         } 
             
         return outputLines;
-    }    
+    }
     
     public void runCommand(String command) {
         ArrayList<String> response = getCommandOutput(command, true, true);
         for (int i=0; i<response.size(); i++) {
             System.out.println(response.get(i));
         }        
+    }
+    
+    public ArrayList checkCommand(String command) {
+        ArrayList outputLines;
+        boolean isOk = true;
+        
+        try {
+            Process p = Runtime.getRuntime().exec(command);
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            String s = null;
+
+            outputLines = new ArrayList();
+            while ((s = stdInput.readLine()) != null) {            
+                outputLines.add(s);
+            }
+            while ((s = stdError.readLine()) != null) {            
+                outputLines.add(s);
+            }
+        } catch (Exception e) {
+            outputLines = null;
+        }
+        
+        return outputLines;
     }
     
     public void runAndLogCommand(String command, String logFilename, boolean fAppend) {

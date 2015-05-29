@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.12.3";
+    public final static String VERSION_STRING = "v0.13";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -20,33 +20,56 @@ public class NanoOK {
         ArrayList<String> response;
         String rVersion = null;
         String pdflatexVersion = null;
+        String hVersion = null;
                 
-        response = pl.getCommandOutput("Rscript --version", true, true);
-        for (int i=0; i<response.size(); i++) {
-            String s = response.get(i);
-            if (s.startsWith("R scripting front-end")) {
-                rVersion = s;
+        response = pl.checkCommand("Rscript --version");
+        if (response != null) {
+            for (int i=0; i<response.size(); i++) {
+                String s = response.get(i);
+                if (s.startsWith("R scripting front-end")) {
+                    rVersion = s;
+                }
             }
         }
         
         if (rVersion == null) {
-            System.out.println("*** WARNING: Couldn't find Rscript - is R installed? ***");
+            System.out.println("*** ERROR: Couldn't find Rscript - is R installed? ***");
+            System.exit(1);
         } else {
             System.out.println(rVersion);
         }
         
-        response = pl.getCommandOutput("pdflatex --version", true, true);
-        for (int i=0; i<response.size(); i++) {
-            String s = response.get(i);
-            if (s.startsWith("pdfTeX")) {
-                pdflatexVersion = s;
+        response = pl.checkCommand("pdflatex --version");
+        if (response != null) {
+            for (int i=0; i<response.size(); i++) {
+                String s = response.get(i);
+                if (s.startsWith("pdfTeX")) {
+                    pdflatexVersion = s;
+                }
             }
         }
         
         if (pdflatexVersion == null) {
-            System.out.println("*** WARNING: Couldn't find pdflatex - is TeX installed? ***");
+            System.out.println("*** ERROR: Couldn't find pdflatex - is TeX installed? ***");
+            System.exit(1);
         } else {
             System.out.println(pdflatexVersion);
+        }
+
+        response = pl.checkCommand("h5dump --version");
+        if (response != null) {
+            for (int i=0; i<response.size(); i++) {
+                String s = response.get(i);
+                if (s.startsWith("h5dump")) {
+                    hVersion = s;
+                }
+            }
+        }
+        
+        if (hVersion == null) {
+            System.out.println("*** ERROR: Couldn't find h5dump - is H5 Tools installed? ***");
+        } else {
+            System.out.println(hVersion);
         }
         
         System.out.println("");
