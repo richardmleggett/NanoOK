@@ -34,7 +34,6 @@ public class NanoOK {
         
         if (rVersion == null) {
             System.out.println("*** ERROR: Couldn't find Rscript - is R installed? ***");
-            System.exit(1);
         } else {
             System.out.println(rVersion);
         }
@@ -43,7 +42,7 @@ public class NanoOK {
         if (response != null) {
             for (int i=0; i<response.size(); i++) {
                 String s = response.get(i);
-                if (s.startsWith("pdfTeX")) {
+                if (s.contains("pdfTeX")) {
                     pdflatexVersion = s;
                 }
             }
@@ -51,7 +50,6 @@ public class NanoOK {
         
         if (pdflatexVersion == null) {
             System.out.println("*** ERROR: Couldn't find pdflatex - is TeX installed? ***");
-            System.exit(1);
         } else {
             System.out.println(pdflatexVersion);
         }
