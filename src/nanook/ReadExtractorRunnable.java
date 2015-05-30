@@ -72,8 +72,11 @@ public class ReadExtractorRunnable implements Runnable {
         
         try {
             pw = new PrintWriter(new FileWriter(filename));
-            pw.printf(">%s\n", id);
-            pw.printf("%s\n", seq);
+            pw.print(">");
+            pw.println(id);
+            //pw.printf(">%s\n", id);
+            pw.println(seq);
+            //pw.printf("%s\n", seq);
             pw.close();            
         } catch (IOException e) {
             System.out.println("writeFastaFile exception");
@@ -87,10 +90,15 @@ public class ReadExtractorRunnable implements Runnable {
         
         try {
             pw = new PrintWriter(new FileWriter(filename));
-            pw.printf("@%s\n", id);
-            pw.printf("%s\n", seq);
-            pw.printf("+\n");
-            pw.printf("%s\n", qual);
+            pw.print("@");
+            pw.println(id);
+            //pw.printf("@%s\n", id);
+            pw.println(seq);
+            //pw.printf("%s\n", seq);
+            pw.println("+");
+            //pw.printf("+\n");
+            pw.println(qual);
+            //pw.printf("%s\n", qual);
             pw.close();            
         } catch (IOException e) {
             System.out.println("writeFastaFile exception");
