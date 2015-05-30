@@ -160,13 +160,14 @@ public class References {
     public void writeReferenceSummary(int type) {
        try {
             PrintWriter pw = new PrintWriter(new FileWriter(options.getAlignmentSummaryFilename(), true));
-            String formatString = "%-"+longestId+"s %-12s %-10s %-10s\n";
+            String formatString = "%-"+longestId+"s %-12s %-10s %-10s";
             pw.println("");
-            pw.printf(formatString, "Id", "Size", "ReadsAlign", "LongPerfKm");        
+            pw.printf(formatString, "Id", "Size", "ReadsAlign", "LongPerfKm");    
+            pw.println("");
             List<String> keys = new ArrayList<String>(referenceSequences.keySet());
             Collections.sort(keys);
             for(String id : keys) {
-                referenceSequences.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10d\n");
+                referenceSequences.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10d");
             }
             pw.close();
         } catch (IOException e) {
@@ -192,7 +193,7 @@ public class References {
         for (int i=0; i<sortedRefs.size(); i++) {
             ReferenceSequence r = sortedRefs.get(i);
             ReferenceSequenceStats refStats = r.getStatsByType(type);
-            pw.printf("%s & %d & %d & %.2f & %d & %.2f & %d \\\\\n",
+            pw.printf("%s & %d & %d & %.2f & %d & %.2f & %d \\\\",
                        r.getName().replaceAll("_", " "),
                        r.getSize(),
                        refStats.getNumberOfReadsWithAlignments(),
@@ -200,6 +201,7 @@ public class References {
                        refStats.getTotalAlignedBases(),
                        (double)refStats.getTotalAlignedBases() / r.getSize(),
                        refStats.getLongestPerfectKmer());
+            pw.println("");
         }
         pw.println("\\end{tabular}");
         pw.println("}");

@@ -89,7 +89,8 @@ public class ReportWriter {
             for (int type = 0; type<3; type++) {
                 if (options.isProcessingReadType(type)) {
                     ReadSetStats r = overallStats.getStatsByType(type);           
-                    pw.printf("%s & %d & %d  \\\\\n", r.getTypeString(), r.getNumberOfPassFiles(), r.getNumberOfFailFiles());
+                    pw.printf("%s & %d & %d  \\\\", r.getTypeString(), r.getNumberOfPassFiles(), r.getNumberOfFailFiles());
+                    pw.println("");
                 }
             }
             
@@ -121,7 +122,8 @@ public class ReportWriter {
         for (int type = 0; type<3; type++) {
             if (options.isProcessingReadType(type)) {
                 ReadSetStats r = overallStats.getStatsByType(type);           
-                pw.printf("%s & %d & %d & %.2f & %d & %d & %d & %d & %d & %d \\\\\n", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
+                pw.printf("%s & %d & %d & %.2f & %d & %d & %d & %d & %d & %d \\\\", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
+                pw.println("");
             }
         }
 
@@ -161,8 +163,10 @@ public class ReportWriter {
         pw.println("\\fontsize{9pt}{11pt}\\selectfont");
         pw.println("\\begin{tabular}{l c c}");
         pw.println("Number of reads & " + stats.getNumberOfReads() + " & \\\\");
-        pw.printf("Number of reads with alignments & %d & (%.2f\\%%) \\\\\n", stats.getNumberOfReadsWithAlignments(), stats.getPercentOfReadsWithAlignments());
-        pw.printf("Number of reads without alignments & %d & (%.2f\\%%) \\\\\n", stats.getNumberOfReadsWithoutAlignments(), stats.getPercentOfReadsWithoutAlignments());
+        pw.printf("Number of reads with alignments & %d & (%.2f\\%%) \\\\", stats.getNumberOfReadsWithAlignments(), stats.getPercentOfReadsWithAlignments());
+        pw.println("");
+        pw.printf("Number of reads without alignments & %d & (%.2f\\%%) \\\\", stats.getNumberOfReadsWithoutAlignments(), stats.getPercentOfReadsWithoutAlignments());
+        pw.println("");
         pw.println("\\end{tabular}");
         pw.println("}");
         pw.println("\\end{table}");
@@ -239,39 +243,6 @@ public class ReportWriter {
            pw.println(lines[i]);
        }
         
-        //pw.println(" & Template & Complement & 2D \\\\");
-        //pw.printf("Overall identity (minus indels) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-        //        refSeq.getStatsByType(0).getReadPercentIdentical(),
-        //        refSeq.getStatsByType(1).getReadPercentIdentical(),
-        //        refSeq.getStatsByType(2).getReadPercentIdentical());                
-        //pw.printf("Aligned identity (minus indels) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-        //        refSeq.getStatsByType(0).getAlignedPercentIdenticalWithoutIndels(),
-        //        refSeq.getStatsByType(1).getAlignedPercentIdenticalWithoutIndels(),
-        //        refSeq.getStatsByType(2).getAlignedPercentIdenticalWithoutIndels());                
-        //pw.printf("Identical bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-        //        refSeq.getStatsByType(0).getAlignedPercentIdentical(),
-        //        refSeq.getStatsByType(1).getAlignedPercentIdentical(),
-        //        refSeq.getStatsByType(2).getAlignedPercentIdentical());
-        //pw.printf("Inserted bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-        //        refSeq.getStatsByType(0).getPercentInsertionErrors(),
-        //        refSeq.getStatsByType(1).getPercentInsertionErrors(),
-        //        refSeq.getStatsByType(2).getPercentInsertionErrors());
-        //pw.printf("Deleted bases per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-        //        refSeq.getStatsByType(0).getPercentDeletionErrors(),
-        //        refSeq.getStatsByType(1).getPercentDeletionErrors(),
-        //        refSeq.getStatsByType(2).getPercentDeletionErrors());
-        //pw.printf("Substitutions per 100 aligned bases & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\\n",
-        //        refSeq.getStatsByType(0).getPercentSubstitutionErrors(),
-        //        refSeq.getStatsByType(1).getPercentSubstitutionErrors(),
-        //        refSeq.getStatsByType(2).getPercentSubstitutionErrors());
-        //pw.printf("Mean insertion size & %.2f & %.2f & %.2f \\\\\n",
-        //        refSeq.getStatsByType(0).getMeanInsertionSize(),
-        //        refSeq.getStatsByType(1).getMeanInsertionSize(),
-        //        refSeq.getStatsByType(2).getMeanInsertionSize());
-        //pw.printf("Mean deletion size & %.2f & %.2f & %.2f \\\\\n",
-        //        refSeq.getStatsByType(0).getMeanDeletionSize(),
-        //        refSeq.getStatsByType(1).getMeanDeletionSize(),
-        //        refSeq.getStatsByType(2).getMeanDeletionSize());
         pw.println("\\end{tabular}");
         pw.println("}");
         pw.println("\\end{table}");     
@@ -508,7 +479,8 @@ public class ReportWriter {
             pw.println("}");
             pw.println("\\end{table}");  
             pw.println("\\vspace{-9mm}");
-            pw.printf("{\\fontsize{8}{8}\\textsf{Kmer space for %d-mers: %d \\hspace{5mm} Random chance for any given %d-mer: %.2f\\%%}}\n", k, (int)Math.pow(4, k), k, 100.0/Math.pow(4, k));
+            pw.printf("{\\fontsize{8}{8}\\textsf{Kmer space for %d-mers: %d \\hspace{5mm} Random chance for any given %d-mer: %.2f\\%%}}", k, (int)Math.pow(4, k), k, 100.0/Math.pow(4, k));
+            pw.println("");
             pw.println("\\vspace{5mm}");
         }
     }

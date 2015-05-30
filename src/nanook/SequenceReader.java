@@ -124,7 +124,8 @@ public class SequenceReader {
                         }
                         
                         if (pw != null) {
-                            pw.printf("%s\t%d\t%s\n", id, contigLength, name);
+                            pw.printf("%s\t%d\t%s", id, contigLength, name);
+                            pw.println("");
                         }
                         
                         if (cacheSequence) {

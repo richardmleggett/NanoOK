@@ -57,7 +57,8 @@ public class NanoOKOptions {
         if (value != null) {
             scriptsDir = value;
         } else {
-            System.out.println("*** WARNING: You should set NANOOK_SCRIPT_DIR. Default value unlikely to work. ***\n");
+            System.out.println("*** WARNING: You should set NANOOK_SCRIPT_DIR. Default value unlikely to work. ***");
+            System.out.println("");
         }
         
         value = System.getenv("NANOOK_BASE_DIR");
@@ -76,7 +77,8 @@ public class NanoOKOptions {
         int i=0;
         
         if (args.length <= 1) {
-            System.out.println("\nSyntax nanook <extract|align|analyse> -s <sample> [options]");
+            System.out.println("");
+            System.out.println("Syntax nanook <extract|align|analyse> -s <sample> [options]");
             System.out.println("");
             System.out.println("Standard options:");
             System.out.println("    -b|-basedir <directory> specifies base directory (default .)");

@@ -56,7 +56,8 @@ public class ReadSet {
             String id = sr.getID(i);
             
             if (id.startsWith("00000000-0000-0000-0000-000000000000")) {
-                System.out.println("Error:\n"+filename);
+                System.out.println("Error:");
+                System.out.println(filename);
                 System.out.println("The reads in this file do not have unique IDs because they were generated when MinKNOW was producing UUIDs, but Metrichor was not using them. To fix, run nanook_extract_reads with the -fixids option.");
                 System.exit(1);
             }
@@ -129,7 +130,8 @@ public class ReadSet {
             } else if (listOfFiles.length <= 0) {
                 System.out.println("Directory "+inputDir+" empty");
             } else {
-                System.out.println("\nGathering stats from "+inputDir);
+                System.out.println("");
+                System.out.println("Gathering stats from "+inputDir);
             
                 for (File file : listOfFiles) {
                     if (file.isFile()) {

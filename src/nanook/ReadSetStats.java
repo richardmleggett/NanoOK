@@ -64,7 +64,8 @@ public class ReadSetStats {
         try {
             pwLengths = new PrintWriter(new FileWriter(lengthsFilename)); 
             pwKmers = new PrintWriter(new FileWriter(kmersFilename));
-            pwKmers.write("Id\tLength\tnk15\tnk17\tnk19\tnk21\tnk23\tnk25\n");
+            pwKmers.write("Id\tLength\tnk15\tnk17\tnk19\tnk21\tnk23\tnk25");
+            pwKmers.println("");
         } catch (IOException e) {
             System.out.println("openLengthsFile exception:");
             e.printStackTrace();
@@ -363,10 +364,15 @@ public class ReadSetStats {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename, true));
             pw.println("");
-            pw.printf("%s alignments\n\n", typeString);
-            pw.printf("Num reads: %d\n", nReads);
-            pw.printf("Num reads with alignments: %d\n", nReadsWithAlignments);
-            pw.printf("Num reads without alignments: %d\n", nReadsWithoutAlignments);
+            pw.printf("%s alignments", typeString);
+            pw.println("");
+            pw.println("");
+            pw.printf("Num reads: %d", nReads);
+            pw.println("");
+            pw.printf("Num reads with alignments: %d", nReadsWithAlignments);
+            pw.println("");
+            pw.printf("Num reads without alignments: %d", nReadsWithoutAlignments);
+            pw.println("");
             pw.close();
         } catch (IOException e) {
             System.out.println("writeSummaryFile exception:");
@@ -465,6 +471,6 @@ public class ReadSetStats {
         for (int i=0; i<nk; i++) {
             pwKmers.print("\t"+Integer.toString(kCounts[i]));
         }
-        pwKmers.print("\n");
+        pwKmers.println("");
     }
 }

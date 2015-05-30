@@ -162,7 +162,8 @@ public class CIGARString {
                         break;
                     case 'I':
                         if (n > 100) {
-                            System.out.println("\nError: large I ("+n+") - read "+queryID+" ignored");
+                            System.out.println("");
+                            System.out.println("Error: large I ("+n+") - read "+queryID+" ignored");
                             processed = false;
                             continueParsing = false;
                         } else {
@@ -193,7 +194,8 @@ public class CIGARString {
                         delCount+=n;
                         break;
                     case 'N':
-                        System.out.println("Warning: encountered N in CIGAR format!\n");
+                        System.out.println("Warning: encountered N in CIGAR format!");
+                        System.out.println("");
                         displayResult = true;
                         hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
                         for (int j=0; j<n; j++) {
@@ -204,7 +206,7 @@ public class CIGARString {
                         donePreClipping = true;
                         break;
                     case 'S':
-                        //System.out.println("Warnning: encountered S in CIGAR format!\n");
+                        //System.out.println("Warnning: encountered S in CIGAR format!");
                         queryPtr += n;
                         if (!donePreClipping) {
                             queryStart += n;
@@ -212,16 +214,17 @@ public class CIGARString {
                         displayResult = true;                        
                         break;
                     case 'H':
-                        //System.out.println("Warning: encountered H in CIGAR format!\n");
+                        //System.out.println("Warning: encountered H in CIGAR format!");
                         if (!donePreClipping) {
                             queryStart += n;
                         } else {
-                            //System.out.println("Warning: hard clipping at end\n");
+                            //System.out.println("Warning: hard clipping at end");
                         }
                         displayResult = true;
                         break;
                     case 'P':
-                        System.out.println("Warning: encountered P in CIGAR format!\n");
+                        System.out.println("Warning: encountered P in CIGAR format!");
+                        System.out.println("");
                         displayResult = true;
                         donePreClipping = true;
                         break;

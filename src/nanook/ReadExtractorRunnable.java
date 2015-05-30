@@ -74,9 +74,7 @@ public class ReadExtractorRunnable implements Runnable {
             pw = new PrintWriter(new FileWriter(filename));
             pw.print(">");
             pw.println(id);
-            //pw.printf(">%s\n", id);
             pw.println(seq);
-            //pw.printf("%s\n", seq);
             pw.close();            
         } catch (IOException e) {
             System.out.println("writeFastaFile exception");
@@ -92,13 +90,9 @@ public class ReadExtractorRunnable implements Runnable {
             pw = new PrintWriter(new FileWriter(filename));
             pw.print("@");
             pw.println(id);
-            //pw.printf("@%s\n", id);
             pw.println(seq);
-            //pw.printf("%s\n", seq);
             pw.println("+");
-            //pw.printf("+\n");
             pw.println(qual);
-            //pw.printf("%s\n", qual);
             pw.close();            
         } catch (IOException e) {
             System.out.println("writeFastaFile exception");
@@ -159,7 +153,8 @@ public class ReadExtractorRunnable implements Runnable {
                     id = id.replaceAll("^00000000-0000-0000-0000-000000000000_", "");
                     id = id.replaceAll(" ", "");
                 } else {
-                    System.out.println("Warning: " + id + " is non-unqiue. Recommend re-running with -fixids option.\\n");
+                    System.out.println("Warning: " + id + " is non-unqiue. Recommend re-running with -fixids option.");
+                    System.out.println("");
                 }
             }
             

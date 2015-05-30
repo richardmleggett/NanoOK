@@ -154,7 +154,8 @@ public class ReferenceSequenceStats {
                 for (int j=0; j<binSize; j++) {
                     count += coverage[i+j];
                 }
-                pw.printf("%d\t%.2f\n", i, ((double)count / (double)binSize));
+                pw.printf("%d\t%.2f", i, ((double)count / (double)binSize));
+                pw.println("");
             }            
             pw.close();
         } catch (IOException e) {
@@ -172,7 +173,8 @@ public class ReferenceSequenceStats {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=longestPerfectKmer; i++) {
-                pw.printf("%d\t%d\n", i, perfectKmerCounts[i]);
+                pw.printf("%d\t%d", i, perfectKmerCounts[i]);
+                pw.println("");
             }            
             pw.close();
         } catch (IOException e) {
@@ -196,7 +198,8 @@ public class ReferenceSequenceStats {
                     pc = ((double)100.0 * readBestPerfectKmer[i]) / (double)nReadsWithAlignments;
                 } 
 
-                pw.printf("%d\t%d\t%.2f\n", i, readBestPerfectKmer[i], pc);
+                pw.printf("%d\t%d\t%.2f", i, readBestPerfectKmer[i], pc);
+                pw.println("");
             }            
             pw.close();
         } catch (IOException e) {
@@ -230,7 +233,8 @@ public class ReferenceSequenceStats {
                     pc = ((double)100.0 * readCumulativeBestPerfectKmer[i]) / (double)nr; //(double)nReadsWithAlignments;
                 }
                 
-                pw.printf("%d\t%d\t%.2f\n", i, readCumulativeBestPerfectKmer[i], pc);
+                pw.printf("%d\t%d\t%.2f", i, readCumulativeBestPerfectKmer[i], pc);
+                pw.println("");
             }            
             pw.close();
         } catch (IOException e) {
@@ -246,6 +250,7 @@ public class ReferenceSequenceStats {
      */
     public void writeSummary(PrintWriter pw, String format) {
         pw.printf(format, name, size, nReadsWithAlignments, longestPerfectKmer);
+        pw.println("");
     }
         
     /**
@@ -289,7 +294,8 @@ public class ReferenceSequenceStats {
      */
     public void addDeletionError(int size, String kmer, ReadSetStats stats) {
         if (size >= MAX_INDEL) {
-            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error\n");
+            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error");
+            System.out.println("");
         } else {
             nDeletionErrors++;
             nDeletedBases += size;
@@ -309,7 +315,8 @@ public class ReferenceSequenceStats {
      */
     public void addInsertionError(int size, String kmer, ReadSetStats stats) {
         if (size >= MAX_INDEL) {
-            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error\n");
+            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error");
+            System.out.println("");
         } else {
             nInsertionErrors++;
             nInsertedBases += size;
@@ -463,8 +470,9 @@ public class ReferenceSequenceStats {
             PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
             for (int i=1; i<=largestInsertion; i++) {
                 //pw.println(i + "\t" + insertionSizes[i]);
-                pw.printf("%d\t%.4f\n", i, (100.0 * (double)insertionSizes[i]/(double)nInsertionErrors));
-            }
+                pw.printf("%d\t%.4f", i, (100.0 * (double)insertionSizes[i]/(double)nInsertionErrors));
+                pw.println("");
+           }
             pw.close();
         } catch (IOException e) {
             System.out.println("writeInsertionStats exception:");
@@ -482,10 +490,12 @@ public class ReferenceSequenceStats {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=largestDeletion; i++) {
                 //pw.println(i + "\t" + deletionSizes[i]);
-                pw.printf("%d\t%.4f\n", i, (100.0 * (double)deletionSizes[i]/(double)nDeletionErrors));            }
-            pw.close();
+                pw.printf("%d\t%.4f", i, (100.0 * (double)deletionSizes[i]/(double)nDeletionErrors));            
+                pw.println("");
+                }
+                pw.close();
         } catch (IOException e) {
-            System.out.println("writeInsertionStats exception:");
+            System.out.println("writeDeletionStats exception:");
             e.printStackTrace();
             System.exit(1);
         }                

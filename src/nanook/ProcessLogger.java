@@ -85,7 +85,9 @@ public class ProcessLogger {
             BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
             if (fAppend && writeHeadings) {
-                pw.println("\n---\n");
+                pw.println("");
+                pw.println("---");
+                pw.println("");
             }
 
             if (writeHeadings) {
@@ -94,7 +96,8 @@ public class ProcessLogger {
 
             // read the output from the command
             if (writeHeadings) {
-                pw.println("\nStdout:");
+                pw.println("");
+                pw.println("Stdout:");
             }
             
             if (writeStdio) {
@@ -106,7 +109,8 @@ public class ProcessLogger {
 
             // read any errors from the attempted command
             if (writeHeadings) {
-                pw.println("\nStderr:");
+                pw.println("");
+                pw.println("Stderr:");
             }
             
             if (writeStderr) {

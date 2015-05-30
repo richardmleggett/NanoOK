@@ -74,7 +74,8 @@ public class ReadAligner {
         String sizesFilename = referenceFile + ".sizes";
         File sizesFile = new File(sizesFilename);
         if (!sizesFile.exists()) {
-            System.out.println("\nGenerating .sizes file for reference");
+            System.out.println("");
+            System.out.println("Generating .sizes file for reference");
             SequenceReader sr = new SequenceReader(false);
             sr.indexFASTAFile(referenceFile, sizesFilename , false);
         }
@@ -101,8 +102,6 @@ public class ReadAligner {
             } else if (listOfFiles.length <= 0) {
                 System.out.println("Directory "+inputDirName+" empty");
             } else {
-                //System.out.println("\nProcessing from "+inputDirName);
-
                 int readCount = 0;
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
@@ -124,7 +123,8 @@ public class ReadAligner {
                     } else if (parser.getReadFormat() == NanoOKOptions.FASTQ) {
                         System.out.print("FASTQ");
                     }
-                    System.out.println(" files to align\n");
+                    System.out.println(" files to align");
+                    System.out.println("");
                     System.exit(1);
                 }
             }

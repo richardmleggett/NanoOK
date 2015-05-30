@@ -149,10 +149,8 @@ public abstract class SAMParser {
         alignments = new ArrayList();
         referenceSizes = new Hashtable();
         leafName = new File(filename).getName();
-
-        //System.out.println("\n" + filename);
         
-         // Read all alignmnets and put into an ArrayList
+        // Read all alignmnets and put into an ArrayList
         try
         {
             BufferedReader br = new BufferedReader(new FileReader(filename));

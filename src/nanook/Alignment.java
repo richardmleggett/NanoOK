@@ -120,8 +120,10 @@ public class Alignment implements Comparable {
     public void writeMafFile(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
-            pw.printf("s %24s %5d %5d %s %5d %s\n", hitName, hitStart, hitAlignmentSize, hitStrand, hitSequenceSize, hitString);
-            pw.printf("s %24s %5d %5d %s %5d %s\n", queryName, queryStart, queryAlignmentSize, queryStrand, querySequenceSize, queryString);
+            pw.printf("s %24s %5d %5d %s %5d %s", hitName, hitStart, hitAlignmentSize, hitStrand, hitSequenceSize, hitString);
+            pw.println("");
+            pw.printf("s %24s %5d %5d %s %5d %s", queryName, queryStart, queryAlignmentSize, queryStrand, querySequenceSize, queryString);
+            pw.println("");
             pw.close();
         } catch (IOException e) {
             System.out.println("ReportWriter exception:");

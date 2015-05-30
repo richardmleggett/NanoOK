@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.13";
+    public final static String VERSION_STRING = "v0.14";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -133,7 +133,8 @@ public class NanoOK {
                 parser = new MarginAlignParser(options, references);                                    
                 break;
             default:
-                System.out.println("Aligner unknown!\n");
+                System.out.println("Aligner unknown!");
+                System.out.println("");
                 System.exit(1);
                 break;                      
         }
@@ -145,7 +146,8 @@ public class NanoOK {
         OverallStats overallStats = new OverallStats(options);
 
         // Load references
-        System.out.println("\nFinding references");
+        System.out.println("");
+        System.out.println("Finding references");
         References references = new References(options);
         
         // Parse all reads sets       
@@ -160,16 +162,19 @@ public class NanoOK {
                 int nReads = readSet.processReads();
 
                 if (nReads < 1) {
-                    System.out.println("Error: unable to find any reads to process.\n");
+                    System.out.println("Error: unable to find any reads to process.");
+                    System.out.println("");
                     System.exit(1);
                 }
                 
                 int nReadsWithAlignments = readSet.processAlignments();
                 if (nReadsWithAlignments < 1) {
-                    System.out.println("Error: unable to find any alignments to process.\n");
+                    System.out.println("Error: unable to find any alignments to process.");
+                    System.out.println("");
                     System.exit(1);
                 } else if (nReadsWithAlignments < 1000) {
-                    System.out.println("Warning: few alignments ("+nReadsWithAlignments+") found to process.\n");                
+                    System.out.println("Warning: few alignments ("+nReadsWithAlignments+") found to process.");
+                    System.out.println("");
                 }
                                 
                 summary.addReadSetStats(overallStats.getStatsByType(type));
@@ -178,7 +183,8 @@ public class NanoOK {
             summary.close();
 
             // Write files
-            System.out.println("\nWriting analysis files");
+            System.out.println("");
+            System.out.println("Writing analysis files");
             Set<String> ids = references.getAllIds();
             int allCount = ids.size() * 3;
             int counter = 1;            
@@ -195,24 +201,28 @@ public class NanoOK {
         
         // Plot graphs
         if (options.doPlotGraphs()) {
-            System.out.println("\nPlotting graphs");
+            System.out.println("");
+            System.out.println("Plotting graphs");
             RGraphPlotter plotter = new RGraphPlotter(options);
             plotter.plot(references);                
         }
         
         // Make report
         if (options.doMakeReport()) {
-            System.out.println("\nMaking report");
+            System.out.println("");
+            System.out.println("Making report");
             ReportWriter rw = new ReportWriter(options, references, overallStats);
             rw.writeReport();
 
             if (options.doMakePDF()) {
-                System.out.println("\nMaking PDF");
+                System.out.println("");
+                System.out.println("Making PDF");
                 rw.makePDF();
             }
         }
                 
-        System.out.println("\nDone");
+        System.out.println("");
+        System.out.println("Done");
     }
     
     private static void extract(NanoOKOptions options) {
@@ -234,7 +244,10 @@ public class NanoOK {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        System.out.println("\nNanoOK " + VERSION_STRING + "\n");
+        System.out.println("");
+        System.out.println("NanoOK " + VERSION_STRING);
+        System.out.println("");
+
         NanoOKOptions options = new NanoOKOptions();
                
         Locale.setDefault(new Locale("en", "US"));
@@ -244,7 +257,8 @@ public class NanoOK {
         options.checkDirectoryStructure();
 
         // Check dependencies
-        System.out.println("\nChecking dependencies");
+        System.out.println("");
+        System.out.println("Checking dependencies");
         checkDependencies();
         
         if (options.getRunMode() == NanoOKOptions.MODE_EXTRACT) {
