@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.14";
+    public final static String VERSION_STRING = "v0.15";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -44,6 +44,7 @@ public class NanoOK {
                 String s = response.get(i);
                 if (s.contains("pdfTeX")) {
                     pdflatexVersion = s;
+                    break;
                 }
             }
         }
@@ -172,7 +173,7 @@ public class NanoOK {
                     System.out.println("Error: unable to find any alignments to process.");
                     System.out.println("");
                     System.exit(1);
-                } else if (nReadsWithAlignments < 1000) {
+                } else if (nReadsWithAlignments < 400) {
                     System.out.println("Warning: few alignments ("+nReadsWithAlignments+") found to process.");
                     System.out.println("");
                 }
@@ -269,6 +270,6 @@ public class NanoOK {
             analyse(options);
         }
         
- 
+        options.getLog().close();
     }
 }

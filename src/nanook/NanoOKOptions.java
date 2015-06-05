@@ -50,6 +50,7 @@ public class NanoOKOptions {
     private int readFormat = FASTA;
     private int numThreads = 1;
     private String jobQueue = "";
+    private NanoOKLog logFile = new NanoOKLog();
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_SCRIPT_DIR");
@@ -136,6 +137,9 @@ public class NanoOKOptions {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-maxreads")) {
                 maxReads = Integer.parseInt(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-log")) {
+                logFile.open(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-nofail") || args[i].equalsIgnoreCase("-passonly")) {
                 processPassReads = true;
@@ -583,5 +587,9 @@ public class NanoOKOptions {
     
     public String getQueue() {
         return jobQueue;
+    }
+    
+    public NanoOKLog getLog() {
+        return logFile;
     }
  }

@@ -7,7 +7,8 @@ package nanook;
  */
 public class AlignmentMerger {
     private ReferenceSequence reference;
-    private ReadSetStats overallStats;    
+    private ReadSetStats overallStats;
+    private NanoOKOptions options;
     private int readLength;
     private int[] covered;
     private int deletionSize = 0;
@@ -42,13 +43,18 @@ public class AlignmentMerger {
      * @param s the read set stats for this read set
      * @param t the type number of read (defined in NanoOKOptions)
      */
-    public AlignmentMerger(ReferenceSequence r, int l, ReadSetStats s, int t) {
+    public AlignmentMerger(NanoOKOptions o, ReferenceSequence r, int l, ReadSetStats s, int t) {
+        options = o;
         reference = r;
         readLength = l;
         overallStats = s;
         type = t;
         
         covered = new int[readLength];
+        
+        options.getLog().println("");
+        options.getLog().println("New AlignmentMerger");
+        options.getLog().println("");
     }
 
     /**
@@ -108,6 +114,7 @@ public class AlignmentMerger {
         int hitPos = a.getHitStart();
         String currentKmer = "";
         AlignmentInfo ai;
+        boolean mergeAlignment = true;
 
         // Deal with hit and query names
         if (queryName == null) {
@@ -127,135 +134,173 @@ public class AlignmentMerger {
             System.exit(1);
         }
         
-        // Store alignment size
-        if ((overallQueryStart == -1) || (queryPos < overallQueryStart)) {
-            overallQueryStart = queryPos;
-        }        
-        if ((overallHitStart == -1) || (hitPos < overallHitStart)) {
-            overallHitStart = hitPos;
-        }        
-        
-        // Expect these to be equal
-        if (hitSize != querySize) {
-            System.out.println("hitSize not equal to querySize");
-        }
-        
-        currentPerfectKmerSize = 0;
-        insertionSize = 0;
-        deletionSize = 0;
-        errorKmer = "";
-        
-        // If alignment starts in middle of area already covered, move to end
-        if (covered[queryPos] == 1) {
-            while((loopFrom < loopTo) && (covered[queryPos] == 1)) {
-                if (hitSeq.charAt(loopFrom)== '-') {
-                    queryPos++;
-                } else if (querySeq.charAt(loopFrom) == '-') {
-                    hitPos++;
-                } else {
-                    queryPos++;
-                    hitPos++;
-                }
-                loopFrom++;
+        options.getLog().println("Merging new block");
+        options.getLog().println("    queryPos = "+queryPos);
+        options.getLog().println("      hitPos = "+hitPos);
+        options.getLog().println("   querySize = "+querySize);
+        options.getLog().println("     hitSize = "+hitSize);
+         
+        // Check for new block too far from current block
+        if ((overallHitStart != -1) && (hitPos < overallHitStart)) {
+            int remainingQuerySequence = a.getQuerySequenceSize() - (overallQueryEnd - overallQueryStart);
+            int maximumDistance = remainingQuerySequence * 2;
+            if ((overallHitStart - hitPos) > maximumDistance) {
+                options.getLog().println("WARNING: hitPos too far (>"+maximumDistance+") from overallHitStart ("+overallHitStart+")");
+                mergeAlignment = false;
             }
         }
         
-        for (int i=loopFrom; i<loopTo; i++) {
-            // If we've ventured into previously covered territory, break
+        if ((overallHitEnd != -1) && (hitPos > overallHitEnd)) {
+            int remainingQuerySequence = a.getQuerySequenceSize() - (overallQueryEnd - overallQueryStart);
+            int maximumDistance = remainingQuerySequence * 2;
+ 
+            if ((hitPos - overallHitEnd) > maximumDistance) {
+                options.getLog().println("WARNING: hitPos too far from (>"+maximumDistance+") from overallHitEnd ("+overallHitEnd+")");
+                mergeAlignment = false;
+            }
+        }        
+
+        if (mergeAlignment) {
+            // Store alignment size
+            if ((overallQueryStart == -1) || (queryPos < overallQueryStart)) {
+                overallQueryStart = queryPos;
+                options.getLog().println("Modifying overallQueryStart = "+overallQueryStart);
+            }        
+            if ((overallHitStart == -1) || (hitPos < overallHitStart)) {
+                overallHitStart = hitPos;
+                options.getLog().println("Modifying overallHitStart = "+overallHitStart);
+            }        
+
+            // Expect these to be equal
+            if (hitSize != querySize) {
+                System.out.println("hitSize not equal to querySize");
+            }
+
+            currentPerfectKmerSize = 0;
+            insertionSize = 0;
+            deletionSize = 0;
+            errorKmer = "";
+
+            // If alignment starts in middle of area already covered, move to end
             if (covered[queryPos] == 1) {
-                break;
+                while((loopFrom < loopTo) && (covered[queryPos] == 1)) {
+                    if (hitSeq.charAt(loopFrom)== '-') {
+                        queryPos++;
+                    } else if (querySeq.charAt(loopFrom) == '-') {
+                        hitPos++;
+                    } else {
+                        queryPos++;
+                        hitPos++;
+                    }
+                    loopFrom++;
+                }
             }
-            
-            // Identical bases
-            if (hitSeq.charAt(i) == querySeq.charAt(i)) {
-                // Check if there are any insertions or deletions to store
-                checkStoreInsertionsOrDeletions();
-                
-                currentPerfectKmerSize++;
-                currentKmer += querySeq.charAt(i);
-                    
-                // If reached end, store perfect sequence length
-                if (i == (loopTo-1)) {
-                    storePerfectKmerLength();
+
+            options.getLog().println("    loopFrom = "+loopFrom);        
+            options.getLog().println("      loopTo = "+loopTo);        
+
+            for (int i=loopFrom; i<loopTo; i++) {
+                // If we've ventured into previously covered territory, break
+                if (covered[queryPos] == 1) {
+                    break;
                 }
 
-                // Mark this position and move on
-                identicalBases++;
-                covered[queryPos]= 1;
-                queryPos++;
-                hitPos++;
-                alignmentSizeWithoutIndels++;
-            } else {
-                // An insertion or deletion or substitution, so store perfect sequence length, if we have some
-                if (currentPerfectKmerSize > 0) {
-                    storePerfectKmerLength();
-                }
-                
-                // Insertion
-                if (hitSeq.charAt(i) == '-') {
-                    // If new insertion, check if we have a previous deletion we were tracking
-                    // And store the current perfect kmer as the one associated with this insertion
-                    if (insertionSize == 0) {
-                        checkStoreInsertionsOrDeletions();
-                        errorKmer = currentKmer;
-                    }
-                                            
-                    // Keep track of insertion size
-                    insertionSize++;      
-                    
-                    // Keep track of position
-                    queryPos++;
-                }
-                
-                // Deletion
-                else if (querySeq.charAt(i) == '-') {
-                    // If new deletion, check if we have a previous insertion we were tracking
-                    // And store the current perfect kmer as the one associated with this deletion
-                    if (deletionSize == 0) {
-                        checkStoreInsertionsOrDeletions();
-                        errorKmer = currentKmer;
-                    }
-
-                    // Keep track of size
-                    deletionSize++;
-                    
-                    // Keep track of position
-                    hitPos++;
-                }
-                
-                // Substitution
-                else {
-                    // Check if previous insertion or deletion we were tracking
+                // Identical bases
+                if (hitSeq.charAt(i) == querySeq.charAt(i)) {
+                    // Check if there are any insertions or deletions to store
                     checkStoreInsertionsOrDeletions();
-                    
-                    // Store current perfect kmer associated with this substitution
-                    errorKmer = currentKmer;
-                    
-                    // Store substitution
-                    reference.getStatsByType(type).addSubstitutionError(errorKmer, hitSeq.charAt(i), querySeq.charAt(i), overallStats);
-                    
+
+                    currentPerfectKmerSize++;
+                    currentKmer += querySeq.charAt(i);
+
+                    // If reached end, store perfect sequence length
+                    if (i == (loopTo-1)) {
+                        storePerfectKmerLength();
+                    }
+
                     // Mark this position and move on
-                    covered[queryPos] = 1;
+                    identicalBases++;
+                    covered[queryPos]= 1;
                     queryPos++;
                     hitPos++;
                     alignmentSizeWithoutIndels++;
+                } else {
+                    // An insertion or deletion or substitution, so store perfect sequence length, if we have some
+                    if (currentPerfectKmerSize > 0) {
+                        storePerfectKmerLength();
+                    }
+
+                    // Insertion
+                    if (hitSeq.charAt(i) == '-') {
+                        // If new insertion, check if we have a previous deletion we were tracking
+                        // And store the current perfect kmer as the one associated with this insertion
+                        if (insertionSize == 0) {
+                            checkStoreInsertionsOrDeletions();
+                            errorKmer = currentKmer;
+                        }
+
+                        // Keep track of insertion size
+                        insertionSize++;      
+
+                        // Keep track of position
+                        queryPos++;
+                    }
+
+                    // Deletion
+                    else if (querySeq.charAt(i) == '-') {
+                        // If new deletion, check if we have a previous insertion we were tracking
+                        // And store the current perfect kmer as the one associated with this deletion
+                        if (deletionSize == 0) {
+                            checkStoreInsertionsOrDeletions();
+                            errorKmer = currentKmer;
+                        }
+
+                        // Keep track of size
+                        deletionSize++;
+
+                        // Keep track of position
+                        hitPos++;
+                    }
+
+                    // Substitution
+                    else {
+                        // Check if previous insertion or deletion we were tracking
+                        checkStoreInsertionsOrDeletions();
+
+                        // Store current perfect kmer associated with this substitution
+                        errorKmer = currentKmer;
+
+                        // Store substitution
+                        reference.getStatsByType(type).addSubstitutionError(errorKmer, hitSeq.charAt(i), querySeq.charAt(i), overallStats);
+
+                        // Mark this position and move on
+                        covered[queryPos] = 1;
+                        queryPos++;
+                        hitPos++;
+                        alignmentSizeWithoutIndels++;
+                }
+
+                    // Reset current kmer
+                    currentKmer = "";
+                }     
+
+                alignmentSize++;
             }
-                
-                // Reset current kmer
-                currentKmer = "";
-            }     
-            
-            alignmentSize++;
-        }
 
-        if ((overallQueryEnd == -1) || (queryPos > overallQueryEnd)) {
-            overallQueryEnd = queryPos;
-        }
-        if ((overallHitEnd == -1) || (hitPos > overallHitEnd)) {
-            overallHitEnd = hitPos;
-        }
+            options.getLog().println("    queryPos = " + queryPos);
+            options.getLog().println("      hitPos = " + hitPos);
 
-        reference.getStatsByType(type).addCoverage(a.getHitStart(), a.getHitAlignmentSize());    
+            if ((overallQueryEnd == -1) || (queryPos > overallQueryEnd)) {
+                overallQueryEnd = queryPos;
+                options.getLog().println("Modifying overallQueryEnd = "+overallQueryEnd);
+            }
+            if ((overallHitEnd == -1) || (hitPos > overallHitEnd)) {
+                overallHitEnd = hitPos;
+                options.getLog().println("Modifying overallHitEnd = "+overallHitEnd);
+            }
+
+            reference.getStatsByType(type).addCoverage(a.getHitStart(), a.getHitAlignmentSize());    
+        }
     }  
     
     /**

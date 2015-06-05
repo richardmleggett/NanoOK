@@ -212,20 +212,25 @@ public class ReadSet {
                     if (file.isFile()) {
                         if (file.getName().endsWith(parser.getAlignmentFileExtension())) {
                             String pathname = inputDir + File.separator + file.getName();
-                            int nAlignments = parser.parseFile(pathname, nonAlignedSummary, stats);
+                            int nAlignments;
+
+                            options.getLog().println("");
+                            options.getLog().println("> New file " + file.getName());
+                            options.getLog().println("");
+                            
+                            nAlignments = parser.parseFile(pathname, nonAlignedSummary, stats);
 
                             if (nAlignments > 0) {
                                 nReadsWithAlignments++;
                                 parser.sortAlignments();
-                                List<Alignment> al = parser.getHighestScoringSet();
-                                
-                                for (int i=0; i<al.size(); i++) {
-                                    Alignment a = al.get(i);
-                                }
-                                
+                                List<Alignment> al = parser.getHighestScoringSet();                                
                                 String readReferenceName = al.get(0).getHitName();
+                                
+                                options.getLog().println("Query size = " + al.get(0).getQuerySequenceSize());
+                                options.getLog().println("  Hit size = " + al.get(0).getHitSequenceSize());
+                                
                                 ReferenceSequence readReference = references.getReferenceById(readReferenceName);
-                                AlignmentMerger merger = new AlignmentMerger(readReference, al.get(0).getQuerySequenceSize(), stats, type);
+                                AlignmentMerger merger = new AlignmentMerger(options, readReference, al.get(0).getQuerySequenceSize(), stats, type);
                                 for (int i=0; i<al.size(); i++) {
                                     Alignment a = al.get(i);
                                     merger.addAlignment(a);
