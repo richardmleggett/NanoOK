@@ -77,10 +77,9 @@ public class ProcessLogger {
         return outputLines;
     }
     
-    public void runAndLogCommand(String command, String logFilename, boolean fAppend) {
+    private synchronized void writeLog(Process p, String command, String logFilename, boolean fAppend) {
         try {         
             PrintWriter pw = new PrintWriter(new FileWriter(logFilename, fAppend)); 
-            Process p = Runtime.getRuntime().exec(command);            
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
@@ -121,9 +120,18 @@ public class ProcessLogger {
             }
             
             pw.close();
-            
-            p.waitFor(); 
-
+        } catch (Exception e) {
+            System.out.println("ProcessLogger exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }  
+    }
+    
+    public void runAndLogCommand(String command, String logFilename, boolean fAppend) {
+        try {         
+            Process p = Runtime.getRuntime().exec(command);            
+            p.waitFor();
+            writeLog(p, command, logFilename, fAppend);
         } catch (Exception e) {
             System.out.println("ProcessLogger exception:");
             e.printStackTrace();

@@ -27,6 +27,7 @@ public class NanoOKOptions {
     public final static int READTYPE_PASS = 1;
     public final static int READTYPE_FAIL = 2;
     public final static int MIN_ALIGNMENTS = 10;
+    private References references = new References(this);
     private String baseDir=".";
     private String referenceFile=null;
     private String sample=null;
@@ -46,6 +47,7 @@ public class NanoOKOptions {
     private boolean processTemplateReads = true;
     private boolean processComplementReads = true;
     private boolean fixIDs = false;
+    private boolean fixRandom = false;
     private int runMode = 0;
     private int readFormat = FASTA;
     private int numThreads = 1;
@@ -68,6 +70,10 @@ public class NanoOKOptions {
         }
         
         System.out.println("Scripts dir: "+scriptsDir);
+    }
+    
+    public References getReferences() {
+        return references;
     }
     
     /**
@@ -166,6 +172,9 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-fixids")) {
                 fixIDs = true;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-fixrandom")) {
+                fixRandom = true;
+                i++;                
             } else if (args[i].equalsIgnoreCase("-aligner")) {
                 aligner = args[i+1];
                 i+=2;
@@ -577,6 +586,10 @@ public class NanoOKOptions {
         return fixIDs;
     }
     
+    public boolean fixRandom() {
+        return fixRandom;
+    }
+    
     public String getScheduler() {
         return scheduler;
     }
@@ -592,4 +605,35 @@ public class NanoOKOptions {
     public NanoOKLog getLog() {
         return logFile;
     }
+    
+    /**
+     * Get the right parser
+     * @param options
+     * @return 
+     */
+    public AlignmentFileParser getParser() {
+        AlignmentFileParser parser = null;
+        
+        switch(aligner) {
+            case "last":
+                parser = new LastParser(this, references);
+                break;
+            case "bwa":
+                parser = new BWAParser(this, references);                
+                break;
+            case "blasr":
+                parser = new BLASRParser(this, references);                                    
+                break;
+            case "marginalign":
+                parser = new MarginAlignParser(this, references);                                    
+                break;
+            default:
+                System.out.println("Aligner unknown!");
+                System.out.println("");
+                System.exit(1);
+                break;                      
+        }
+        
+        return parser;
+    }    
  }

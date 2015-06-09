@@ -132,7 +132,7 @@ public class ReadExtractor {
         executor.shutdown();
         while (!executor.isTerminated()) {
             writeProgress();
-            Thread.sleep(1000);
+            Thread.sleep(100);
         }        
 
         writeProgress();

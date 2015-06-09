@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.16";
+    public final static String VERSION_STRING = "v0.17";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -112,44 +112,17 @@ public class NanoOK {
         //System.exit(0);
     }
     
-    /**
-     * Get the right parser
-     * @param options
-     * @return 
-     */
-    private static AlignmentFileParser getParser(NanoOKOptions options, References references) {
-        AlignmentFileParser parser = null;
-        
-        switch(options.getAligner()) {
-            case "last":
-                parser = new LastParser(options, references);
-                break;
-            case "bwa":
-                parser = new BWAParser(options, references);                
-                break;
-            case "blasr":
-                parser = new BLASRParser(options, references);                                    
-                break;
-            case "marginalign":
-                parser = new MarginAlignParser(options, references);                                    
-                break;
-            default:
-                System.out.println("Aligner unknown!");
-                System.out.println("");
-                System.exit(1);
-                break;                      
-        }
-        
-        return parser;
-    }
-    
-    private static void analyse(NanoOKOptions options) {
+    private static void analyse(NanoOKOptions options) throws InterruptedException {
         OverallStats overallStats = new OverallStats(options);
 
         // Load references
-        System.out.println("");
         System.out.println("Finding references");
-        References references = new References(options);
+        
+        // Load reference data
+        options.getReferences().loadReferences();
+        options.setReadFormat(options.getParser().getReadFormat());
+        
+        System.out.println("");
         
         // Parse all reads sets       
         if (options.doParseAlignments()) {
@@ -157,9 +130,8 @@ public class NanoOK {
             summary.open(options.getSample());
             
             for (int type = 0; type<3; type++) {
-                AlignmentFileParser parser = getParser(options, references);  
-                options.setReadFormat(parser.getReadFormat());
-                ReadSet readSet = new ReadSet(type, options, references, parser, overallStats.getStatsByType(type));
+                System.out.println(NanoOKOptions.getTypeFromInt(type));
+                ReadSet readSet = new ReadSet(type, options, overallStats.getStatsByType(type));
                 int nReads = readSet.processReads();
 
                 if (nReads < 1) {
@@ -167,8 +139,10 @@ public class NanoOK {
                     System.out.println("");
                     System.exit(1);
                 }
+
+                readSet.processAlignments();
                 
-                int nReadsWithAlignments = readSet.processAlignments();
+                int nReadsWithAlignments = readSet.getStats().getNumberOfReadsWithAlignments();
                 if (nReadsWithAlignments < 1) {
                     System.out.println("Error: unable to find any alignments to process.");
                     System.out.println("");
@@ -180,20 +154,20 @@ public class NanoOK {
                                 
                 summary.addReadSetStats(overallStats.getStatsByType(type));
                 overallStats.getStatsByType(type).closeKmersFile();
+                System.out.println("");
             }
             summary.close();
 
             // Write files
-            System.out.println("");
             System.out.println("Writing analysis files");
-            Set<String> ids = references.getAllIds();
+            Set<String> ids = options.getReferences().getAllIds();
             int allCount = ids.size() * 3;
             int counter = 1;            
             for (String id : ids) {
                 for (int type=0; type<3; type++) {
                     System.out.print("\r"+counter+"/"+allCount);
-                    references.writeReferenceStatFiles(type);
-                    references.writeReferenceSummary(type);
+                    options.getReferences().writeReferenceStatFiles(type);
+                    options.getReferences().writeReferenceSummary(type);
                     counter++;
                 }
             }
@@ -205,14 +179,14 @@ public class NanoOK {
             System.out.println("");
             System.out.println("Plotting graphs");
             RGraphPlotter plotter = new RGraphPlotter(options);
-            plotter.plot(references);                
+            plotter.plot();                
         }
         
         // Make report
         if (options.doMakeReport()) {
             System.out.println("");
             System.out.println("Making report");
-            ReportWriter rw = new ReportWriter(options, references, overallStats);
+            ReportWriter rw = new ReportWriter(options, overallStats);
             rw.writeReport();
 
             if (options.doMakePDF()) {
@@ -226,14 +200,14 @@ public class NanoOK {
         System.out.println("Done");
     }
     
-    private static void extract(NanoOKOptions options) {
+    private static void extract(NanoOKOptions options) throws InterruptedException {
         ReadExtractor re = new ReadExtractor(options);
         re.createDirectories();
         re.extract();
     }
     
-    private static void align(NanoOKOptions options) {
-        AlignmentFileParser parser = getParser(options, null);
+    private static void align(NanoOKOptions options) throws InterruptedException {
+        AlignmentFileParser parser = options.getParser();
         ReadAligner aligner = new ReadAligner(options, parser);
         options.setReadFormat(parser.getReadFormat());
         aligner.createDirectories();
@@ -244,7 +218,7 @@ public class NanoOK {
      * Entry to tool.
      * @param args command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.out.println("");
         System.out.println("NanoOK " + VERSION_STRING);
         System.out.println("");

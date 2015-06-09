@@ -21,6 +21,9 @@ public class References {
     public References(NanoOKOptions o)
     {
         options = o;
+    }
+    
+    public void loadReferences() {
         getSizesFile();
         GCParser gcp = new GCParser();
                 
@@ -49,7 +52,7 @@ public class References {
                     longestId = values[0].length();
                 }
                 
-                gcp.parseSequence(o.getReferenceFile(), values[0], options.getAnalysisDir() + File.separator + values[2] + File.separator + values[2] + "_gc.txt", refSeq.getBinSize());            
+                gcp.parseSequence(options.getReferenceFile(), values[0], options.getAnalysisDir() + File.separator + values[2] + File.separator + values[2] + "_gc.txt", refSeq.getBinSize());            
                 line = br.readLine();
             }
             br.close();

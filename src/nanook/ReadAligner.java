@@ -51,7 +51,7 @@ public class ReadAligner {
             System.out.print("] " + completed +"/" +  total);
             lastCompleted = e;
         }
-   }    
+    }    
     
     private void checkAndMakeDir(String dir) {
         File f = new File(dir);
@@ -176,7 +176,7 @@ public class ReadAligner {
         executor.shutdown();
         while (!executor.isTerminated()) {
             writeProgress();
-            Thread.sleep(1000);
+            Thread.sleep(100);
         }        
 
         writeProgress();

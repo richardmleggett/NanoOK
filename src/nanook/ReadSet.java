@@ -3,6 +3,9 @@ package nanook;
 import java.io.BufferedReader;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a read set (Template reads, Complement reads, or 2D reads).
@@ -10,62 +13,53 @@ import java.util.*;
  * @author Richard Leggett
  */
 public class ReadSet {
+    private ThreadPoolExecutor parserExecutor;
+    private ThreadPoolExecutor queryExecutor;
     private NanoOKOptions options;
-    private AlignmentFileParser parser;
     private ReadSetStats stats;
-    private References references;
     private int type;
     private int nFastaFiles=0;
     private String typeString;
+    private long lastCompleted = -1;
+
    
     /**
      * Constructor
      * @param t type (defined in NanoOKOprions)
      * @param o NanoOKOptions object
-     * @param r the References
-     * @param p an alignment parser object
      * @param s set of stats to associate with this read set
      */
-    public ReadSet(int t, NanoOKOptions o, References r, AlignmentFileParser p, ReadSetStats s) {
+    public ReadSet(int t, NanoOKOptions o, ReadSetStats s) {
         options = o;
-        parser = p;
-        references = r;
         type = t;
         stats = s;
+        
+        parserExecutor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        queryExecutor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
         
     /**
-     * Parse a FASTA or FASTQ file, noting length of reads etc.
-     * @param filename filename of FASTA file
+     * Write progress
      */
-    private void readQueryFile(String filename) {
-        SequenceReader sr = new SequenceReader(false);
-        int nReadsInFile;
+    private void writeProgress(ThreadPoolExecutor tpe, String msg) {
+        long completed = tpe.getCompletedTaskCount();
+        long total = tpe.getTaskCount();
+        long e = 50 * completed / total;
+        long s = 50 - e;
         
-        if (options.getReadFormat() == NanoOKOptions.FASTQ) {
-            nReadsInFile = sr.indexFASTQFile(filename);
-        } else {
-            nReadsInFile = sr.indexFASTAFile(filename, null, true);
-        }
-
-        if (nReadsInFile > 1) {
-            System.out.println("Warning: File "+filename+" has more than 1 read.");
-        }
-
-        for (int i=0; i<sr.getSequenceCount(); i++) {
-            String id = sr.getID(i);
-            
-            if (id.startsWith("00000000-0000-0000-0000-000000000000")) {
-                System.out.println("Error:");
-                System.out.println(filename);
-                System.out.println("The reads in this file do not have unique IDs because they were generated when MinKNOW was producing UUIDs, but Metrichor was not using them. To fix, run nanook_extract_reads with the -fixids option.");
-                System.exit(1);
+        if (completed != lastCompleted) {              
+            System.out.print("\r" + msg + " [");
+            for (int i=0; i<e; i++) {
+                System.out.print("=");
             }
-            
-            stats.addLength(id, sr.getLength(i));
+            for (int i=0; i<s; i++) {
+                System.out.print(" ");
+            }
+            System.out.print("] " + completed +"/" +  total);
+            lastCompleted = e;
         }
-    }
-
+    }    
+    
     /**
      * Check if filename has valid read extension 
      * @param f flename
@@ -90,7 +84,7 @@ public class ReadSet {
     /**
      * Gather length statistics on all files in this read set.
      */
-    public int processReads() {
+    public int processReads() throws InterruptedException {
         String dirs[] = new String[2];
         int readTypes[] = new int[2];
         int maxReads = options.getMaxReads();
@@ -130,31 +124,34 @@ public class ReadSet {
             } else if (listOfFiles.length <= 0) {
                 System.out.println("Directory "+inputDir+" empty");
             } else {
-                System.out.println("");
-                System.out.println("Gathering stats from "+inputDir);
+                //System.out.println("");
+                //System.out.println("Gathering stats from "+inputDir);
             
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
                         if (isValidReadExtension(file.getName())) {
-                            readQueryFile(file.getPath());
-                            stats.addReadFile(dirIndex, readTypes[dirIndex]);
+                            queryExecutor.execute(new QueryReaderRunnable(options, stats, file.getAbsolutePath(), readTypes[dirIndex]));
+                            writeProgress(queryExecutor, "Reading FASTA files");
+
                             nFastaFiles++;
-
-                            if ((nFastaFiles % 100) == 0) {
-                                System.out.print("\r"+nFastaFiles);
-                            }
-
-
                             if ((maxReads > 0) && (nFastaFiles >= maxReads)) {
                                  break;
                             }
                         }
                     }
                 }
-
-                System.out.println("\r"+nFastaFiles);
             }
         }
+        
+        // That's all - wait for all threads to finish
+        queryExecutor.shutdown();
+        while (!queryExecutor.isTerminated()) {
+            writeProgress(queryExecutor, "Reading FASTA files");
+            Thread.sleep(100);
+        }        
+
+        writeProgress(queryExecutor, "Reading FASTA files");
+        System.out.println("");
         
         stats.closeLengthsFile();
              
@@ -163,45 +160,14 @@ public class ReadSet {
         
         return nFastaFiles;
     }
-        
-    /**
-     * Pick top alignment from sorted list. List is sorted in order of score, but if there are
-     * matching scores, we pick one at random.
-     * @param al list of alignments
-     * @return index
-     */
-    private int pickTopAlignment(List<Alignment> al) {
-        int index = 0;
-        int topScore = al.get(0).getScore();
-        int countSame = 0;
-        
-        //for (int i=0; i<al.size(); i++) {
-        //    System.out.println(i+" = "+al.get(i).getScore());
-        //}
-        
-        // Find out how many have the same score
-        while ((countSame < al.size()) && (al.get(countSame).getScore() == topScore)) {
-            countSame++;
-        }
-        
-        if (countSame > 1) {
-            Random rn = new Random();
-            index = rn.nextInt(countSame);
-        }
-        
-        //System.out.println("Index chosen ("+countSame+") "+index);
-        
-        return index;
-    }
     
     /**
      * Parse all alignment files for this read set.
      * Code in common with gatherLengthStats - combine?
      */
-    public int processAlignments() {
+    public void processAlignments() throws InterruptedException {
+        AlignmentFileParser parser = options.getParser();
         int nReads = 0;
-        int nReadsWithAlignments = 0;
-        int nReadsWithoutAlignments = 0;
         String dirs[] = new String[2];
         int readTypes[] = new int[2];
         int nDirs = 0;
@@ -237,59 +203,34 @@ public class ReadSet {
             } else if (listOfFiles.length <= 0) {
                 System.out.println("Directory "+inputDir+" empty");
             } else {            
-                System.out.println("Parsing from " + inputDir);            
+                //System.out.println("Parsing from " + inputDir);            
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
                         if (file.getName().endsWith(parser.getAlignmentFileExtension())) {
-                            String pathname = inputDir + File.separator + file.getName();
-                            int nAlignments;
-
-                            options.getLog().println("");
-                            options.getLog().println("> New file " + file.getName());
-                            options.getLog().println("");
+                            parserExecutor.execute(new AlignmentFileParserRunnable(options, stats, inputDir + File.separator + file.getName(), nonAlignedSummary));
+                            writeProgress(parserExecutor, " Parsing alignments");
                             
-                            nAlignments = parser.parseFile(pathname, nonAlignedSummary, stats);
-
-                            if (nAlignments > 0) {
-                                nReadsWithAlignments++;
-                                parser.sortAlignments();
-                                List<Alignment> al = parser.getHighestScoringSet();
-                                int topAlignment = pickTopAlignment(al);
-                                String readReferenceName = al.get(topAlignment).getHitName();
-                                
-                                options.getLog().println("Query size = " + al.get(topAlignment).getQuerySequenceSize());
-                                options.getLog().println("  Hit size = " + al.get(topAlignment).getHitSequenceSize());
-                                
-                                ReferenceSequence readReference = references.getReferenceById(readReferenceName);
-                                AlignmentMerger merger = new AlignmentMerger(options, readReference, al.get(topAlignment).getQuerySequenceSize(), stats, type);
-                                for (int i=topAlignment; i<al.size(); i++) {
-                                    Alignment a = al.get(i);
-                                    merger.addAlignment(a);
-                                }
-                                AlignmentInfo stat = merger.endMergeAndStoreStats();
-                                readReference.getStatsByType(type).getAlignmentsTableFile().writeMergedAlignment(file.getName(), merger, stat);  
-                            } else {
-                                nReadsWithoutAlignments++;
-                            }
-
                             nReads++;
-                            if ((nReads % 100) == 0) {
-                                System.out.print("\r"+nReads+"/"+nFastaFiles);
-                            }
-
                             if ((maxReads > 0) && (nReads >= maxReads)) {
                                 break;
                             }
                         }
                     }
                 }
-                System.out.println("\r" + nFastaFiles + "/" + nFastaFiles + " ("+(nFastaFiles - nReads)+")");
             }
         }
+        
+        // That's all - wait for all threads to finish
+        parserExecutor.shutdown();
+        while (!parserExecutor.isTerminated()) {
+            writeProgress(parserExecutor, " Parsing alignments");
+            Thread.sleep(100);
+        }        
+
+        writeProgress(parserExecutor, " Parsing alignments");  
+        System.out.println("");
 
         stats.writeSummaryFile(options.getAlignmentSummaryFilename());
-        
-        return nReadsWithAlignments;
     }
     
     /**

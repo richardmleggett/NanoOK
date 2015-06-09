@@ -25,9 +25,9 @@ public class ReportWriter {
      * @param r the references
      * @param s overall statistics
      */
-    public ReportWriter(NanoOKOptions o, References r, OverallStats s) {
+    public ReportWriter(NanoOKOptions o, OverallStats s) {
         options = o;
-        references = r;
+        references = options.getReferences();
         overallStats = s;
         sample = o.getSample().replaceAll("_", "\\\\_");
     }

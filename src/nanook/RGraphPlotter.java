@@ -2,6 +2,9 @@ package nanook;
 
 import java.io.*;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Executes command to plot graphs with R.
@@ -9,10 +12,10 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class RGraphPlotter {
+    private ThreadPoolExecutor executor;
     private NanoOKOptions options;
-    private int nScriptsToRun;
-    private int nScriptCounter = 1;
-    String logFilename;
+    private String logFilename;
+    private long lastCompleted = -1;
 
     /**
      * Constructor.
@@ -21,8 +24,41 @@ public class RGraphPlotter {
     public RGraphPlotter(NanoOKOptions o) {
         options = o;
         logFilename = options.getLogsDir() + File.separator + "R_output_log.txt";
+        executor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
     
+    public void createLog() {
+        try {         
+            PrintWriter pw = new PrintWriter(new FileWriter(logFilename, false)); 
+            pw.close();
+        } catch (Exception e) {
+            System.out.println("createLog exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }       
+    }
+    
+    /**
+     * Write progress
+     */
+    private void writeProgress() {
+        long completed = executor.getCompletedTaskCount();
+        long total = executor.getTaskCount();
+        long e = 50 * completed / total;
+        long s = 50 - e;
+        
+        if (completed != lastCompleted) {              
+            System.out.print("\rGraph plotting [");
+            for (int i=0; i<e; i++) {
+                System.out.print("=");
+            }
+            for (int i=0; i<s; i++) {
+                System.out.print(" ");
+            }
+            System.out.print("] " + completed +"/" +  total);
+            lastCompleted = e;
+        }
+    } 
     
     public void runScript(String scriptName, String refName) {
         String command = "Rscript " + options.getScriptsDir() + File.separator + scriptName + " " + options.getBaseDirectory() + " " + options.getSample();
@@ -31,35 +67,40 @@ public class RGraphPlotter {
             command = command + " " + refName;
         }
         
-        System.out.print("\r"+nScriptCounter+"/"+nScriptsToRun);
-        
-        ProcessLogger pl = new ProcessLogger();
-        pl.runAndLogCommand(command, logFilename, nScriptCounter == 1 ? false:true);
-
-        nScriptCounter++;
+        executor.execute(new RGraphRunnable(command, logFilename));
+        writeProgress();
     }
     
     /**
      * Execute plot commands.
      * @param references References object containing all references
      */
-    public void plot(References references) {
+    public void plot() throws InterruptedException {
         String s = null;
 
-        nScriptsToRun = 1 + (references.getNumberOfReferences() * 3);
-         
         System.out.println("R log " + logFilename);
+        System.out.println("");
+        createLog();
         
         runScript("nanook_plot_lengths.R ", null);
        
-        Set<String> ids = references.getAllIds();
+        Set<String> ids = options.getReferences().getAllIds();
         for (String id : ids) {
-            String name = references.getReferenceById(id).getName();
+            String name = options.getReferences().getReferenceById(id).getName();
             runScript("nanook_plot_alignments.R", name);
             runScript("nanook_plot_indels.R", name);
             runScript("nanook_plot_read_identity.R", name);
+            writeProgress();
         }          
         
+        // That's all - wait for all threads to finish
+        executor.shutdown();
+        while (!executor.isTerminated()) {
+            writeProgress();
+            Thread.sleep(100);
+        }        
+
+        writeProgress();
         System.out.println("");
     }
 }

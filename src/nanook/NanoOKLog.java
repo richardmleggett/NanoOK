@@ -18,7 +18,7 @@ public class NanoOKLog {
     public NanoOKLog() {
     }
     
-    public void open(String filename) {
+    public synchronized void open(String filename) {
         try {
             pw = new PrintWriter(new FileWriter(filename, false));
         } catch (IOException e) {
@@ -27,25 +27,25 @@ public class NanoOKLog {
         }        
     }
     
-    public void close() {
+    public synchronized void close() {
         if (pw != null) {
             pw.close();
         }
     }
 
-    public void print(String s) {
+    public synchronized void print(String s) {
         if (pw != null) {
             pw.print(s);
         }
     }
         
-    public void println(String s) {
+    public synchronized void println(String s) {
         if (pw != null) {
             pw.println(s);
         }
     }
     
-    public PrintWriter getPrintWriter() {
+    public synchronized PrintWriter getPrintWriter() {
         return pw;
     }    
 }

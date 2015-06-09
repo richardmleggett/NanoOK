@@ -39,6 +39,7 @@ public class ReadSetStats {
     private int nSubstitutions = 0;
     private int nInsertions = 0;
     private int nDeletions = 0;
+    private int type;
    
     /**
      * Constructor
@@ -47,7 +48,8 @@ public class ReadSetStats {
      */
     public ReadSetStats(NanoOKOptions o, int t) {
         options=o;
-        typeString = NanoOKOptions.getTypeFromInt(t);
+        type = t;
+        typeString = NanoOKOptions.getTypeFromInt(type);
         for (int i=0; i<NanoOKOptions.MAX_KMER; i++) {
             readBestPerfectKmer[i] = 0;
             readCumulativeBestPerfectKmer[i] = 0;
@@ -57,7 +59,7 @@ public class ReadSetStats {
     /**
      * Open a text file to store read lengths.
      */
-    public void openLengthsFile() {
+    public synchronized void openLengthsFile() {
         String lengthsFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_lengths.txt";
         String kmersFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_kmers.txt";
         
@@ -76,18 +78,18 @@ public class ReadSetStats {
     /**
      * Close the read lengths file.
      */
-    public void closeLengthsFile() {
+    public synchronized void closeLengthsFile() {
         pwLengths.close();
     }
     
-    public void closeKmersFile() {
+    public synchronized void closeKmersFile() {
         pwKmers.close();
     }
 
     /**
      * Calculate various statistics, e.g. N50 etc.
      */
-    public void calculateStats() {
+    public synchronized void calculateStats() {
         int total = 0;
         int c = 0;
                 
@@ -114,9 +116,9 @@ public class ReadSetStats {
     
     /**
      * Update count of read files.
-     * @param i subdirectory index (0=pass, 1=fail)
+     * @param type 
      */
-    public void addReadFile(int i, int type) {
+    public synchronized void addReadFile(int type) {
        nReadFiles++;
        
        if (type == NanoOKOptions.READTYPE_PASS) {
@@ -130,7 +132,7 @@ public class ReadSetStats {
      * Get number of read files in pass directory
      * @return Number of files in pass directory
      */
-    public int getNumberOfPassFiles() {
+    public synchronized int getNumberOfPassFiles() {
         return nPassFiles;        
     }
 
@@ -138,15 +140,23 @@ public class ReadSetStats {
      * Get number of read files in fail directory
      * @return Number of files in fail directory
      */
-    public int getNumberOfFailFiles() {
+    public synchronized int getNumberOfFailFiles() {
         return nFailFiles;        
     }    
+    
+    /**
+     * Get type
+     * @return type
+     */
+    public synchronized int getType() {
+        return type;
+    }
     
     /**
      * Get type as a string.
      * @return type String
      */
-    public String getTypeString() {
+    public synchronized String getTypeString() {
         return typeString;
     }
     
@@ -154,7 +164,7 @@ public class ReadSetStats {
      * Get mean length of reads in this read set.
      * @return length
      */
-    public double getMeanLength() {
+    public synchronized double getMeanLength() {
         return meanLength;
     }
     
@@ -162,7 +172,7 @@ public class ReadSetStats {
      * Get longest read in this read set.
      * @return length
      */
-    public int getLongest() {
+    public synchronized int getLongest() {
         return longest;
     }
     
@@ -170,7 +180,7 @@ public class ReadSetStats {
      * Get shortest read in this read set.
      * @return length
      */
-    public int getShortest() {
+    public synchronized int getShortest() {
         return shortest;
     }
     
@@ -178,7 +188,7 @@ public class ReadSetStats {
      * Get N50 for this read set.
      * @return N50 length
      */
-    public int getN50() {
+    public synchronized int getN50() {
         return n50;
     }
     
@@ -186,7 +196,7 @@ public class ReadSetStats {
      * Get N50 count - number of reads of length N50 or greater.
      * @return count
      */
-    public int getN50Count() {
+    public synchronized int getN50Count() {
         return n50Count;
     }
     
@@ -194,7 +204,7 @@ public class ReadSetStats {
      * Get N90 for this read set.
      * @return N90 length
      */
-    public int getN90() {
+    public synchronized int getN90() {
         return n90;
     }
     
@@ -202,7 +212,7 @@ public class ReadSetStats {
      * Get N90 count - number of reads of length N90 or greater.
      * @return count
      */
-    public int getN90Count() {
+    public synchronized int getN90Count() {
         return n90Count;
     }
     
@@ -210,7 +220,7 @@ public class ReadSetStats {
      * Get number of reads.
      * @return number of reads
      */
-    public int getNumReads() {
+    public synchronized int getNumReads() {
         return nReads;
     }
         
@@ -218,7 +228,7 @@ public class ReadSetStats {
      * Get total bases represented by read set.
      * @return number of bases
      */
-    public int getTotalBases() {
+    public synchronized int getTotalBases() {
         return basesSum;
     }    
     
@@ -226,7 +236,7 @@ public class ReadSetStats {
      * Get number of read files.
      * @return number of files
      */
-    public int getNumReadFiles() {
+    public synchronized int getNumReadFiles() {
         return nReadFiles;
     }    
     
@@ -235,7 +245,7 @@ public class ReadSetStats {
      * @param id ID of read
      * @param l length
      */
-    public void addLength(String id, int l) {
+    public synchronized void addLength(String id, int l) {
         lengths[l]++;
         
         pwLengths.println(id + "\t" + l);
@@ -263,7 +273,7 @@ public class ReadSetStats {
      * @param id of read
      * @return length, in bases
      */
-    public int getReadLength(String id) {
+    public synchronized int getReadLength(String id) {
         int length = -1;
         
         Integer l = readLengths.get(id);
@@ -278,14 +288,14 @@ public class ReadSetStats {
     /**
      * Store a read with an alignment.
      */
-    public void addReadWithAlignment() {
+    public synchronized void addReadWithAlignment() {
         nReadsWithAlignments++;
     }
 
     /**
      * Store a read without an alignment.
      */
-    public void addReadWithoutAlignment() {
+    public synchronized void addReadWithoutAlignment() {
         nReadsWithoutAlignments++;
     }
         
@@ -293,7 +303,7 @@ public class ReadSetStats {
      * Store best perfect kmers for each read.
      * @param bestKmer length of best perfect kmer
      */
-    public void addReadBestKmer(int bestKmer) {
+    public synchronized void addReadBestKmer(int bestKmer) {
         if (bestKmer >= NanoOKOptions.MAX_KMER) {
             System.out.println("Error: the unlikely event of a best kmer size of "+bestKmer+" has happened!");
             System.exit(1);
@@ -310,7 +320,7 @@ public class ReadSetStats {
      * Get number of reads in this read set.
      * @return number of reads.
      */
-    public int getNumberOfReads() {
+    public synchronized int getNumberOfReads() {
         return nReads;
     }
     
@@ -318,7 +328,7 @@ public class ReadSetStats {
      * Get number of reads with alignments in this read set.
      * @return number of reads
      */
-    public int getNumberOfReadsWithAlignments() {
+    public synchronized int getNumberOfReadsWithAlignments() {
         return nReadsWithAlignments;
     }
     
@@ -326,7 +336,7 @@ public class ReadSetStats {
      * Get number of reads without alignments in this read set.
      * @return number of reads
      */
-    public int getNumberOfReadsWithoutAlignments() {
+    public synchronized int getNumberOfReadsWithoutAlignments() {
         return nReadsWithoutAlignments;
     }
     
@@ -334,7 +344,7 @@ public class ReadSetStats {
      * Get percentage of reads with alignments
      * @return percentage of reads
      */
-    public double getPercentOfReadsWithAlignments() {
+    public synchronized double getPercentOfReadsWithAlignments() {
         return (100.0 * (double)nReadsWithAlignments) / (double)nReads;
     }
     
@@ -342,14 +352,14 @@ public class ReadSetStats {
      * Get percentage of reads without alignments
      * @return percentage of reads
      */
-    public double getPercentOfReadsWithoutAlignments() {
+    public synchronized double getPercentOfReadsWithoutAlignments() {
         return (100.0 * (double)nReadsWithoutAlignments) / (double)nReads;
     }    
     
     /**
      * Print statistics to screen.
      */
-    public void printStats() {
+    public synchronized void printStats() {
         System.out.println("Parse " + typeString + " alignments");
         System.out.println(typeString + " reads: " + nReads);
         System.out.println(typeString + " reads with alignments: " + nReadsWithAlignments);
@@ -360,7 +370,7 @@ public class ReadSetStats {
      * Write a short summary file for this read set.
      * @param filename output filename
      */
-    public void writeSummaryFile(String filename) {
+    public synchronized void writeSummaryFile(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename, true));
             pw.println("");
@@ -386,7 +396,7 @@ public class ReadSetStats {
      * @param size size of deletion
      * @param kmer kmer prior to error
      */
-    public void addDeletionError(int size, String kmer) {
+    public synchronized void addDeletionError(int size, String kmer) {
         motifStats.addDeletionMotifs(kmer);
         nDeletions++;
     }
@@ -396,7 +406,7 @@ public class ReadSetStats {
      * @param size size of insertion
      * @param kmer kmer prior to error
      */
-    public void addInsertionError(int size, String kmer) {
+    public synchronized void addInsertionError(int size, String kmer) {
         motifStats.addInsertionMotifs(kmer);
         nInsertions++;
     } 
@@ -407,7 +417,7 @@ public class ReadSetStats {
      * @param refChar reference base
      * @param subChar substituted base
      */
-    public void addSubstitutionError(String kmer, char refChar, char subChar) {
+    public synchronized void addSubstitutionError(String kmer, char refChar, char subChar) {
         int r = -1;
         int s = -1;
         
@@ -439,7 +449,7 @@ public class ReadSetStats {
      * Get substitution error matrix (A, C, G, T vs A, C, G, T).
      * @return Substitution error matrix
      */
-    public int[][] getSubstitutionErrors() {
+    public synchronized int[][] getSubstitutionErrors() {
         return substitutionErrors;
     }
     
@@ -447,14 +457,14 @@ public class ReadSetStats {
      * Get number of substitutions.
      * @return number
      */
-    public int getNumberOfSubstitutions() {
+    public synchronized int getNumberOfSubstitutions() {
         return nSubstitutions;
     }
     
     /**
      * Write motif stats to screen.
      */
-    public void outputMotifStats() {
+    public synchronized void outputMotifStats() {
         motifStats.outputAllMotifCounts();
     }
     
@@ -462,11 +472,11 @@ public class ReadSetStats {
      * Get motif statistics.
      * @return MotifStatistics object
      */
-    public MotifStatistics getMotifStatistics() {
+    public synchronized MotifStatistics getMotifStatistics() {
         return motifStats;
     }
     
-    public void writekCounts(String id, int length, int nk, int[] s, int[] kCounts) {            
+    public synchronized void writekCounts(String id, int length, int nk, int[] s, int[] kCounts) {            
         pwKmers.print(id+"\t"+Integer.toString(length));
         for (int i=0; i<nk; i++) {
             pwKmers.print("\t"+Integer.toString(kCounts[i]));

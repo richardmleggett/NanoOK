@@ -21,7 +21,7 @@ public class AlignmentsTableFile {
         writeHeader();
     }
     
-    private void openFile(boolean append) {
+    private synchronized void openFile(boolean append) {
         try {
             pw = new PrintWriter(new FileWriter(filename, append));
         } catch (IOException e) {
@@ -33,7 +33,7 @@ public class AlignmentsTableFile {
     /**
      * Write header row to file.
      */
-    private void writeHeader() {
+    private synchronized void writeHeader() {
         openFile(false);
         pw.print("Filename\t");
         pw.print("QueryName\t");
@@ -65,7 +65,7 @@ public class AlignmentsTableFile {
      * @param queryLine query object
      * @param stat AlignmentInfo statistics
      */
-    public void writeAlignment(String alignmentFilename, MAFAlignmentLine hitLine, MAFAlignmentLine queryLine, AlignmentInfo stat) {
+    public synchronized void writeAlignment(String alignmentFilename, MAFAlignmentLine hitLine, MAFAlignmentLine queryLine, AlignmentInfo stat) {
         String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
                 queryLine.getName(),
@@ -94,7 +94,7 @@ public class AlignmentsTableFile {
         count++;
     }
     
-    public void writeMergedAlignment(String alignmentFilename, AlignmentMerger merger, AlignmentInfo stat) {
+    public synchronized void writeMergedAlignment(String alignmentFilename, AlignmentMerger merger, AlignmentInfo stat) {
         String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
                 stat.getQueryName(),
@@ -127,7 +127,7 @@ public class AlignmentsTableFile {
      * Used when no alignment found for this query.
      * @param alignmentFilename - alignment filename
      */
-    public void writeNoAlignmentMessage(String alignmentFilename) {
+    public synchronized void writeNoAlignmentMessage(String alignmentFilename) {
         openFile(true);
         pw.println(alignmentFilename+"\tNO ALIGNMENTS");
         pw.close();
