@@ -17,7 +17,8 @@ import java.util.concurrent.*;
 public class ReadAligner {
     private NanoOKOptions options;
     private AlignmentFileParser parser;
-    private ExecutorService executor;
+    private ThreadPoolExecutor executor;
+    private long lastCompleted = -1;
     
     /**
      * Constructor
@@ -27,8 +28,30 @@ public class ReadAligner {
         options = o;
         parser = afp;
         
-        executor = Executors.newFixedThreadPool(options.getNumberOfThreads());
+        executor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
+    
+    /**
+     * Write progress
+     */
+    private void writeProgress() {
+        long completed = executor.getCompletedTaskCount();
+        long total = executor.getTaskCount();
+        long e = 50 * completed / total;
+        long s = 50 - e;
+        
+        if (completed != lastCompleted) {              
+            System.out.print("\rAlignment [");
+            for (int i=0; i<e; i++) {
+                System.out.print("=");
+            }
+            for (int i=0; i<s; i++) {
+                System.out.print(" ");
+            }
+            System.out.print("] " + completed +"/" +  total);
+            lastCompleted = e;
+        }
+   }    
     
     private void checkAndMakeDir(String dir) {
         File f = new File(dir);
@@ -110,7 +133,8 @@ public class ReadAligner {
                             String outPath = outputDirName + File.separator + file.getName() + parser.getAlignmentFileExtension();
                             String logFile = logDirName + File.separator + file.getName() + ".log";
                             String command = parser.getRunCommand(inPath, outPath, reference);                            
-                            executor.execute(new SystemCommandRunnable(options, "Aligning "+inPath+"\n      to "+outPath, command, parser.outputsToStdout() ? outPath:null, logFile));
+                            executor.execute(new SystemCommandRunnable(options, null, command, parser.outputsToStdout() ? outPath:null, logFile));
+                            writeProgress();
                             readCount++;
                         }
                     }
@@ -131,7 +155,7 @@ public class ReadAligner {
         }
     }
     
-    public void align() {
+    public void align() throws InterruptedException {
         if (options.isNewStyleDir()) {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getReadDir() + File.separator + "pass",
@@ -151,8 +175,13 @@ public class ReadAligner {
         // That's all - wait for all threads to finish
         executor.shutdown();
         while (!executor.isTerminated()) {
+            writeProgress();
+            Thread.sleep(1000);
         }        
 
+        writeProgress();
+        System.out.println("");
+        System.out.println("");
         System.out.println("DONE");
     }
 }

@@ -15,7 +15,8 @@ import java.util.regex.Pattern;
  */
 public class ReadExtractor {
     private NanoOKOptions options;
-    private ExecutorService executor;
+    private ThreadPoolExecutor executor;
+    private long lastCompleted = -1;
 
     /**
      * Constructor
@@ -24,7 +25,30 @@ public class ReadExtractor {
     public ReadExtractor(NanoOKOptions o) {    
         options = o;
 
-        executor = Executors.newFixedThreadPool(options.getNumberOfThreads());
+        //executor = Executors.newFixedThreadPool(options.getNumberOfThreads());
+        executor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+    }
+    
+    /**
+     * Write progress of extraction
+     */
+    private void writeProgress() {
+        long completed = executor.getCompletedTaskCount();
+        long total = executor.getTaskCount();
+        long e = 50 * completed / total;
+        long s = 50 - e;
+        
+        if (completed != lastCompleted) {              
+            System.out.print("\rExtraction [");
+            for (int i=0; i<e; i++) {
+                System.out.print("=");
+            }
+            for (int i=0; i<s; i++) {
+                System.out.print(" ");
+            }
+            System.out.print("] " + completed +"/" +  total);
+            lastCompleted = e;
+        }
     }
     
     /**
@@ -79,6 +103,7 @@ public class ReadExtractor {
                 if (file.isFile()) {
                     if (file.getName().endsWith(".fast5")) {
                         executor.execute(new ReadExtractorRunnable(options, inputDirName, file.getName(), outputDirName));
+                        writeProgress();
                     }
                 }
             }            
@@ -88,7 +113,7 @@ public class ReadExtractor {
     /**
      * Extract reads
      */
-    public void extract() {
+    public void extract() throws InterruptedException {
         if (options.isNewStyleDir()) {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "pass",
@@ -106,8 +131,13 @@ public class ReadExtractor {
         // That's all - wait for all threads to finish
         executor.shutdown();
         while (!executor.isTerminated()) {
+            writeProgress();
+            Thread.sleep(1000);
         }        
 
+        writeProgress();
+        System.out.println("");
+        System.out.println("");
         System.out.println("DONE");
     }    
 }

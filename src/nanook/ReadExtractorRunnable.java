@@ -180,7 +180,7 @@ public class ReadExtractorRunnable implements Runnable {
     public void run() {
         String inputPathname = inDir + File.separator + filename;
         
-        System.out.println("Extracting " + inputPathname);
+        //System.out.println("Extracting " + inputPathname);
 
         boolean[] typesAvailable = checkTypesAvailable(inputPathname);        
         

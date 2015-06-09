@@ -80,7 +80,10 @@ public class SystemCommandRunnable implements Runnable {
     }
         
     public void run() {
-        System.out.println(message);
+        if (message != null) {
+            System.out.println(message);
+        }
+        
         runCommand(command, outFile, logFile);
     }         
 }

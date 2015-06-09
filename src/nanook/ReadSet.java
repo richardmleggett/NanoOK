@@ -163,6 +163,36 @@ public class ReadSet {
         
         return nFastaFiles;
     }
+        
+    /**
+     * Pick top alignment from sorted list. List is sorted in order of score, but if there are
+     * matching scores, we pick one at random.
+     * @param al list of alignments
+     * @return index
+     */
+    private int pickTopAlignment(List<Alignment> al) {
+        int index = 0;
+        int topScore = al.get(0).getScore();
+        int countSame = 0;
+        
+        //for (int i=0; i<al.size(); i++) {
+        //    System.out.println(i+" = "+al.get(i).getScore());
+        //}
+        
+        // Find out how many have the same score
+        while ((countSame < al.size()) && (al.get(countSame).getScore() == topScore)) {
+            countSame++;
+        }
+        
+        if (countSame > 1) {
+            Random rn = new Random();
+            index = rn.nextInt(countSame);
+        }
+        
+        //System.out.println("Index chosen ("+countSame+") "+index);
+        
+        return index;
+    }
     
     /**
      * Parse all alignment files for this read set.
@@ -223,15 +253,16 @@ public class ReadSet {
                             if (nAlignments > 0) {
                                 nReadsWithAlignments++;
                                 parser.sortAlignments();
-                                List<Alignment> al = parser.getHighestScoringSet();                                
-                                String readReferenceName = al.get(0).getHitName();
+                                List<Alignment> al = parser.getHighestScoringSet();
+                                int topAlignment = pickTopAlignment(al);
+                                String readReferenceName = al.get(topAlignment).getHitName();
                                 
-                                options.getLog().println("Query size = " + al.get(0).getQuerySequenceSize());
-                                options.getLog().println("  Hit size = " + al.get(0).getHitSequenceSize());
+                                options.getLog().println("Query size = " + al.get(topAlignment).getQuerySequenceSize());
+                                options.getLog().println("  Hit size = " + al.get(topAlignment).getHitSequenceSize());
                                 
                                 ReferenceSequence readReference = references.getReferenceById(readReferenceName);
-                                AlignmentMerger merger = new AlignmentMerger(options, readReference, al.get(0).getQuerySequenceSize(), stats, type);
-                                for (int i=0; i<al.size(); i++) {
+                                AlignmentMerger merger = new AlignmentMerger(options, readReference, al.get(topAlignment).getQuerySequenceSize(), stats, type);
+                                for (int i=topAlignment; i<al.size(); i++) {
                                     Alignment a = al.get(i);
                                     merger.addAlignment(a);
                                 }
