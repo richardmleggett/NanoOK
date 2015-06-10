@@ -70,6 +70,7 @@ public class References {
         ReferenceSequence r = referenceSequences.get(id);
         
         if (r == null) {
+            System.out.println("");
             System.out.println("Error: Couldn't find reference for "+id);
             System.exit(1);
         }

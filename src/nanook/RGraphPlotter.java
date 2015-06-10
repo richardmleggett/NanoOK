@@ -1,6 +1,8 @@
 package nanook;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -14,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class RGraphPlotter {
     private ThreadPoolExecutor executor;
     private NanoOKOptions options;
-    private String logFilename;
     private long lastCompleted = -1;
+    private String logDirectory;
 
     /**
      * Constructor.
@@ -23,21 +25,14 @@ public class RGraphPlotter {
      */
     public RGraphPlotter(NanoOKOptions o) {
         options = o;
-        logFilename = options.getLogsDir() + File.separator + "R_output_log.txt";
         executor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        logDirectory = options.getLogsDir() + File.separator + "R";
+        File f = new File(logDirectory);
+        if (!f.exists()) {
+            f.mkdir();
+        }
     }
-    
-    public void createLog() {
-        try {         
-            PrintWriter pw = new PrintWriter(new FileWriter(logFilename, false)); 
-            pw.close();
-        } catch (Exception e) {
-            System.out.println("createLog exception:");
-            e.printStackTrace();
-            System.exit(1);
-        }       
-    }
-    
+        
     /**
      * Write progress
      */
@@ -60,14 +55,23 @@ public class RGraphPlotter {
         }
     } 
     
-    public void runScript(String scriptName, String refName) {
-        String command = "Rscript " + options.getScriptsDir() + File.separator + scriptName + " " + options.getBaseDirectory() + " " + options.getSample();
+    public void runScript(String scriptName, String logPrefix, String refName) {
+        ArrayList<String> args = new ArrayList<String>();
+        //String command = options.getScriptsDir() + File.separator + scriptName + " " + options.getBaseDirectory() + " " + options.getSample();
+        String logFilename = logDirectory + File.separator + logPrefix;
+        
+        args.add("Rscript");
+        args.add(options.getScriptsDir() + File.separator + scriptName);
+        args.add(options.getBaseDirectory());
+        args.add(options.getSample());
         
         if (refName != null) {
-            command = command + " " + refName;
+            args.add(refName);
+            //command = command + " " + refName;
+            logFilename = logFilename + "_"+refName;
         }
-        
-        executor.execute(new RGraphRunnable(command, logFilename));
+                
+        executor.execute(new RGraphRunnable("Rscript", args, logFilename + ".txt"));
         writeProgress();
     }
     
@@ -77,19 +81,15 @@ public class RGraphPlotter {
      */
     public void plot() throws InterruptedException {
         String s = null;
-
-        System.out.println("R log " + logFilename);
-        System.out.println("");
-        createLog();
         
-        runScript("nanook_plot_lengths.R ", null);
+        runScript("nanook_plot_lengths.R", "plot_lengths", null);
        
         Set<String> ids = options.getReferences().getAllIds();
         for (String id : ids) {
             String name = options.getReferences().getReferenceById(id).getName();
-            runScript("nanook_plot_alignments.R", name);
-            runScript("nanook_plot_indels.R", name);
-            runScript("nanook_plot_read_identity.R", name);
+            runScript("nanook_plot_alignments.R", "plot_alignments", name);
+            runScript("nanook_plot_indels.R", "plot_indels", name);
+            runScript("nanook_plot_read_identity.R", "plot_identity", name);
             writeProgress();
         }          
         

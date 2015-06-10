@@ -62,7 +62,7 @@ public class ReadExtractor {
                 System.exit(1);
             }
         } else {
-            System.out.println("Making directory "+options.getReadDir());
+            //System.out.println("Making directory "+options.getReadDir());
             f.mkdir();
         }
         

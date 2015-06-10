@@ -1,9 +1,11 @@
 package nanook;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 
 /**
@@ -129,9 +131,9 @@ public class ProcessLogger {
     
     public void runAndLogCommand(String command, String logFilename, boolean fAppend) {
         try {         
-            Process p = Runtime.getRuntime().exec(command);            
-            p.waitFor();
+            Process p = Runtime.getRuntime().exec(command); 
             writeLog(p, command, logFilename, fAppend);
+            p.waitFor();
         } catch (Exception e) {
             System.out.println("ProcessLogger exception:");
             e.printStackTrace();

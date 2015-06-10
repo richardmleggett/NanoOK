@@ -172,7 +172,7 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-fixids")) {
                 fixIDs = true;
                 i++;
-            } else if (args[i].equalsIgnoreCase("-fixrandom")) {
+            } else if (args[i].equalsIgnoreCase("-deterministic")) {
                 fixRandom = true;
                 i++;                
             } else if (args[i].equalsIgnoreCase("-aligner")) {

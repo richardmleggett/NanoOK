@@ -138,6 +138,7 @@ public abstract class SAMParser {
                     System.exit(1);
                 }
             } else {
+                System.out.println("");
                 System.out.println("Error: Couldn't find reference "+hitName);
             }
         }

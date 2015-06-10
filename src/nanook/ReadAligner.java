@@ -61,7 +61,7 @@ public class ReadAligner {
                 System.exit(1);
             }
         } else {
-            System.out.println("Making directory " + dir);
+            //System.out.println("Making directory " + dir);
             f.mkdir();
         }
     }
