@@ -49,7 +49,7 @@ public class ReadAligner {
                 System.out.print(" ");
             }
             System.out.print("] " + completed +"/" +  total);
-            lastCompleted = e;
+            lastCompleted = completed;
         }
     }    
     

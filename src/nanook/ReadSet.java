@@ -56,7 +56,7 @@ public class ReadSet {
                 System.out.print(" ");
             }
             System.out.print("] " + completed +"/" +  total);
-            lastCompleted = e;
+            lastCompleted = completed;
         }
     }    
     
