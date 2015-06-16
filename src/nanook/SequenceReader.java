@@ -269,4 +269,18 @@ public class SequenceReader {
         
         return seq;
     }
+        
+    public void storeKmers(int index, KmerTable t) {
+        String seq = sequence.get(index);
+        if (seq != null) {
+            int k = t.getKmerSize();
+
+            for (int o=0; o<seq.length() - k; o++) {
+                t.countKmer(seq.substring(o, o+5));
+            }        
+        } else {
+            System.out.println("Need to handle the non-cached case");
+        }
+    }
+    
 }

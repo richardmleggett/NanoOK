@@ -3,6 +3,8 @@ package nanook;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Stores stats for each reference sequence, one object per read type (Template, Complement, 2D).
@@ -36,7 +38,9 @@ public class ReferenceSequenceStats {
     private int alignedNegativeStrand = 0;
     private long totalBases = 0;
     private long totalReads = 0;
+    private KmerTable readKmerTable = new KmerTable(5);
     private AlignmentsTableFile atf;
+    private ArrayList<KmerAbundance> kmerAbundance = new ArrayList();
 
     /** 
      * Constructor.
@@ -524,5 +528,24 @@ public class ReferenceSequenceStats {
         } else {
             return 0;
         }
+    }
+    
+    public KmerTable getReadKmerTable() {
+        return readKmerTable;
+    }
+
+    public void addKmerAbundance(String kmer, double refAbundance, double readAbundance) {
+        kmerAbundance.add(new KmerAbundance(kmer, refAbundance, readAbundance));
+    }
+    
+    public void sortKmerAbundance() {
+        Collections.sort(kmerAbundance);
+        for (int i=0; i<10; i++) {
+            KmerAbundance k = kmerAbundance.get(i);
+        }
+    }
+    
+    public ArrayList getKmerAbundance() {
+        return kmerAbundance;
     }
 }

@@ -313,7 +313,7 @@ public class ReportWriter {
         } else {
             graphSize = "height=2cm";
         }
-
+                
         pw.println("\\subsection*{" + id + " coverage}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
@@ -322,10 +322,99 @@ public class ReportWriter {
         includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_coverage.pdf", "} \\\\");
         includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_coverage.pdf", "} \\\\");
         includeGraphicsIfExists(NanoOKOptions.TYPE_ALL, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_gc.pdf", "}");
-        pw.println("\\end{figure}");        
+        pw.println("\\end{figure}"); 
+
+        if (options.getNumberOfTypes() == 1) {
+            pw.println("\\clearpage");
+        }                
+        
+        if (options.getNumberOfTypes() == 1) {
+            graphSize = "width=.7\\linewidth";
+        } else {
+            graphSize = "height=8cm";
+        }
+
+        pw.println("\\subsection*{" + id + " 5-mer analysis}");
+
+        String[] overRepLines = new String[10];
+        String[] underRepLines = new String[10];
+        for (int i=0; i<10; i++) {
+            overRepLines[i] = Integer.toString(i+1);
+            underRepLines[i] = Integer.toString(i+1);
+            for (int type=0; type<3; type++) {
+                if (options.isProcessingReadType(type)) {
+                    if (i == 0) {
+                        refSeq.getStatsByType(type).sortKmerAbundance();
+                    }
+                    
+                    ArrayList<KmerAbundance> ka = refSeq.getStatsByType(type).getKmerAbundance();
+                    KmerAbundance ko = ka.get(i);
+                    KmerAbundance ku = ka.get(ka.size() - 1 - i);
+                    overRepLines[i] += String.format(" & %s & %.3f & %.3f & %.3f", ko.getKmer(), ko.getRefAbundance(), ko.getReadAbundance(), ko.getDifference());
+                    underRepLines[i] += String.format(" & %s & %.3f & %.3f & %.3f", ku.getKmer(), ku.getRefAbundance(), ku.getReadAbundance(), ku.getDifference());
+                }
+            }
+            overRepLines[i] += " \\\\";
+            underRepLines[i] += " \\\\";
+        }        
+        
+        pw.println("\\subsection*{Under-represented 5-mers}");
+        pw.println("\\vspace{-3mm}");
+        writeKmerTable(underRepLines);
+        pw.println("\\vspace{-3mm}");
+        pw.println("\\subsection*{Over-represented 5-mers}");
+        pw.println("\\vspace{-3mm}");
+        writeKmerTable(overRepLines);
+        pw.println("\\vspace{-8mm}");
+        
+        pw.println("\\begin{figure}[H]");
+        pw.println("\\centering");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_kmer_scatter.pdf", "} ");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_kmer_scatter.pdf", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_kmer_scatter.pdf", "} \\\\");
+        pw.println("\\end{figure}");         
+    
+    }
+
+    private void writeKmerTable(String[] lines) {
+        pw.println("\\begin{table}[H]");
+        pw.println("{\\footnotesize");
+        pw.println("\\fontsize{7pt}{9pt}\\selectfont");
+        pw.print("\\begin{tabular}{|c");
+        int colCount = 1;
+        for (int type=0; type<3; type++) {                
+            if (options.isProcessingReadType(type)) {
+                pw.print("|c c c c");
+                colCount+=4;
+            }
+        }
+        pw.println("|}");
+        pw.println("\\cline{1-"+colCount+"}");
+        for (int type=0; type<3; type++) {                
+            if (options.isProcessingReadType(type)) {
+                pw.print(" & \\multicolumn{4}{c|}{" + NanoOKOptions.getTypeFromInt(type) + "}");
+            }
+        }            
+        pw.println(" \\\\");
+        pw.print("Rank");
+        for (int type=0; type<3; type++) {
+            if (options.isProcessingReadType(type)) {
+                pw.print(" & kmer & Ref & Read & Diff");
+            }
+        }
+        pw.println(" \\\\");
+        pw.println("\\cline{1-"+colCount+"}");
+                
+        for (int i=0; i<10; i++) {
+            pw.println(lines[i]);
+        }
+        pw.println("\\cline{1-"+colCount+"}");
+        pw.println("\\end{tabular}");
+        pw.println("}");
+        pw.println("\\end{table}");     
     }
     
-    /**
+     /**
      * Write Top 10 or Bottom 10 moitf section.
      * @param listType either TYPE_TOP or TYPE_BOTTOM
      * @param k kmer size
@@ -635,8 +724,8 @@ public class ReportWriter {
         for (int type=0; type<3; type++) {
             if (options.isProcessingReadType(type)) {
                 writeAlignmentsSection(overallStats.getStatsByType(type));            
-                references.writeReferenceStatFiles(type);
-                references.writeReferenceSummary(type);
+        //        references.writeReferenceStatFiles(type);
+        //        references.writeReferenceSummary(type);
                 references.writeTexSummary(type, pw);
             }
         }

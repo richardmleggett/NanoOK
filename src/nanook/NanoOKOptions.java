@@ -28,9 +28,9 @@ public class NanoOKOptions {
     public final static int READTYPE_FAIL = 2;
     public final static int MIN_ALIGNMENTS = 10;
     private References references = new References(this);
-    private String baseDir=".";
     private String referenceFile=null;
-    private String sample=null;
+    private String sampleDirectory = null;
+    private String sampleName = null;
     private String scriptsDir="/Users/leggettr/Documents/github/nanotools/scripts";
     private String aligner="last";
     private String alignerParams="";
@@ -48,6 +48,7 @@ public class NanoOKOptions {
     private boolean processComplementReads = true;
     private boolean fixIDs = false;
     private boolean fixRandom = false;
+    private boolean doKmerCounting = true;
     private int runMode = 0;
     private int readFormat = FASTA;
     private int numThreads = 1;
@@ -63,12 +64,7 @@ public class NanoOKOptions {
             System.out.println("*** WARNING: You should set NANOOK_SCRIPT_DIR. Default value unlikely to work. ***");
             System.out.println("");
         }
-        
-        value = System.getenv("NANOOK_BASE_DIR");
-        if (value != null) {
-            baseDir = value;
-        }
-        
+                
         System.out.println("Scripts dir: "+scriptsDir);
     }
     
@@ -88,8 +84,7 @@ public class NanoOKOptions {
             System.out.println("Syntax nanook <extract|align|analyse> -s <sample> [options]");
             System.out.println("");
             System.out.println("Standard options:");
-            System.out.println("    -b|-basedir <directory> specifies base directory (default .)");
-            System.out.println("    -s|-sample <name> specifies name of sample");
+            System.out.println("    -s|-sample <dir> specifies sample directory");
             System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
             System.out.println("");
             System.out.println("'extract' options:");
@@ -129,17 +124,14 @@ public class NanoOKOptions {
         i++;
         
         while (i < (args.length)) {
-            if (args[i].equalsIgnoreCase("-basedir") || args[i].equalsIgnoreCase("-b")) {
-                baseDir = args[i+1];
-                i+=2;
-            } else if (args[i].equalsIgnoreCase("-coveragebin")) {
+            if (args[i].equalsIgnoreCase("-coveragebin")) {
                 coverageBinSize = Integer.parseInt(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-reference") || args[i].equalsIgnoreCase("-r")) {
                 referenceFile = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-sample") |  args[i].equalsIgnoreCase("-s")) {
-                sample = args[i+1];
+                sampleDirectory = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-maxreads")) {
                 maxReads = Integer.parseInt(args[i+1]);
@@ -195,12 +187,7 @@ public class NanoOKOptions {
                 System.exit(0);
             }            
         }
-        
-        if (baseDir == null) {
-            System.out.println("Error: You must specify a base directory");
-            System.exit(1);
-        }
-        
+                
         if ((runMode == MODE_ALIGN) || (runMode == MODE_ANALYSE)) {
             if (referenceFile == null) {
                 System.out.println("Error: You must specify a reference");
@@ -212,10 +199,27 @@ public class NanoOKOptions {
             }
         }
         
-        if (sample == null) {
+        if (sampleDirectory == null) {
             System.out.println("Error: You must specify a sample");
             System.exit(1);
-        }      
+        } else {
+            File s = new File(sampleDirectory);
+            if (!s.exists()) {
+                System.out.println("Error: sample directory doesn't exist");
+                System.exit(1);
+            }
+            
+            if (!s.isDirectory()) {
+                System.out.println("Error: sample doesn't point to a directory");
+                System.exit(1);
+            }
+            
+            sampleDirectory = s.getAbsolutePath();
+            
+            System.out.println("Dir="+sampleDirectory);
+            
+            sampleName = s.getName();
+        }
     }
         
     public String getAligner() {
@@ -229,21 +233,13 @@ public class NanoOKOptions {
     public void setReadFormat(int f) {
         readFormat = f;
     }
-    
-    /**
-     * Get base directory name.
-     * @return directory name as String
-     */
-    public String getBaseDirectory() {
-        return baseDir;
-    }
-    
+        
     /**
      * Get sample name.
      * @return name String
      */
     public String getSample() {
-        return sample;
+        return sampleName;
     }
     
     /**
@@ -389,24 +385,28 @@ public class NanoOKOptions {
         return scriptsDir;
     }
     
+    public String getSampleDirectory() {
+        return sampleDirectory;
+    }
+    
     /**
      * Get graphs directory.
      * @return directory name as String
      */
     public String getGraphsDir() {
-        return baseDir + File.separator + sample + File.separator + "graphs";
+        return sampleDirectory + File.separator + "graphs";
     } 
 
     public String getFastaDir() {
-        return baseDir + File.separator + sample + File.separator + "fasta";
+        return sampleDirectory + File.separator + "fasta";
     }
 
     public String getFastqDir() {
-        return baseDir + File.separator + sample + File.separator + "fastq";
+        return sampleDirectory + File.separator + "fastq";
     }    
     
     public String getFast5Dir() {
-        return baseDir + File.separator + sample + File.separator + "fast5";
+        return sampleDirectory + File.separator + "fast5";
     }
     
     /**
@@ -430,7 +430,7 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getAlignerDir() {
-        return baseDir + File.separator + sample + File.separator + aligner;
+        return sampleDirectory + File.separator + aligner;
     } 
 
     /**
@@ -438,7 +438,7 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getLatexDir() {
-        return baseDir + File.separator + sample + File.separator + "latex";
+        return sampleDirectory + File.separator + "latex";
     } 
 
     /**
@@ -446,7 +446,7 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getLogsDir() {
-        return baseDir + File.separator + sample + File.separator + "logs";
+        return sampleDirectory + File.separator + "logs";
     } 
     
     public boolean isNewStyleDir() {
@@ -466,7 +466,7 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getAnalysisDir() {
-        return baseDir + File.separator + sample + File.separator + "analysis";
+        return sampleDirectory + File.separator + "analysis";
     } 
     
     /**
@@ -474,7 +474,7 @@ public class NanoOKOptions {
      * @return filename as String
      */
     public String getTexFilename() {
-        return baseDir + File.separator + sample + File.separator + "latex" + File.separator + sample + ".tex";
+        return sampleDirectory + File.separator + "latex" + File.separator + sampleName + ".tex";
     }
     
     /**
@@ -636,4 +636,8 @@ public class NanoOKOptions {
         
         return parser;
     }    
+    
+    public boolean doKmerCounting() {
+        return doKmerCounting;
+    }
  }

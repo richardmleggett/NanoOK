@@ -57,17 +57,14 @@ public class RGraphPlotter {
     
     public void runScript(String scriptName, String logPrefix, String refName) {
         ArrayList<String> args = new ArrayList<String>();
-        //String command = options.getScriptsDir() + File.separator + scriptName + " " + options.getBaseDirectory() + " " + options.getSample();
         String logFilename = logDirectory + File.separator + logPrefix;
         
         args.add("Rscript");
         args.add(options.getScriptsDir() + File.separator + scriptName);
-        args.add(options.getBaseDirectory());
-        args.add(options.getSample());
+        args.add(options.getSampleDirectory());
         
         if (refName != null) {
             args.add(refName);
-            //command = command + " " + refName;
             logFilename = logFilename + "_"+refName;
         }
                 
@@ -87,9 +84,7 @@ public class RGraphPlotter {
         Set<String> ids = options.getReferences().getAllIds();
         for (String id : ids) {
             String name = options.getReferences().getReferenceById(id).getName();
-            runScript("nanook_plot_alignments.R", "plot_alignments", name);
-            runScript("nanook_plot_indels.R", "plot_indels", name);
-            runScript("nanook_plot_read_identity.R", "plot_identity", name);
+            runScript("nanook_plot_reference.R", "plot_reference", name);
             writeProgress();
         }          
         

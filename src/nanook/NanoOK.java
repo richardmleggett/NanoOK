@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.18";
+    public final static String VERSION_STRING = "v0.21";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -130,31 +130,31 @@ public class NanoOK {
             summary.open(options.getSample());
             
             for (int type = 0; type<3; type++) {
-                System.out.println(NanoOKOptions.getTypeFromInt(type));
-                ReadSet readSet = new ReadSet(type, options, overallStats.getStatsByType(type));
-                int nReads = readSet.processReads();
+                if (options.isProcessingReadType(type)) {
+                    System.out.println(NanoOKOptions.getTypeFromInt(type));
+                    ReadSet readSet = new ReadSet(type, options, overallStats.getStatsByType(type));
+                    int nReads = readSet.processReads();
 
-                if (nReads < 1) {
-                    System.out.println("Error: unable to find any reads to process.");
-                    System.out.println("");
-                    System.exit(1);
-                }
+                    if (nReads < 1) {
+                        System.out.println("Error: unable to find any reads to process.");
+                        System.out.println("");
+                        System.exit(1);
+                    }
 
-                readSet.processAlignments();
-                
-                int nReadsWithAlignments = readSet.getStats().getNumberOfReadsWithAlignments();
-                if (nReadsWithAlignments < 1) {
-                    System.out.println("Error: unable to find any alignments to process.");
-                    System.out.println("");
-                    System.exit(1);
-                } else if (nReadsWithAlignments < 400) {
-                    System.out.println("Warning: few alignments ("+nReadsWithAlignments+") found to process.");
+                    int nReadsWithAlignments = readSet.getStats().getNumberOfReadsWithAlignments();
+                    if (nReadsWithAlignments < 1) {
+                        System.out.println("Error: unable to find any alignments to process.");
+                        System.out.println("");
+                        System.exit(1);
+                    } else if (nReadsWithAlignments < 400) {
+                        System.out.println("Warning: few alignments ("+nReadsWithAlignments+") found to process.");
+                        System.out.println("");
+                    }
+
+                    summary.addReadSetStats(overallStats.getStatsByType(type));
+                    overallStats.getStatsByType(type).closeKmersFile();
                     System.out.println("");
                 }
-                                
-                summary.addReadSetStats(overallStats.getStatsByType(type));
-                overallStats.getStatsByType(type).closeKmersFile();
-                System.out.println("");
             }
             summary.close();
 
@@ -163,13 +163,11 @@ public class NanoOK {
             Set<String> ids = options.getReferences().getAllIds();
             int allCount = ids.size() * 3;
             int counter = 1;            
-            for (String id : ids) {
-                for (int type=0; type<3; type++) {
-                    System.out.print("\r"+counter+"/"+allCount);
-                    options.getReferences().writeReferenceStatFiles(type);
-                    options.getReferences().writeReferenceSummary(type);
-                    counter++;
-                }
+            for (int type=0; type<3; type++) {
+                System.out.print("\r"+counter+"/"+allCount);
+                options.getReferences().writeReferenceStatFiles(type);
+                options.getReferences().writeReferenceSummary(type);
+                counter++;
             }
             System.out.println("");
         }

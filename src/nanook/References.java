@@ -11,7 +11,8 @@ import java.util.*;
 public class References {
     private NanoOKOptions options;
     private File sizesFile;
-    private Hashtable<String,ReferenceSequence> referenceSequences = new Hashtable();
+    private Hashtable<String,ReferenceSequence> referenceSeqIds = new Hashtable();
+    private Hashtable<String,ReferenceSequence> referenceSeqNames = new Hashtable();
     private int longestId = 0;
         
     /**
@@ -23,10 +24,21 @@ public class References {
         options = o;
     }
     
-    public void loadReferences() {
-        getSizesFile();
-        GCParser gcp = new GCParser();
-                
+    public void readSizesFile() {
+        sizesFile = new File(options.getReferenceFile()+".sizes");
+        if (! sizesFile.exists()) {
+            int extensionIndex = options.getReferenceFile().lastIndexOf('.');
+            if (extensionIndex > 0) {
+                String minusExtension = options.getReferenceFile().substring(0, extensionIndex);
+                sizesFile = new File(minusExtension + ".sizes");
+            }
+        }
+        
+        if (!sizesFile.exists()) {
+            System.out.println("Error: can't read sizes file.");
+            System.exit(1);
+        }        
+        
         try
         {
             BufferedReader br = new BufferedReader(new FileReader(sizesFile));
@@ -34,25 +46,31 @@ public class References {
             while (line != null) {
                 String[] values = line.split("\\t");
                 int size = Integer.parseInt(values[1]);
-                
+
                 System.out.println("- Reference " + values[2] + "\t" + size);
-                
-                ReferenceSequence refSeq = referenceSequences.get(values[0]);
-                if (refSeq != null) {
+
+                ReferenceSequence refSeqById = referenceSeqIds.get(values[0]);
+                if (refSeqById != null) {
                     System.out.println("Error: reference contig ID "+values[0]+" occurs more than once.");
                     System.exit(1);
-                } else {
-                    refSeq = new ReferenceSequence(values[0], size, values[2]);
-                    options.checkAndMakeReferenceAnalysisDir(refSeq.getName());
-                    referenceSequences.put(values[0], refSeq);
-                    refSeq.openAlignmentSummaryFiles(options.getAnalysisDir());
+                }
+
+                ReferenceSequence refSeqByName = referenceSeqNames.get(values[2]);
+                if (refSeqByName != null) {
+                    System.out.println("Error: reference contig name "+values[2]+" occurs more than once.");
+                    System.exit(1);
                 }
                 
+                refSeqById = new ReferenceSequence(values[0], size, values[2]);
+                options.checkAndMakeReferenceAnalysisDir(refSeqById.getName());
+                referenceSeqIds.put(values[0], refSeqById);
+                referenceSeqNames.put(values[2], refSeqById);
+                refSeqById.openAlignmentSummaryFiles(options.getAnalysisDir());
+
                 if (values[0].length() > longestId) {
                     longestId = values[0].length();
                 }
-                
-                gcp.parseSequence(options.getReferenceFile(), values[0], options.getAnalysisDir() + File.separator + values[2] + File.separator + values[2] + "_gc.txt", refSeq.getBinSize());            
+
                 line = br.readLine();
             }
             br.close();
@@ -61,13 +79,92 @@ public class References {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+       
+    /**
+     * Read reference FASTA file
+     */
+    private void readReferenceFile() {
+        ReferenceSequence currentRef = null;
+        KmerTable refKmerTable = null;
+        GCCounter gcc = null;
+
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(options.getReferenceFile()));             
+            String line;
+            String id = null;
+            String name = null;
+            String seq = "";
+            String previousKmerString = "";
+                                    
+            do {
+                line = br.readLine();
+                if (line != null) {
+                    line = line.trim();
+                }
+
+                // New ID
+                if ((line == null) || (line.startsWith(">"))) {                    
+                    if (id != null) {
+                        if (gcc != null) {
+                            gcc.closeFile();
+                        }                        
+                    }
+                    
+                    if (line != null) {
+                        String[] parts = line.substring(1).split("(\\s+)");
+                        id = parts[0];
+                        currentRef = getReferenceById(id);
+                        refKmerTable = currentRef.getKmerTable();
+                        gcc = new GCCounter(currentRef.getBinSize(), options.getAnalysisDir() + File.separator + currentRef.getName() + File.separator + currentRef.getName() + "_gc.txt");
+                    }                                        
+                }
+                // Continuing sequence read 
+                else if (line != null) {
+                    String kmerSeq = previousKmerString + line;                    
+                    int k = refKmerTable.getKmerSize();
+
+                    // Store kmers
+                    for (int o=0; o<kmerSeq.length() - k; o++) {
+                        refKmerTable.countKmer(kmerSeq.substring(o, o+5));
+                    }
+                    
+                    // Store end k-1 bases for start of next kmer
+                    if (line.length() > k) {
+                        previousKmerString = line.substring(line.length() - k + 1);
+                    } else {
+                        previousKmerString = "";
+                    }
+                    
+                    // Now for GC graph
+                    gcc.addString(line);
+                    
+                }                
+            } while (line != null);
+
+            br.close();
+        } catch (Exception e) {
+            System.out.println("readFasta Exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }
+                
+    }
+    
+    /**
+     * Load references
+     */
+    public void loadReferences() {
+        readSizesFile(); 
+        readReferenceFile();
     }    
     
     /**
      * Get a ReferenceSequence object from sequence ID.
      */
     public ReferenceSequence getReferenceById(String id) {
-        ReferenceSequence r = referenceSequences.get(id);
+        ReferenceSequence r = referenceSeqIds.get(id);
         
         if (r == null) {
             System.out.println("");
@@ -83,7 +180,7 @@ public class References {
      * @return a String set
      */
     public Set<String> getAllIds() {
-        return referenceSequences.keySet();
+        return referenceSeqIds.keySet();
     }
     
     /**
@@ -92,10 +189,10 @@ public class References {
      */
     public ArrayList getSortedReferences() {
         ArrayList sortedReferences = new ArrayList();
-        Set<String> keys = referenceSequences.keySet();
+        Set<String> keys = referenceSeqIds.keySet();
         
         for(String id : keys) {
-            sortedReferences.add(referenceSequences.get(id));
+            sortedReferences.add(referenceSeqIds.get(id));
         }    
         Collections.sort(sortedReferences);
         
@@ -108,16 +205,17 @@ public class References {
      * @param type a type, as defined in NanoOKOptions (for example TYPE_TEMPLATE)
      */
     public void writeReferenceStatFiles(int type) {
-        Set<String> keys = referenceSequences.keySet();
+        Set<String> keys = referenceSeqIds.keySet();
         
         for(String id : keys) {
-            ReferenceSequence ref = referenceSequences.get(id);
+            ReferenceSequence ref = referenceSeqIds.get(id);
             ref.getStatsByType(type).writeCoverageData(options.getAnalysisDir() + File.separator + ref.getName() + File.separator + ref.getName() + "_" + options.getTypeFromInt(type) + "_coverage.txt", ref.getBinSize());
             ref.getStatsByType(type).writePerfectKmerHist(options.getAnalysisDir() + File.separator + ref.getName() + File.separator + ref.getName() + "_" + options.getTypeFromInt(type) + "_all_perfect_kmers.txt");
             ref.getStatsByType(type).writeBestPerfectKmerHist(options.getAnalysisDir() + File.separator + ref.getName() + File.separator + ref.getName() + "_" + options.getTypeFromInt(type) + "_best_perfect_kmers.txt");
             ref.getStatsByType(type).writeBestPerfectKmerHistCumulative(options.getAnalysisDir() + File.separator + ref.getName() + File.separator + ref.getName() + "_" + options.getTypeFromInt(type) + "_cumulative_perfect_kmers.txt");
             ref.getStatsByType(type).writeInsertionStats(options.getAnalysisDir() + File.separator + ref.getName() + File.separator + ref.getName() + "_" + options.getTypeFromInt(type) + "_insertions.txt");
             ref.getStatsByType(type).writeDeletionStats(options.getAnalysisDir() + File.separator + ref.getName() + File.separator + ref.getName() + "_" + options.getTypeFromInt(type) + "_deletions.txt");
+            ref.writeKmerFile(type, options.getAnalysisDir() + File.separator + ref.getName() + File.separator + ref.getName() + "_" + options.getTypeFromInt(type) + "_kmers.txt");
         }        
     }
     
@@ -134,27 +232,7 @@ public class References {
      * @return number of references
      */
     public int getNumberOfReferences() {
-        return referenceSequences.size();
-    }
-    
-    /**
-     * Work out the sizes filename for this set of references.
-     */
-    private void getSizesFile()
-    {
-        sizesFile = new File(options.getReferenceFile()+".sizes");
-        if (! sizesFile.exists()) {
-            int extensionIndex = options.getReferenceFile().lastIndexOf('.');
-            if (extensionIndex > 0) {
-                String minusExtension = options.getReferenceFile().substring(0, extensionIndex);
-                sizesFile = new File(minusExtension + ".sizes");
-            }
-        }
-        
-        if (!sizesFile.exists()) {
-            System.out.println("Error: can't read sizes file.");
-            System.exit(1);
-        }
+        return referenceSeqIds.size();
     }
     
     /**
@@ -168,10 +246,10 @@ public class References {
             pw.println("");
             pw.printf(formatString, "Id", "Size", "ReadsAlign", "LongPerfKm");    
             pw.println("");
-            List<String> keys = new ArrayList<String>(referenceSequences.keySet());
+            List<String> keys = new ArrayList<String>(referenceSeqIds.keySet());
             Collections.sort(keys);
             for(String id : keys) {
-                referenceSequences.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10d");
+                referenceSeqIds.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10d");
             }
             pw.close();
         } catch (IOException e) {

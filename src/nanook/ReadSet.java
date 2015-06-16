@@ -82,13 +82,17 @@ public class ReadSet {
     }
     
     /**
-     * Gather length statistics on all files in this read set.
+     * Gather length statistics on reads and parse alignments
      */
     public int processReads() throws InterruptedException {
-        String dirs[] = new String[2];
+        AlignmentFileParser parser = options.getParser();
+        String[] readDirs = new String[2];
+        String[] alignerDirs = new String[2];
         int readTypes[] = new int[2];
-        int maxReads = options.getMaxReads();
         int nDirs = 0;
+        int maxReads = options.getMaxReads();
+        String outputFilename = options.getAnalysisDir() + File.separator + "Unaligned" + File.separator + options.getTypeFromInt(type) + "_nonaligned.txt";
+        AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile(outputFilename);
         
         nFastaFiles=0;
 
@@ -98,24 +102,28 @@ public class ReadSet {
 
         if (options.isNewStyleDir()) {
             if (options.isProcessingPassReads()) {
-                dirs[nDirs] = options.getReadDir() + File.separator + "pass";
+                readDirs[nDirs] = options.getReadDir() + File.separator + "pass";
+                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "pass";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
                 nDirs++;
             }
             
             if (options.isProcessingFailReads()) {
-                dirs[nDirs] = options.getReadDir() + File.separator + "fail";
+                readDirs[nDirs] = options.getReadDir() + File.separator + "fail";
+                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "fail";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
                 nDirs++;
             }
         } else {
-            dirs[nDirs] = options.getReadDir();
+            readDirs[nDirs] = options.getReadDir();
+            alignerDirs[nDirs] = options.getAlignerDir();
             readTypes[nDirs] = NanoOKOptions.READTYPE_COMBINED;
             nDirs++;
         }
                 
         for (int dirIndex=0; dirIndex<nDirs; dirIndex++) {        
-            String inputDir = dirs[dirIndex] + File.separator + options.getTypeFromInt(type);
+            String inputDir = readDirs[dirIndex] + File.separator + options.getTypeFromInt(type);
+            String alignDir = alignerDirs[dirIndex] + File.separator + options.getTypeFromInt(type);
             File folder = new File(inputDir);
             File[] listOfFiles = folder.listFiles();
 
@@ -124,19 +132,22 @@ public class ReadSet {
             } else if (listOfFiles.length <= 0) {
                 System.out.println("Directory "+inputDir+" empty");
             } else {
-                //System.out.println("");
-                //System.out.println("Gathering stats from "+inputDir);
-            
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
                         if (isValidReadExtension(file.getName())) {
-                            queryExecutor.execute(new QueryReaderRunnable(options, stats, file.getAbsolutePath(), readTypes[dirIndex]));
-                            writeProgress(queryExecutor, "Reading FASTA files");
-
-                            nFastaFiles++;
-                            if ((maxReads > 0) && (nFastaFiles >= maxReads)) {
-                                 break;
-                            }
+                            String alignmentFilename = alignDir + File.separator + file.getName() + parser.getAlignmentFileExtension();
+                            if (new File(alignmentFilename).exists()) {
+                                queryExecutor.execute(new ParserRunnable(options, stats, file.getAbsolutePath(), alignmentFilename, type, readTypes[dirIndex], nonAlignedSummary));
+                                writeProgress(queryExecutor, "Parsing");
+                                                                
+                                nFastaFiles++;
+                                if ((maxReads > 0) && (nFastaFiles >= maxReads)) {
+                                     break;
+                                }
+                                
+                            } else {
+                                System.out.println("Error: Read ignored, can't find alignment "+alignmentFilename);
+                            } 
                         }
                     }
                 }
@@ -146,91 +157,18 @@ public class ReadSet {
         // That's all - wait for all threads to finish
         queryExecutor.shutdown();
         while (!queryExecutor.isTerminated()) {
-            writeProgress(queryExecutor, "Reading FASTA files");
+            writeProgress(queryExecutor, "Parsing");
             Thread.sleep(100);
         }        
 
-        writeProgress(queryExecutor, "Reading FASTA files");
+        writeProgress(queryExecutor, "Parsing");
         System.out.println("");
         
         stats.closeLengthsFile();
-             
-        //System.out.println("Calculating...");
+        stats.writeSummaryFile(options.getAlignmentSummaryFilename());        
         stats.calculateStats();    
         
         return nFastaFiles;
-    }
-    
-    /**
-     * Parse all alignment files for this read set.
-     * Code in common with gatherLengthStats - combine?
-     */
-    public void processAlignments() throws InterruptedException {
-        AlignmentFileParser parser = options.getParser();
-        int nReads = 0;
-        String dirs[] = new String[2];
-        int readTypes[] = new int[2];
-        int nDirs = 0;
-        int maxReads = options.getMaxReads();
-        String outputFilename = options.getAnalysisDir() + File.separator + "Unaligned" + File.separator + options.getTypeFromInt(type) + "_nonaligned.txt";
-        AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile(outputFilename);
-        
-        if (options.isNewStyleDir()) {
-            if (options.isProcessingPassReads()) {
-                dirs[nDirs] = options.getAlignerDir() + File.separator + "pass";
-                readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
-                nDirs++;
-            }
-            
-            if (options.isProcessingFailReads()) {
-                dirs[nDirs] = options.getAlignerDir() + File.separator + "fail";
-                readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
-                nDirs++;
-            }
-        } else {
-            dirs[nDirs] = options.getAlignerDir();
-            readTypes[nDirs] = NanoOKOptions.READTYPE_COMBINED;
-            nDirs++;
-        }
-        
-        for (int dirIndex=0; dirIndex<nDirs; dirIndex++) {        
-            String inputDir = dirs[dirIndex] + File.separator + options.getTypeFromInt(type);
-            File folder = new File(inputDir);
-            File[] listOfFiles = folder.listFiles();
-            
-            if (listOfFiles == null) {
-                System.out.println("Directory "+inputDir+" doesn't exist");
-            } else if (listOfFiles.length <= 0) {
-                System.out.println("Directory "+inputDir+" empty");
-            } else {            
-                //System.out.println("Parsing from " + inputDir);            
-                for (File file : listOfFiles) {
-                    if (file.isFile()) {
-                        if (file.getName().endsWith(parser.getAlignmentFileExtension())) {
-                            parserExecutor.execute(new AlignmentFileParserRunnable(options, stats, inputDir + File.separator + file.getName(), nonAlignedSummary));
-                            writeProgress(parserExecutor, " Parsing alignments");
-                            
-                            nReads++;
-                            if ((maxReads > 0) && (nReads >= maxReads)) {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // That's all - wait for all threads to finish
-        parserExecutor.shutdown();
-        while (!parserExecutor.isTerminated()) {
-            writeProgress(parserExecutor, " Parsing alignments");
-            Thread.sleep(100);
-        }        
-
-        writeProgress(parserExecutor, " Parsing alignments");  
-        System.out.println("");
-
-        stats.writeSummaryFile(options.getAlignmentSummaryFilename());
     }
     
     /**
