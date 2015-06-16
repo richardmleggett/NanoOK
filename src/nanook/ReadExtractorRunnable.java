@@ -13,8 +13,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
- * @author leggettr
+ * Enable multi-threading of read extraction
+ * 
+ * @author Richard Leggett
  */
 public class ReadExtractorRunnable implements Runnable {
     public final static String TYPE_STRING_TEMPLATE = "/Analyses/Basecall_2D_000/BaseCalled_template/Fastq";

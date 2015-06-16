@@ -1,8 +1,9 @@
 package nanook;
 
 /**
- *
- * @author leggettr
+ * Represent abundance of a kmer
+ * 
+ * @author Richard Leggett
  */
 public class KmerAbundance implements Comparable {
     String kmer;

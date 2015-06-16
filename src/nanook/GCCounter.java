@@ -7,8 +7,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author leggettr
+ * Count GC content in references
+ * 
+ * @author Richard Leggett
  */
 public class GCCounter {
     PrintWriter pw = null;

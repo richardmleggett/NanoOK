@@ -9,8 +9,9 @@ import java.io.File;
 import java.util.List;
 
 /**
- *
- * @author leggettr
+ * Enable multi-threading of R plotting
+ * 
+ * @author Richard Leggett
  */
 public class RGraphRunnable implements Runnable {
     private String command;

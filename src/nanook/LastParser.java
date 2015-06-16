@@ -5,8 +5,9 @@
 package nanook;
 
 /**
- *
- * @author leggettr
+ * Parser for LAST alignments
+ * 
+ * @author Richard Leggett
  */
 public class LastParser extends MAFParser implements AlignmentFileParser {
     private String alignmentParams = "-s 2 -T 0 -Q 0 -a 1";

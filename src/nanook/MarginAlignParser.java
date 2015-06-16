@@ -7,8 +7,9 @@ package nanook;
 import java.io.File;
 
 /**
- *
- * @author leggettr
+ * Parser for marginAlign files
+ * 
+ * @author Richard Leggett
  */
 public class MarginAlignParser extends SAMParser implements AlignmentFileParser {
     private String alignmentParams="";

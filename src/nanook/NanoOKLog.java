@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package nanook;
 
 import java.io.FileWriter;
@@ -9,8 +5,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- *
- * @author leggettr
+ * Logging
+ * 
+ * @author Richard Leggett
  */
 public class NanoOKLog {
     PrintWriter pw = null;

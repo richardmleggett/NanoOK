@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  * Execute a system process and log result to a file
  * 
- * @author leggettr
+ * @author Richard Leggett
  */
 public class ProcessLogger {
     private boolean writeStdio = true;

@@ -4,8 +4,9 @@ import java.util.Hashtable;
 import java.util.Set;
 
 /**
- *
- * @author leggettr
+ * KmerTable used for 5-mer comparison
+ * 
+ * @author Richard Leggett
  */
 public class KmerTable {
     private int kmerSize = 5;

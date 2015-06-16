@@ -5,8 +5,8 @@
 package nanook;
 
 /**
- *
- * @author leggettr
+ * Parser for BLASR files
+ * @author Richard Leggett
  */
 public class BLASRParser extends SAMParser implements AlignmentFileParser {
     private String alignmentParams = "";

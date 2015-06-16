@@ -5,8 +5,8 @@
 package nanook;
 
 /**
- *
- * @author leggettr
+ * Parser for BWA files
+ * @author Richard Leggett
  */
 public class BWAParser extends SAMParser implements AlignmentFileParser {
     private String alignmentParams = "-x ont2d";

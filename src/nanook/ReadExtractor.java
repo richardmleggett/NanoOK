@@ -10,8 +10,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
- * @author leggettr
+ * Read extractor
+ * 
+ * @author Richard Leggett
  */
 public class ReadExtractor {
     private NanoOKOptions options;

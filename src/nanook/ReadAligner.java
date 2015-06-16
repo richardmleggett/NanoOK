@@ -11,8 +11,9 @@ import java.util.ArrayList;
 import java.util.concurrent.*;
 
 /**
- *
- * @author leggettr
+ * Align reads
+ * 
+ * @author Richard Leggett
  */
 public class ReadAligner {
     private NanoOKOptions options;

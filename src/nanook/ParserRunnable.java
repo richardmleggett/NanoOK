@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Random;
 
 /**
- *
- * @author leggettr
+ * Enables multi-threading of parsing
+ * 
+ * @author Richard Leggett
  */
 public class ParserRunnable implements Runnable
 {

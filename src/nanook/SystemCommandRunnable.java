@@ -8,8 +8,9 @@ import java.io.File;
 import java.util.LinkedList;
 
 /**
- *
- * @author leggettr
+ * Enable multi-threading of system commands
+ * 
+ * @author Richard Leggett
  */
 public class SystemCommandRunnable implements Runnable {
     NanoOKOptions options;
