@@ -1,7 +1,10 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
  */
+
 package nanook;
 
 import java.io.BufferedReader;

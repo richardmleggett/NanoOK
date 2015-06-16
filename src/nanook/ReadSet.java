@@ -1,3 +1,10 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
+ */
+
 package nanook;
 
 import java.io.BufferedReader;
@@ -41,14 +48,14 @@ public class ReadSet {
     /**
      * Write progress
      */
-    private void writeProgress(ThreadPoolExecutor tpe, String msg) {
+    private void writeProgress(ThreadPoolExecutor tpe) {
         long completed = tpe.getCompletedTaskCount();
         long total = tpe.getTaskCount();
         long e = 50 * completed / total;
         long s = 50 - e;
         
         if (completed != lastCompleted) {              
-            System.out.print("\r" + msg + " [");
+            System.out.print("\r[");
             for (int i=0; i<e; i++) {
                 System.out.print("=");
             }
@@ -138,7 +145,7 @@ public class ReadSet {
                             String alignmentFilename = alignDir + File.separator + file.getName() + parser.getAlignmentFileExtension();
                             if (new File(alignmentFilename).exists()) {
                                 queryExecutor.execute(new ParserRunnable(options, stats, file.getAbsolutePath(), alignmentFilename, type, readTypes[dirIndex], nonAlignedSummary));
-                                writeProgress(queryExecutor, "Parsing");
+                                writeProgress(queryExecutor);
                                                                 
                                 nFastaFiles++;
                                 if ((maxReads > 0) && (nFastaFiles >= maxReads)) {
@@ -157,11 +164,11 @@ public class ReadSet {
         // That's all - wait for all threads to finish
         queryExecutor.shutdown();
         while (!queryExecutor.isTerminated()) {
-            writeProgress(queryExecutor, "Parsing");
+            writeProgress(queryExecutor);
             Thread.sleep(100);
         }        
 
-        writeProgress(queryExecutor, "Parsing");
+        writeProgress(queryExecutor);
         System.out.println("");
         
         stats.closeLengthsFile();

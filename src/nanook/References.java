@@ -1,3 +1,10 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
+ */
+
 package nanook;
 
 import java.io.*;
@@ -46,8 +53,6 @@ public class References {
             while (line != null) {
                 String[] values = line.split("\\t");
                 int size = Integer.parseInt(values[1]);
-
-                System.out.println("- Reference " + values[2] + "\t" + size);
 
                 ReferenceSequence refSeqById = referenceSeqIds.get(values[0]);
                 if (refSeqById != null) {
@@ -116,6 +121,7 @@ public class References {
                         String[] parts = line.substring(1).split("(\\s+)");
                         id = parts[0];
                         currentRef = getReferenceById(id);
+                        System.out.println("- Reference " + currentRef.getName() + "\t" + currentRef.getSize());
                         refKmerTable = currentRef.getKmerTable();
                         gcc = new GCCounter(currentRef.getBinSize(), options.getAnalysisDir() + File.separator + currentRef.getName() + File.separator + currentRef.getName() + "_gc.txt");
                     }                                        

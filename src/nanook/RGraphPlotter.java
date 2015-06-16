@@ -1,3 +1,10 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
+ */
+
 package nanook;
 
 import java.io.*;
@@ -43,7 +50,7 @@ public class RGraphPlotter {
         long s = 50 - e;
         
         if (completed != lastCompleted) {              
-            System.out.print("\rGraph plotting [");
+            System.out.print("\r[");
             for (int i=0; i<e; i++) {
                 System.out.print("=");
             }

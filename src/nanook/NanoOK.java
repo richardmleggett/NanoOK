@@ -1,8 +1,16 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
+ */
+
 package nanook;
 
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Entry class for tool.
@@ -10,7 +18,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.21";
+    public final static String VERSION_STRING = "v0.23";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -116,7 +124,7 @@ public class NanoOK {
         OverallStats overallStats = new OverallStats(options);
 
         // Load references
-        System.out.println("Finding references");
+        System.out.println("Reading references");
         
         // Load reference data
         options.getReferences().loadReferences();
@@ -131,7 +139,7 @@ public class NanoOK {
             
             for (int type = 0; type<3; type++) {
                 if (options.isProcessingReadType(type)) {
-                    System.out.println(NanoOKOptions.getTypeFromInt(type));
+                    System.out.println("Parsing " + NanoOKOptions.getTypeFromInt(type));
                     ReadSet readSet = new ReadSet(type, options, overallStats.getStatsByType(type));
                     int nReads = readSet.processReads();
 
@@ -148,7 +156,6 @@ public class NanoOK {
                         System.exit(1);
                     } else if (nReadsWithAlignments < 400) {
                         System.out.println("Warning: few alignments ("+nReadsWithAlignments+") found to process.");
-                        System.out.println("");
                     }
 
                     summary.addReadSetStats(overallStats.getStatsByType(type));
@@ -156,15 +163,26 @@ public class NanoOK {
                     System.out.println("");
                 }
             }
-            summary.close();
-
+            summary.close();            
+            
             // Write files
             System.out.println("Writing analysis files");
             Set<String> ids = options.getReferences().getAllIds();
-            int allCount = ids.size() * 3;
+            int allCount = 3; //ids.size() * 3;
             int counter = 1;            
             for (int type=0; type<3; type++) {
-                System.out.print("\r"+counter+"/"+allCount);
+                long completed = counter;
+                long total = allCount;
+                long e = 50 * completed / total;
+                long s = 50 - e;    
+                System.out.print("\r[");
+                for (int i=0; i<e; i++) {
+                    System.out.print("=");
+                }
+                for (int i=0; i<s; i++) {
+                    System.out.print(" ");
+                }
+                System.out.print("] " + completed +"/" +  total);
                 options.getReferences().writeReferenceStatFiles(type);
                 options.getReferences().writeReferenceSummary(type);
                 counter++;
