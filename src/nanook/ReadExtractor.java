@@ -43,8 +43,8 @@ public class ReadExtractor {
     private void writeProgress() {
         long completed = executor.getCompletedTaskCount();
         long total = executor.getTaskCount();
-        long e = 50 * completed / total;
-        long s = 50 - e;
+        long e = NanoOKOptions.PROGRESS_WIDTH * completed / total;
+        long s = NanoOKOptions.PROGRESS_WIDTH - e;
         
         if (completed != lastCompleted) {              
             System.out.print("\rExtraction [");

@@ -133,8 +133,6 @@ for (t in 1:3) {
     data_kmers = read.table(input_kmers, header=TRUE);
     kmer_scatter_pdf <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_kmer_scatter.pdf", sep="");
     pdf(kmer_scatter_pdf, height=6, width=6)
-    print(ggplot(data_kmers, aes(x=data_kmers$RefPc, y=data_kmers$ReadPc)) + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Reference abundance") +ylab("Reads abundance") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 0.3)) + scale_y_continuous(limits=c(0, 0.3)) + geom_text(aes(label=data_kmers$Kmer), size=1) )
+    print(ggplot(data_kmers, aes(x=data_kmers$RefPc, y=data_kmers$ReadPc)) + geom_point(shape=1, alpha = 0.4, color=colourcode) + xlab("Reference abundance %") +ylab("Reads abundance %") + ggtitle(type) + theme(text = element_text(size=10)) + scale_x_continuous(limits=c(0, 0.3)) + scale_y_continuous(limits=c(0, 0.3)) + geom_text(aes(label=data_kmers$Kmer), size=1) )
     garbage <- dev.off()
-
-
 }

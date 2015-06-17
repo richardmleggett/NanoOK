@@ -406,7 +406,7 @@ public class ReportWriter {
         pw.print("Rank");
         for (int type=0; type<3; type++) {
             if (options.isProcessingReadType(type)) {
-                pw.print(" & kmer & Ref & Read & Diff");
+                pw.print(" & kmer & Ref \\% & Read \\% & Diff \\%");
             }
         }
         pw.println(" \\\\");

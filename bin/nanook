@@ -12,7 +12,7 @@ JARFILE=${NANOOK_SCRIPT_DIR}/NanoOK.jar
 if [ ! -f ${JARFILE} ] ; then 
     JARFILE=${NANOOK_SCRIPT_DIR}/../dist/NanoOK.jar
     if [ ! -f ${JARFILE} ] ; then
-        echo "Error: Can't find NanoOK.jar - it needs to be inside the directory pointed to by NANOOK_SCRIPTDIR which is currently ${NANOOK_SCRIPT_DIR}"
+        echo "Error: Can't find NanoOK.jar - it needs to be inside the directory pointed to by NANOOK_SCRIPT_DIR which is currently ${NANOOK_SCRIPT_DIR}"
         exit 1
     fi
 fi

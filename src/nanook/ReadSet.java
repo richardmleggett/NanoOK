@@ -51,8 +51,8 @@ public class ReadSet {
     private void writeProgress(ThreadPoolExecutor tpe) {
         long completed = tpe.getCompletedTaskCount();
         long total = tpe.getTaskCount();
-        long e = 50 * completed / total;
-        long s = 50 - e;
+        long e = NanoOKOptions.PROGRESS_WIDTH * completed / total;
+        long s = NanoOKOptions.PROGRESS_WIDTH - e;
         
         if (completed != lastCompleted) {              
             System.out.print("\r[");
@@ -143,6 +143,7 @@ public class ReadSet {
                     if (file.isFile()) {
                         if (isValidReadExtension(file.getName())) {
                             String alignmentFilename = alignDir + File.separator + file.getName() + parser.getAlignmentFileExtension();
+                            //System.out.println(alignmentFilename);
                             if (new File(alignmentFilename).exists()) {
                                 queryExecutor.execute(new ParserRunnable(options, stats, file.getAbsolutePath(), alignmentFilename, type, readTypes[dirIndex], nonAlignedSummary));
                                 writeProgress(queryExecutor);

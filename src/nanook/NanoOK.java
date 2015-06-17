@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.24";
+    public final static String VERSION_STRING = "v0.26";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -173,8 +173,8 @@ public class NanoOK {
             for (int type=0; type<3; type++) {
                 long completed = counter;
                 long total = allCount;
-                long e = 50 * completed / total;
-                long s = 50 - e;    
+                long e = NanoOKOptions.PROGRESS_WIDTH * completed / total;
+                long s = NanoOKOptions.PROGRESS_WIDTH - e;    
                 System.out.print("\r[");
                 for (int i=0; i<e; i++) {
                     System.out.print("=");

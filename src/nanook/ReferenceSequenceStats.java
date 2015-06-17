@@ -305,6 +305,7 @@ public class ReferenceSequenceStats {
      * @param stats - ReadSetStats associated with the error
      */
     public synchronized void addDeletionError(int size, String kmer, ReadSetStats stats) {
+        //System.out.println("Delete " + size);
         if (size >= MAX_INDEL) {
             System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error");
             System.out.println("");
@@ -326,6 +327,7 @@ public class ReferenceSequenceStats {
      * @param stats - ReadSetStats associated with the error
      */
     public synchronized void addInsertionError(int size, String kmer, ReadSetStats stats) {
+        //System.out.println("Insert " + size);
         if (size >= MAX_INDEL) {
             System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error");
             System.out.println("");

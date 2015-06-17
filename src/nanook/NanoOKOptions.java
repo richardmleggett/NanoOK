@@ -34,6 +34,7 @@ public class NanoOKOptions {
     public final static int READTYPE_PASS = 1;
     public final static int READTYPE_FAIL = 2;
     public final static int MIN_ALIGNMENTS = 10;
+    public final static int PROGRESS_WIDTH = 40;
     private References references = new References(this);
     private String referenceFile=null;
     private String sampleDirectory = null;
