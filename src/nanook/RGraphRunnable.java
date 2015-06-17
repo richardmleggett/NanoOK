@@ -7,7 +7,9 @@
 
 package nanook;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.util.List;
 
 /**
@@ -25,6 +27,28 @@ public class RGraphRunnable implements Runnable {
         args = a;
         logFilename = log;
     }
+    
+    public void checkLogForErrors(String filename) {
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            String line = null;
+            
+            do {
+                if (line != null) {
+                    line = br.readLine();
+                    if (line.contains("there is no package called")) {
+                        System.out.println("R error - have you installed all the dependency packages?");
+                        System.out.println(line);
+                    }
+                }
+            } while (line != null);
+        } catch (Exception e) {
+            System.out.println("Exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
 
     public void run() {  
         try {         
@@ -33,6 +57,7 @@ public class RGraphRunnable implements Runnable {
             pb.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilename)));
             Process p = pb.start();
             p.waitFor();
+            checkLogForErrors(logFilename);
         } catch (Exception e) {
             System.out.println("RGraphRunnable exception:");
             e.printStackTrace();
