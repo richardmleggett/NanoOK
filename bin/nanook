@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JAVA_ARGS="-Xmx4096m"
+JAVA_ARGS="-Xmx2048m"
 
 if [ -z "$NANOOK_SCRIPT_DIR" ] ; then
     echo "Error: You must set NANOOK_SCRIPT_DIR before running."
@@ -9,13 +9,9 @@ fi
 
 JARFILE=${NANOOK_SCRIPT_DIR}/NanoOK.jar
 
-if [ ! -f ${JARFILE} ] ; then 
-    JARFILE=${NANOOK_SCRIPT_DIR}/../dist/NanoOK.jar
-    if [ ! -f ${JARFILE} ] ; then
-        echo "Error: Can't find NanoOK.jar - it needs to be inside the directory pointed to by NANOOK_SCRIPT_DIR which is currently ${NANOOK_SCRIPT_DIR}"
-        exit 1
-    fi
+if [ ! -f ${JARFILE} ] ; then
+    echo "Error: Can't find NanoOK.jar - it needs to be inside the directory pointed to by NANOOK_SCRIPT_DIR which is currently ${NANOOK_SCRIPT_DIR}"
+    exit 1
 fi
 
 exec java ${JAVA_ARGS} -jar ${JARFILE} "$@"
-
