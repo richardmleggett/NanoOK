@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.29";
+    public final static String VERSION_STRING = "v0.30";
     
     /**
      * Check for program dependencies - R, pdflatex

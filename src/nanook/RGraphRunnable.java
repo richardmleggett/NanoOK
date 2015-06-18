@@ -56,7 +56,7 @@ public class RGraphRunnable implements Runnable {
         try {         
             ProcessBuilder pb = new ProcessBuilder(args);
             pb.redirectErrorStream(true);
-            pb.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilename)));
+            pb.redirectOutput(ProcessBuilder.Redirect.to(new File(logFilename))); //appendTo
             Process p = pb.start();
             p.waitFor();
             checkLogForErrors(logFilename);
