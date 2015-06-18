@@ -38,7 +38,8 @@ public class RGraphRunnable implements Runnable {
                 line = br.readLine();
                 if (line != null) {
                     if (line.contains("there is no package called")) {
-                        System.out.println("R error - have you installed all the dependency packages?");
+                        System.out.println("");
+                        System.out.println("R error - have you installed all the package dependencies? See documentation for help.");
                         System.out.println(line);
                     }
                 }
