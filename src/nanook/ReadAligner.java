@@ -125,6 +125,7 @@ public class ReadAligner {
             File[] listOfFiles = inputDir.listFiles();
 
             if (listOfFiles == null) {
+                System.out.println("");
                 System.out.println("Directory "+inputDirName+" doesn't exist");
             } else if (listOfFiles.length <= 0) {
                 System.out.println("");

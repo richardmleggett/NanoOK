@@ -135,6 +135,7 @@ public class ReadSet {
             File[] listOfFiles = folder.listFiles();
 
             if (listOfFiles == null) {
+                System.out.println("");
                 System.out.println("Directory "+inputDir+" doesn't exist");
             } else if (listOfFiles.length <= 0) {
                 System.out.println("");
