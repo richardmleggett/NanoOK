@@ -51,8 +51,13 @@ public class ReadSet {
     private void writeProgress(ThreadPoolExecutor tpe) {
         long completed = tpe.getCompletedTaskCount();
         long total = tpe.getTaskCount();
-        long e = NanoOKOptions.PROGRESS_WIDTH * completed / total;
-        long s = NanoOKOptions.PROGRESS_WIDTH - e;
+        long e = 0;
+        long s = NanoOKOptions.PROGRESS_WIDTH;
+        
+        if (total > 0) {
+            e = NanoOKOptions.PROGRESS_WIDTH * completed / total;
+            s = NanoOKOptions.PROGRESS_WIDTH - e;
+        }
         
         if (completed != lastCompleted) {              
             System.out.print("\r[");

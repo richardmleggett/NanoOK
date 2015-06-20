@@ -46,8 +46,14 @@ public class RGraphPlotter {
     private void writeProgress() {
         long completed = executor.getCompletedTaskCount();
         long total = executor.getTaskCount();
-        long e = NanoOKOptions.PROGRESS_WIDTH * completed / total;
-        long s = NanoOKOptions.PROGRESS_WIDTH - e;
+        long e = 0;
+        long s = NanoOKOptions.PROGRESS_WIDTH;
+        
+        if (total > 0) {
+            e = NanoOKOptions.PROGRESS_WIDTH * completed / total;
+            s = NanoOKOptions.PROGRESS_WIDTH - e;
+        }
+        
         
         if (completed != lastCompleted) {              
             System.out.print("\r[");
