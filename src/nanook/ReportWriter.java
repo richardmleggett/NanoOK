@@ -143,9 +143,9 @@ public class ReportWriter {
         
         
         
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Template_lengths.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Complement_lengths.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_2D_lengths.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Template_lengths", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Complement_lengths", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_2D_lengths", "}");
         
         
         //pw.println("\\includegraphics[width=.3\\linewidth]{" + options.getGraphsDir() + File.separator + "all_Template_lengths.pdf}");
@@ -188,11 +188,12 @@ public class ReportWriter {
      */
     private void includeGraphicsIfExists(int type, String preTex, String filename, String postTex) {
         if (options.isProcessingReadType(type)) {
-            File f = new File(filename);
+            String fullFilename = filename + "." + options.getImageFormat();
+            File f = new File(fullFilename);
 
             if (f.exists()) {
                 pw.print(preTex);
-                pw.print(filename);
+                pw.print(fullFilename);
                 pw.println(postTex);            
             } else {
                 pw.print(" ");
@@ -223,12 +224,12 @@ public class ReportWriter {
         
         
         lines[0] = "";
-        lines[1] = "Overall identity (minus indels)";
-        lines[2] = "Aligned identity (minus indels)";
-        lines[3] = "Identical bases per 100 aligned bases";
-        lines[4] = "Inserted bases per 100 aligned bases";
-        lines[5] = "Deleted bases per 100 aligned bases";
-        lines[6] = "Substitutions per 100 aligned bases";
+        lines[1] = "Overall base identity (excluding indels)";
+        lines[2] = "Aligned base identity (excluding indels)";
+        lines[3] = "Identical bases per 100 aligned bases (including indels)";
+        lines[4] = "Inserted bases per 100 aligned bases (including indels)";
+        lines[5] = "Deleted bases per 100 aligned bases (including indels)";
+        lines[6] = "Substitutions per 100 aligned bases (including indels)";
         lines[7] = "Mean insertion size";
         lines[8] = "Mean deletion size";
         for (int type=0; type<3; type++) {
@@ -263,56 +264,56 @@ public class ReportWriter {
         pw.println("\\vspace{-5mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_insertions.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_insertions.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_insertions.pdf", "}"+newLineTag);
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_deletions.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_deletions.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_deletions.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_insertions", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_insertions", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_insertions", "}"+newLineTag);
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_deletions", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_deletions", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_deletions", "}");
         pw.println("\\end{figure}");
         
         pw.println("\\subsection*{" + id + " read identity}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_hist.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_hist.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_hist.pdf", "}"+newLineTag);        
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_scatter.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_scatter.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_scatter.pdf", "}"+newLineTag);        
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_read_fraction_vs_alignment_identity_scatter.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_read_fraction_vs_alignment_identity_scatter.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_read_fraction_vs_alignment_identity_scatter.pdf", "}");        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_hist", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_hist", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_hist", "}"+newLineTag);        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_length_vs_identity_scatter", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_length_vs_identity_scatter", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_length_vs_identity_scatter", "}"+newLineTag);        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_read_fraction_vs_alignment_identity_scatter", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_read_fraction_vs_alignment_identity_scatter", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_read_fraction_vs_alignment_identity_scatter", "}");        
         if (options.getNumberOfTypes() > 1) {
             pw.println("\\end{figure}");
             pw.println("\\begin{figure}[H]");
             pw.println("\\centering");
         }
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_percent_aligned_vs_length_scatter.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_percent_aligned_vs_length_scatter.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_percent_aligned_vs_length_scatter.pdf", "}");        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_percent_aligned_vs_length_scatter", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_percent_aligned_vs_length_scatter", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_percent_aligned_vs_length_scatter", "}");        
         pw.println("\\end{figure}");
         
         if (options.getNumberOfTypes() == 1) {
             graphSize = "width=.4\\linewidth";
         } else {
-            graphSize = "width=.3\\linewidth";
+            graphSize = "height=3.5cm";
         }
 
         pw.println("\\subsection*{" + id + " perfect kmers}");
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_cumulative_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_cumulative_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_cumulative_perfect_kmers.pdf", "}");        
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_best_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_best_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_best_perfect_kmers.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_longest_perfect_vs_length_scatter.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_longest_perfect_vs_length_scatter.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_longest_perfect_vs_length_scatter.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_cumulative_perfect_kmers", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_cumulative_perfect_kmers", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_cumulative_perfect_kmers", "}");        
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_best_perfect_kmers", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_best_perfect_kmers", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_best_perfect_kmers", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_longest_perfect_vs_length_scatter", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_longest_perfect_vs_length_scatter", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_longest_perfect_vs_length_scatter", "}");
         pw.println("\\end{figure}");
 
         if (options.getNumberOfTypes() == 1) {
@@ -325,10 +326,10 @@ public class ReportWriter {
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_coverage.pdf", "} \\\\");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_coverage.pdf", "} \\\\");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_coverage.pdf", "} \\\\");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_ALL, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_gc.pdf", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_coverage", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_coverage", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_coverage", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_ALL, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_gc", "}");
         pw.println("\\end{figure}"); 
 
         if (options.getNumberOfTypes() == 1) {
@@ -376,9 +377,9 @@ public class ReportWriter {
         
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_kmer_scatter.pdf", "} ");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_kmer_scatter.pdf", "} \\\\");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_kmer_scatter.pdf", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_kmer_scatter", "} ");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_kmer_scatter", "} \\\\");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_kmer_scatter", "} \\\\");
         pw.println("\\end{figure}");         
     
     }
@@ -531,12 +532,12 @@ public class ReportWriter {
      * Write motif section of report.
      */
     public void writeMotifSection() {        
-        pw.println("\\subsection*{Error motif analysis}");
+        pw.println("\\subsection*{Kmer motifs before errors}");
         
         for (int k=3; k<=5; k++) {   
             int colCount = 1;
 
-            pw.println("\\subsection*{"+k+"-mer analysis}");
+            pw.println("\\subsection*{"+k+"-mer error motif analysis}");
             pw.println("\\vspace{-3mm}");
             pw.println("\\begin{table}[H]");
             pw.println("{\\footnotesize");
@@ -675,9 +676,9 @@ public class ReportWriter {
         pw.println("\\vspace{-3mm}");
         pw.println("\\begin{figure}[H]");
         pw.println("\\centering");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Template_21mers.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Complement_21mers.pdf", "}");
-        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_2D_21mers.pdf", "}");                
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Template_21mers", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_Complement_21mers", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphWidth+"]{", options.getGraphsDir() + File.separator + "all_2D_21mers", "}");                
         pw.println("\\end{figure}");        
    }
     

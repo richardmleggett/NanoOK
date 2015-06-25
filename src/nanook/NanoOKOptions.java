@@ -62,6 +62,7 @@ public class NanoOKOptions {
     private int numThreads = 1;
     private String jobQueue = "";
     private NanoOKLog logFile = new NanoOKLog();
+    private String imageFormat = "pdf";
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_SCRIPT_DIR");
@@ -111,6 +112,7 @@ public class NanoOKOptions {
             System.out.println("    -passonly to analyse only pass reads");
             System.out.println("    -failonly to analyse only fail reads");            
             System.out.println("    -2donly to analyse only 2D reads"); 
+            System.out.println("    -bitmaps to output bitmap PNG graphs instead of PDF");
             System.out.println("");
             System.exit(0);
         }
@@ -168,6 +170,9 @@ public class NanoOKOptions {
             } else if (args[i].equalsIgnoreCase("-2donly")) {
                 processTemplateReads = false;
                 processComplementReads = false;
+                i++;
+            } else if (args[i].equalsIgnoreCase("-bitmaps")) {
+                imageFormat = "png";
                 i++;
             } else if (args[i].equalsIgnoreCase("-fixids")) {
                 fixIDs = true;
@@ -645,5 +650,9 @@ public class NanoOKOptions {
     
     public boolean doKmerCounting() {
         return doKmerCounting;
+    }
+    
+    public String getImageFormat() {
+        return imageFormat;
     }
  }

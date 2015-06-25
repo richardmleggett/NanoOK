@@ -83,7 +83,7 @@ public class SequenceReader {
         return nSeqs;
     }
     
-    private String parseFASTAHeader(String line, String id) {
+    private String makeName(String line, String id) {
         String name = id;
         Pattern p = Pattern.compile(">gi\\|(\\S+)\\|(\\S+)\\|(\\S+)\\| (\\S+) (\\S+)");
         Matcher m = p.matcher(line);
@@ -91,6 +91,9 @@ public class SequenceReader {
         if (m.find()) {
             name = m.group(4) + "_" + m.group(5);
         }
+        
+        name=name.replaceAll("\\.", "_");
+        name=name.replaceAll(" ", "_");
         
         return name;
     }
@@ -144,7 +147,7 @@ public class SequenceReader {
                     if (line != null) {
                         String[] parts = line.substring(1).split("(\\s+)");
                         id = parts[0];
-                        name = parseFASTAHeader(line, id);
+                        name = makeName(line, id);
                     }                   
                     
                     contigLength = 0;

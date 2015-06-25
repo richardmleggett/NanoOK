@@ -80,6 +80,8 @@ public class RGraphPlotter {
             args.add(refName);
             logFilename = logFilename + "_"+refName;
         }
+
+        args.add(options.getImageFormat());
                 
         executor.execute(new RGraphRunnable("Rscript", args, logFilename + ".txt"));
         writeProgress();

@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.31";
+    public final static String VERSION_STRING = "v0.32";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -155,7 +155,7 @@ public class NanoOK {
                         System.out.println("");
                         System.exit(1);
                     } else if (nReadsWithAlignments < 400) {
-                        System.out.println("Warning: few alignments ("+nReadsWithAlignments+") found to process.");
+                        System.out.println("Warning: not many alignments ("+nReadsWithAlignments+") found to process.");
                     }
 
                     summary.addReadSetStats(overallStats.getStatsByType(type));
