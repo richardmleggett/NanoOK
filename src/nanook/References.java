@@ -21,6 +21,7 @@ public class References {
     private Hashtable<String,ReferenceSequence> referenceSeqIds = new Hashtable();
     private Hashtable<String,ReferenceSequence> referenceSeqNames = new Hashtable();
     private int longestId = 0;
+    private OverallStats overallStats = null;
         
     /**
      * Constructor
@@ -29,6 +30,10 @@ public class References {
     public References(NanoOKOptions o)
     {
         options = o;
+    }
+    
+    public void setOverallStats(OverallStats s) {
+        overallStats = s;
     }
     
     public void readSizesFile() {
@@ -248,15 +253,37 @@ public class References {
     public void writeReferenceSummary(int type) {
        try {
             PrintWriter pw = new PrintWriter(new FileWriter(options.getAlignmentSummaryFilename(), true));
-            String formatString = "%-"+longestId+"s %-12s %-10s %-10s";
+            String formatString = "%-"+longestId+"s %-12s %-10s %-10s %-10s %-12s %-10s %-10s";
             pw.println("");
-            pw.printf(formatString, "Id", "Size", "ReadsAlign", "LongPerfKm");    
+            pw.println(NanoOKOptions.getTypeFromInt(type) + " stats");
             pw.println("");
-            List<String> keys = new ArrayList<String>(referenceSeqIds.keySet());
-            Collections.sort(keys);
-            for(String id : keys) {
-                referenceSeqIds.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10d");
+            pw.printf(formatString, "ID", "Size", "ReadsAlign", "PcReads", "MeanLen", "TotalBases", "MeanCov", "LongPerfKm");    
+            pw.println("");
+            
+            //List<String> keys = new ArrayList<String>(referenceSeqIds.keySet());
+            //Collections.sort(keys);
+            //for(String id : keys) {
+            //    referenceSeqIds.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10.2f %-10d");
+            //}
+
+            formatString = "%-"+longestId+"s %-12d %-10d %-10.2f %-10.2f %-12d %-10.2f %-10d";
+            ArrayList<ReferenceSequence> sortedRefs = getSortedReferences();
+            for (int i=0; i<sortedRefs.size(); i++) {
+                ReferenceSequence r = sortedRefs.get(i);
+                ReferenceSequenceStats refStats = r.getStatsByType(type);
+                pw.printf(formatString,
+                           r.getName().replaceAll("_", " "),
+                           r.getSize(),
+                           refStats.getNumberOfReadsWithAlignments(),
+                           100.0 * (double)refStats.getNumberOfReadsWithAlignments() / (double)overallStats.getStatsByType(type).getNumberOfReads(),
+                           refStats.getMeanReadLength(),
+                           refStats.getTotalAlignedBases(),
+                           (double)refStats.getTotalAlignedBases() / r.getSize(),
+                           refStats.getLongestPerfectKmer());
+                pw.println("");
             }
+            
+            
             pw.close();
         } catch (IOException e) {
             System.out.println("writeReferenceSummary exception:");
@@ -275,16 +302,17 @@ public class References {
         pw.println("{\\footnotesize");
         pw.println("\\fontsize{9pt}{11pt}\\selectfont");
         pw.println("\\begin{tabular}{l c c c c c c c}");
-        pw.println("          &             & {\\bf Number of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest} \\\\");
-        pw.println("{\\bf Id} & {\\bf Size} & {\\bf Reads}     & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} \\\\");
+        pw.println("          &             & {\\bf Number of} & {\\bf \\% of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest} \\\\");
+        pw.println("{\\bf ID} & {\\bf Size} & {\\bf Reads}     & {\\bf Reads}  & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} \\\\");
         ArrayList<ReferenceSequence> sortedRefs = getSortedReferences();
         for (int i=0; i<sortedRefs.size(); i++) {
             ReferenceSequence r = sortedRefs.get(i);
             ReferenceSequenceStats refStats = r.getStatsByType(type);
-            pw.printf("%s & %d & %d & %.2f & %d & %.2f & %d \\\\",
+            pw.printf("%s & %d & %d & %.2f & %.2f & %d & %.2f & %d \\\\",
                        r.getName().replaceAll("_", " "),
                        r.getSize(),
                        refStats.getNumberOfReadsWithAlignments(),
+                       100.0 * (double)refStats.getNumberOfReadsWithAlignments() / (double)overallStats.getStatsByType(type).getNumberOfReads(),
                        refStats.getMeanReadLength(),
                        refStats.getTotalAlignedBases(),
                        (double)refStats.getTotalAlignedBases() / r.getSize(),

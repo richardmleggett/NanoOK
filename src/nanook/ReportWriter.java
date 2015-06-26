@@ -726,8 +726,6 @@ public class ReportWriter {
         open();
         addPassFailSection();
         addLengthsSection();
-
-        options.initialiseAlignmentSummaryFile();
         
         for (int type=0; type<3; type++) {
             if (options.isProcessingReadType(type)) {

@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.32";
+    public final static String VERSION_STRING = "v0.33";
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -122,6 +122,7 @@ public class NanoOK {
     
     private static void analyse(NanoOKOptions options) throws InterruptedException {
         OverallStats overallStats = new OverallStats(options);
+        options.getReferences().setOverallStats(overallStats);
 
         // Load references
         System.out.println("Reading references");
@@ -129,6 +130,7 @@ public class NanoOK {
         // Load reference data
         options.getReferences().loadReferences();
         options.setReadFormat(options.getParser().getReadFormat());
+        options.initialiseAlignmentSummaryFile();
         
         System.out.println("");
         
