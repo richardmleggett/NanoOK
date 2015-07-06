@@ -14,9 +14,10 @@ import java.io.*;
  * 
  * @author Richard Leggett
  */
-public class AlignmentsTableFile {
+public class AlignmentsTableFile implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String filename;
-    private PrintWriter pw;
+    private transient PrintWriter pw = null;
     private int count = 0;
 
     /**

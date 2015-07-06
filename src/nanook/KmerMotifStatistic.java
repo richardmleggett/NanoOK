@@ -7,6 +7,7 @@
 
 package nanook;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -14,7 +15,8 @@ import java.util.*;
  * 
  * @author Richard Leggett
  */
-public class KmerMotifStatistic {
+public class KmerMotifStatistic implements Serializable {
+    private static final long serialVersionUID = 1L;
     public final static int TYPE_TOP = 1;
     public final static int TYPE_BOTTOM = 2;
     private int kSize;

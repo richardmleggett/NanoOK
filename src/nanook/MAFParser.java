@@ -19,7 +19,7 @@ import java.util.Collections;
 public abstract class MAFParser {
     private NanoOKOptions options;
     private References references;
-    private ReportWriter report;
+    private SampleReportWriter report;
     ArrayList<Alignment> alignments;
     String leafName;
     

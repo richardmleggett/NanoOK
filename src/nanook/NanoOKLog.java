@@ -10,14 +10,16 @@ package nanook;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 
 /**
  * Logging
  * 
  * @author Richard Leggett
  */
-public class NanoOKLog {
-    PrintWriter pw = null;
+public class NanoOKLog  implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private transient PrintWriter pw = null;
     
     public NanoOKLog() {
     }

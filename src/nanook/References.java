@@ -15,7 +15,8 @@ import java.util.*;
  * 
  * @author Richard Leggett
  */
-public class References {
+public class References implements Serializable {
+    private static final long serialVersionUID = 1L;
     private NanoOKOptions options;
     private File sizesFile;
     private Hashtable<String,ReferenceSequence> referenceSeqIds = new Hashtable();

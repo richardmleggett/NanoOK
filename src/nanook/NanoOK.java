@@ -7,6 +7,11 @@
 
 package nanook;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
@@ -163,9 +168,21 @@ public class NanoOK {
                     summary.addReadSetStats(overallStats.getStatsByType(type));
                     overallStats.getStatsByType(type).closeKmersFile();
                     System.out.println("");
+                    
                 }
             }
             summary.close();            
+
+            System.out.println("Writing object");
+            try {
+                FileOutputStream fos = new FileOutputStream(options.getAnalysisDir() + File.separator + "OverallStats.ser");
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(overallStats);
+                oos.close();
+            } catch (Exception e) {
+                System.out.println("Exception trying to write object:");
+                e.printStackTrace();
+            }
             
             // Write files
             System.out.println("Writing analysis files");
@@ -203,14 +220,14 @@ public class NanoOK {
             System.out.println("");
             System.out.println("Plotting graphs");
             RGraphPlotter plotter = new RGraphPlotter(options);
-            plotter.plot();                
+            plotter.plot(false);                
         }
         
         // Make report
         if (options.doMakeReport()) {
             System.out.println("");
             System.out.println("Making report");
-            ReportWriter rw = new ReportWriter(options, overallStats);
+            SampleReportWriter rw = new SampleReportWriter(options, overallStats);
             rw.writeReport();
 
             if (options.doMakePDF()) {
@@ -236,6 +253,26 @@ public class NanoOK {
         options.setReadFormat(parser.getReadFormat());
         aligner.createDirectories();
         aligner.align();
+    }
+    
+    private static void compare(NanoOKOptions options) throws InterruptedException {
+        System.out.println("Comparing");
+        SampleComparer comparer = new SampleComparer(options);
+        comparer.loadSamples();
+        comparer.compareSamples();
+        
+        options.setReferences(comparer.getSample(0).getStatsByType(0).getOptions().getReferences());
+
+        System.out.println("");
+        System.out.println("Plotting graphs");
+        RGraphPlotter plotter = new RGraphPlotter(options);
+        plotter.plot(true);   
+        
+        System.out.println("");
+        System.out.println("Making PDF");
+        ComparisonReportWriter crw = new ComparisonReportWriter(options, comparer);
+        crw.writeReport();
+        crw.makePDF();
     }
     
     /**
@@ -266,6 +303,8 @@ public class NanoOK {
             align(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_ANALYSE) {
             analyse(options);
+        } else if (options.getRunMode() == NanoOKOptions.MODE_COMPARE) {
+            compare(options);
         }
         
         options.getLog().close();

@@ -7,6 +7,7 @@
 
 package nanook;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
@@ -20,7 +21,8 @@ import static nanook.NanoOKOptions.TYPE_TEMPLATE;
  * 
  * @author Richard Leggett
  */
-public class MotifStatistics {
+public class MotifStatistics implements Serializable {
+    private static final long serialVersionUID = 1L;
     private KmerMotifStatistic[] insertionMotifs = new KmerMotifStatistic[3];
     private KmerMotifStatistic[] deletionMotifs = new KmerMotifStatistic[3];
     private KmerMotifStatistic[] substitutionMotifs = new KmerMotifStatistic[3];

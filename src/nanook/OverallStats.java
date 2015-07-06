@@ -7,12 +7,15 @@
 
 package nanook;
 
+import java.io.Serializable;
+
 /**
  * Represents overall (as opposed to per reference) stats for Template, Complement and 2D reads.
  * 
  * @author Richard Leggett
  */
-public class OverallStats {
+public class OverallStats implements Serializable {
+    private static final long serialVersionUID = 1L;
     private ReadSetStats[] readStats = new ReadSetStats[3];
     
     /**

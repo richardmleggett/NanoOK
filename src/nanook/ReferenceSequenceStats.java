@@ -10,6 +10,7 @@ package nanook;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -18,7 +19,8 @@ import java.util.Collections;
  * 
  * @author Richard Leggett
  */
-public class ReferenceSequenceStats {
+public class ReferenceSequenceStats implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static final int MAX_INDEL = 100;
     private int size;
     private String name;

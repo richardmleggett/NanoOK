@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Hashtable;
 
 /**
@@ -18,10 +19,11 @@ import java.util.Hashtable;
  * 
  * @author Richard Leggett
  */
-public class ReadSetStats {
+public class ReadSetStats implements Serializable {
+    private static final long serialVersionUID = 1L;
     NanoOKOptions options;
-    private PrintWriter pwLengths;
-    private PrintWriter pwKmers;
+    private transient PrintWriter pwLengths = null;
+    private transient PrintWriter pwKmers = null;
     private String typeString = "";
     private int longest = 0;
     private int shortest = NanoOKOptions.MAX_READ_LENGTH;
@@ -489,5 +491,9 @@ public class ReadSetStats {
             pwKmers.print("\t"+Integer.toString(kCounts[i]));
         }
         pwKmers.println("");
+    }
+    
+    public NanoOKOptions getOptions() {
+        return options;
     }
 }

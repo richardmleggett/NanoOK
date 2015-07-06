@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
@@ -20,7 +21,8 @@ import java.util.Set;
  * 
  * @author Richard leggett
  */
-public class ReferenceSequence implements Comparable {
+public class ReferenceSequence implements Comparable, Serializable {
+    private static final long serialVersionUID = 1L;
     private String id = null;
     private String name = null;
     private int size = 0;

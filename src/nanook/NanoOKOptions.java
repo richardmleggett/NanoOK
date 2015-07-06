@@ -14,13 +14,15 @@ import java.io.*;
  * 
  * @author Richard Leggett
  */
-public class NanoOKOptions {
+public class NanoOKOptions implements Serializable {
+    private static final long serialVersionUID = 1L;
     public final static int MAX_KMER = 5000;
     public final static int MAX_READ_LENGTH = 1000000;
     public final static int MAX_READS = 1000000;
     public final static int MODE_EXTRACT = 1;
     public final static int MODE_ALIGN = 2;
     public final static int MODE_ANALYSE = 3;
+    public final static int MODE_COMPARE = 4;
     public final static int FASTA = 1;
     public final static int FASTQ = 2;
     public final static int TYPE_TEMPLATE = 0;
@@ -43,6 +45,8 @@ public class NanoOKOptions {
     private String aligner="last";
     private String alignerParams="";
     private String scheduler="system";
+    private String sampleList = null;
+    private String comparisonDir = null;
     private int coverageBinSize = 100;
     private boolean processPassReads = true;
     private boolean processFailReads = true;
@@ -79,6 +83,10 @@ public class NanoOKOptions {
     
     public References getReferences() {
         return references;
+    }
+    
+    public void setReferences(References r) {
+        references = r;
     }
     
     /**
@@ -127,6 +135,8 @@ public class NanoOKOptions {
             runMode = MODE_ALIGN;
         } else if (args[i].equals("analyse") || args[i].equals("analyze")) {
             runMode = MODE_ANALYSE;
+        } else if (args[i].equals("compare")) {
+            runMode = MODE_COMPARE;
         } else {
             System.out.println("Unknonwn mode " + args[i] + " - must be extract, align or analyse");
             System.exit(1);
@@ -142,6 +152,12 @@ public class NanoOKOptions {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-sample") |  args[i].equalsIgnoreCase("-s")) {
                 sampleDirectory = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-samplelist") |  args[i].equalsIgnoreCase("-l")) {
+                sampleList = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-outputdir") |  args[i].equalsIgnoreCase("-o")) {
+                comparisonDir = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-maxreads")) {
                 maxReads = Integer.parseInt(args[i+1]);
@@ -212,24 +228,33 @@ public class NanoOKOptions {
             }
         }
         
-        if (sampleDirectory == null) {
-            System.out.println("Error: You must specify a sample");
-            System.exit(1);
+        if (runMode == MODE_COMPARE) {
+            if (comparisonDir == null) {
+                System.out.println("Error: you must specify an output dir for the comparison");
+                System.exit(1);
+            } else {
+                checkAndMakeComparisonDirs();
+            }
         } else {
-            File s = new File(sampleDirectory);
-            if (!s.exists()) {
-                System.out.println("Error: sample directory doesn't exist");
+            if (sampleDirectory == null) {
+                System.out.println("Error: You must specify a sample");
                 System.exit(1);
+            } else {
+                File s = new File(sampleDirectory);
+                if (!s.exists()) {
+                    System.out.println("Error: sample directory doesn't exist");
+                    System.exit(1);
+                }
+
+                if (!s.isDirectory()) {
+                    System.out.println("Error: sample doesn't point to a directory");
+                    System.exit(1);
+                }
+
+                sampleDirectory = s.getAbsolutePath();
+
+                sampleName = s.getName();
             }
-            
-            if (!s.isDirectory()) {
-                System.out.println("Error: sample doesn't point to a directory");
-                System.exit(1);
-            }
-            
-            sampleDirectory = s.getAbsolutePath();
-                        
-            sampleName = s.getName();
         }
     }
         
@@ -340,6 +365,33 @@ public class NanoOKOptions {
             logsDir.mkdir();
         }
     }
+
+    public void checkAndMakeComparisonDirs() {
+        File f = new File(comparisonDir);
+        if (!f.exists()) {
+            f.mkdir();
+        }
+        
+        f = new File(comparisonDir+File.separator+"graphs");
+        if (!f.exists()) {
+            f.mkdir();
+        }
+
+        f = new File(comparisonDir+File.separator+"latex");
+        if (!f.exists()) {
+            f.mkdir();
+        }
+        
+        f = new File(comparisonDir+File.separator+"logs");
+        if (!f.exists()) {
+            f.mkdir();
+        }        
+
+        f = new File(comparisonDir+File.separator+"logs"+File.separator+"R");
+        if (!f.exists()) {
+            f.mkdir();
+        }            
+    }
     
     /**
      * Check if an analysis reference directory exists and make if not.
@@ -405,7 +457,11 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getGraphsDir() {
-        return sampleDirectory + File.separator + "graphs";
+        if (runMode == MODE_COMPARE) {
+            return comparisonDir + File.separator + "graphs";
+        } else {
+            return sampleDirectory + File.separator + "graphs";
+        }
     } 
 
     public String getFastaDir() {
@@ -449,7 +505,11 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getLatexDir() {
-        return sampleDirectory + File.separator + "latex";
+        if (runMode == MODE_COMPARE) {
+            return comparisonDir + File.separator + "latex";
+        } else {
+            return sampleDirectory + File.separator + "latex";
+        }
     } 
 
     /**
@@ -457,7 +517,11 @@ public class NanoOKOptions {
      * @return directory name as String
      */
     public String getLogsDir() {
-        return sampleDirectory + File.separator + "logs";
+        if (runMode == MODE_COMPARE) {
+            return comparisonDir + File.separator + "logs";
+        } else {
+            return sampleDirectory + File.separator + "logs";
+        }
     } 
     
     public boolean isNewStyleDir() {
@@ -654,5 +718,13 @@ public class NanoOKOptions {
     
     public String getImageFormat() {
         return imageFormat;
+    }
+    
+    public String getSampleList() {
+        return sampleList;
+    }
+    
+    public String getComparisonDir() {
+        return comparisonDir;
     }
  }

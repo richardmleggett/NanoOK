@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 public abstract class SAMParser {
     private NanoOKOptions options;
     private References references;
-    private ReportWriter report;
+    private SampleReportWriter report;
     private String programID = null;
     ArrayList<Alignment> alignments;
     private Hashtable<String,Integer> referenceSizes;

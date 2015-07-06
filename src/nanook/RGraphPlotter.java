@@ -68,13 +68,19 @@ public class RGraphPlotter {
         }
     } 
     
-    public void runScript(String scriptName, String logPrefix, String refName) {
+    public void runScript(boolean fComparison, String scriptName, String logPrefix, String refName) {
         ArrayList<String> args = new ArrayList<String>();
         String logFilename = logDirectory + File.separator + logPrefix;
         
         args.add("Rscript");
         args.add(options.getScriptsDir() + File.separator + scriptName);
-        args.add(options.getSampleDirectory());
+        
+        if (fComparison) {
+            args.add(options.getSampleList());
+            args.add(options.getComparisonDir());
+        } else {
+            args.add(options.getSampleDirectory());
+        }
         
         if (refName != null) {
             args.add(refName);
@@ -91,15 +97,23 @@ public class RGraphPlotter {
      * Execute plot commands.
      * @param references References object containing all references
      */
-    public void plot() throws InterruptedException {
+    public void plot(boolean fComparison) throws InterruptedException {
         String s = null;
         
-        runScript("nanook_plot_lengths.R", "plot_lengths", null);
+        if (fComparison) {
+            runScript(fComparison, "nanook_plot_comparison.R", "plot_lengths", null);        
+        } else {
+            runScript(fComparison, "nanook_plot_lengths.R", "plot_lengths", null);
+        }
        
         Set<String> ids = options.getReferences().getAllIds();
         for (String id : ids) {
             String name = options.getReferences().getReferenceById(id).getName();
-            runScript("nanook_plot_reference.R", "plot_reference", name);
+            if (fComparison) {
+                runScript(fComparison, "nanook_plot_comparison_reference.R", "plot_reference", name);            
+            } else {
+                runScript(fComparison, "nanook_plot_reference.R", "plot_reference", name);
+            }
             writeProgress();
         }          
         
@@ -112,5 +126,5 @@ public class RGraphPlotter {
 
         writeProgress();
         System.out.println("");
-    }
+    }    
 }

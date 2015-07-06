@@ -19,7 +19,7 @@ import java.util.Set;
  * 
  * @author Richard Leggett
  */
-public class ReportWriter {
+public class SampleReportWriter {
     private NanoOKOptions options;
     private References references;
     private OverallStats overallStats;
@@ -32,7 +32,7 @@ public class ReportWriter {
      * @param r the references
      * @param s overall statistics
      */
-    public ReportWriter(NanoOKOptions o, OverallStats s) {
+    public SampleReportWriter(NanoOKOptions o, OverallStats s) {
         options = o;
         references = options.getReferences();
         overallStats = s;

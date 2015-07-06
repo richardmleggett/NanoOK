@@ -7,6 +7,7 @@
 
 package nanook;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -15,7 +16,8 @@ import java.util.Set;
  * 
  * @author Richard Leggett
  */
-public class KmerTable {
+public class KmerTable implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int kmerSize = 5;
     private Hashtable<String, Integer> counts = new Hashtable();
    
