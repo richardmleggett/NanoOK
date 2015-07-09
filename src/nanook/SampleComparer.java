@@ -31,12 +31,12 @@ public class SampleComparer {
         options = o;
     }
     
-    private void readSample(String sample) {
+    private void readSample(String sample, String name) {
         try {
             FileInputStream fis = new FileInputStream(sample + File.separator + "analysis" + File.separator + "OverallStats.ser");
             ObjectInputStream ois = new ObjectInputStream(fis);
             OverallStats os = (OverallStats)ois.readObject();
-            sampleNames.add(new File(sample).getName());
+            sampleNames.add(name);
             sampleStats.add(os);
             ois.close();
         } catch (Exception e) {
@@ -61,7 +61,7 @@ public class SampleComparer {
                 if (line != null) {
                     if (!line.startsWith("SampleDir")) {
                         String[] fields = line.split("\t");
-                        readSample(fields[0]);
+                        readSample(fields[0], fields[1]);
                     }
                 }
             } while (line != null);            
@@ -92,7 +92,41 @@ public class SampleComparer {
                         pw.println("");
                     }
                     
-                    pw.close();                
+                    pw.close();
+                    
+                    filename = options.getComparisonDir() + File.separator + NanoOKOptions.getTypeFromInt(type) + "_map_summary.txt";
+                    pw = new PrintWriter(new FileWriter(filename, false));
+                    References refs = sampleStats.get(0).getStatsByType(type).getOptions().getReferences();
+                    ArrayList<ReferenceSequence> sortedRefs = refs.getSortedReferences();
+                    pw.print("Sample");
+                    for (int i=0; i<sortedRefs.size(); i++) {
+                        ReferenceSequence rs = sortedRefs.get(i);
+                        pw.print("\t" + rs.getName());
+                    }
+                    pw.println("\tUnaligned");
+                    for (int i=0; i<sampleStats.size(); i++) {
+                        String name = sampleNames.get(i);
+                        OverallStats overallStats = sampleStats.get(i);
+                        pw.print(name);
+                        for (int j=0; j<sortedRefs.size(); j++) {
+                            ReferenceSequence rs = overallStats.getStatsByType(type).getOptions().getReferences().getReferenceById(sortedRefs.get(j).getId());
+                            double value = 0.0;
+                            
+                            if (rs.getStatsByType(type).getNumberOfReadsWithAlignments() > 0) {
+                                value = 100.0 * (double)rs.getStatsByType(type).getNumberOfReadsWithAlignments() / (double)overallStats.getStatsByType(type).getNumberOfReads();
+                            }
+                            
+                            pw.printf("\t%.4f", value);
+                        }
+                        
+                        double value = 0;                        
+                        if (overallStats.getStatsByType(type).getNumberOfReadsWithoutAlignments() > 0) {
+                            value = 100.0 * (double)overallStats.getStatsByType(type).getNumberOfReadsWithoutAlignments() / (double)overallStats.getStatsByType(type).getNumberOfReads();
+                        }
+                        pw.printf("\t%.4f", value);
+                        pw.println("");
+                    }
+                    pw.close();
                 }                
             }                    
         } catch (IOException e) {
@@ -101,7 +135,15 @@ public class SampleComparer {
         }
     }
     
+    public int getNumberOfSamples() {
+        return sampleStats.size();
+    }
+    
     public OverallStats getSample(int i) {
         return sampleStats.get(i);
+    }
+    
+    public String getSampleName(int i) {
+        return sampleNames.get(i);
     }
 }

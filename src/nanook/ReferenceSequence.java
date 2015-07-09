@@ -22,7 +22,7 @@ import java.util.Set;
  * @author Richard leggett
  */
 public class ReferenceSequence implements Comparable, Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private String id = null;
     private String name = null;
     private int size = 0;
@@ -178,5 +178,11 @@ public class ReferenceSequence implements Comparable, Serializable {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+    
+    public int getTotalNumberOfAlignments() {
+        return referenceStats[0].getNumberOfReadsWithAlignments() + 
+               referenceStats[1].getNumberOfReadsWithAlignments() +
+               referenceStats[2].getNumberOfReadsWithAlignments();
     }
 }

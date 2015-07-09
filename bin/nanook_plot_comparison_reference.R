@@ -43,19 +43,59 @@ for (t in 1:3) {
         type = types[t];
         sampledir <- data_samples[i, "SampleDir"];
         filename_data <- paste(sampledir, "/analysis/", reference, "/", reference, "_",type,"_alignments.txt", sep="");
-        data_field = read.table(filename_data, header=TRUE);
-        thisid <- data_samples[i, "SampleName"];
-        message(thisid);
-        listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$QueryPercentIdentity);
-        count <- count + 1;
+        if (file.exists(filename_data)) {
+            data_field = read.table(filename_data, header=TRUE);
+            message(nrow(data_field));
+            if (nrow(data_field) > 0) {
+                thisid <- data_samples[i, "SampleName"];
+                listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$QueryPercentIdentity);
+                count <- count + 1;
+            }
+        }
     }
     
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_query_identity.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 1;
+    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
-    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Query identity %"));
+    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Read identity %"));
+    garbage <- dev.off();
+
+    output_file <- paste(outdir, "/graphs/", reference, "_", type, "_query_identity_zoom.pdf", sep="");
+    message(output_file);
+    imagewidth <- nrow(data_samples) * 0.5;
+    pdf(output_file, width=imagewidth, height = 4);
+    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Read identity %") + scale_y_continuous(limits=c(60, 100)));
+    garbage <- dev.off();
+}
+
+# Query GC
+for (t in 1:3) {
+    df <- data.frame();
+    listOfDataFrames <- NULL;
+    count <- c(1);
+    for (i in 1:nrow(data_samples)) {
+        type = types[t];
+        sampledir <- data_samples[i, "SampleDir"];
+        filename_data <- paste(sampledir, "/analysis/", reference, "/", reference, "_",type,"_alignments.txt", sep="");
+        if (file.exists(filename_data)) {
+            data_field = read.table(filename_data, header=TRUE);
+            message(nrow(data_field));
+            if (nrow(data_field) > 0) {
+                thisid <- data_samples[i, "SampleName"];
+                listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$QueryGC);
+                count <- count + 1;
+            }
+        }
+    }
+    
+    df <- do.call("rbind", listOfDataFrames);
+    output_file <- paste(outdir, "/graphs/", reference, "_", type, "_query_gc.pdf", sep="");
+    message(output_file);
+    imagewidth <- nrow(data_samples) * 0.5;
+    pdf(output_file, width=imagewidth, height = 4);
+    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Read GC %"));
     garbage <- dev.off();
 }
 
@@ -68,17 +108,20 @@ for (t in 1:3) {
         type = types[t];
         sampledir <- data_samples[i, "SampleDir"];
         filename_data <- paste(sampledir, "/analysis/", reference, "/", reference, "_",type,"_alignments.txt", sep="");
-        data_field = read.table(filename_data, header=TRUE);
-        thisid <- data_samples[i, "SampleName"];
-        message(thisid);
-        listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$LongestPerfectKmer);
-        count <- count + 1;
+        if (file.exists(filename_data)) {
+            data_field = read.table(filename_data, header=TRUE);
+            if (nrow(data_field) > 0) {
+                thisid <- data_samples[i, "SampleName"];
+                listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$LongestPerfectKmer);
+                count <- count + 1;
+            }
+        }
     }
     
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_best_perfect_kmer.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 1;
+    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Best perfect kmer"));
     garbage <- dev.off();
@@ -93,19 +136,29 @@ for (t in 1:3) {
         type = types[t];
         sampledir <- data_samples[i, "SampleDir"];
         filename_data <- paste(sampledir, "/analysis/", reference, "/", reference, "_",type,"_alignments.txt", sep="");
-        data_field = read.table(filename_data, header=TRUE);
-        thisid <- data_samples[i, "SampleName"];
-        message(thisid);
-        listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$PercentQueryAligned);
-        count <- count + 1;
+        if (file.exists(filename_data)) {
+            data_field = read.table(filename_data, header=TRUE);
+            if (nrow(data_field) > 0) {
+                thisid <- data_samples[i, "SampleName"];
+                listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$PercentQueryAligned);
+                count <- count + 1;
+            }
+        }
     }
     
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_percent_query_aligned.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 1;
+    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
-    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("% query aligned"));
+    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("% read aligned"));
+    garbage <- dev.off();
+
+    output_file <- paste(outdir, "/graphs/", reference, "_", type, "_percent_query_aligned_zoom.pdf", sep="");
+    message(output_file);
+    imagewidth <- nrow(data_samples) * 0.5;
+    pdf(output_file, width=imagewidth, height = 4);
+    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("% read aligned") + scale_y_continuous(limits=c(75, 100)));
     garbage <- dev.off();
 }
 
@@ -118,43 +171,48 @@ for (t in 1:3) {
         type = types[t];
         sampledir <- data_samples[i, "SampleDir"];
         filename_data <- paste(sampledir, "/analysis/", reference, "/", reference, "_",type,"_alignments.txt", sep="");
-        data_field = read.table(filename_data, header=TRUE);
-        thisid <- data_samples[i, "SampleName"];
-        message(thisid);
-        listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$AlignmentSize);
-        count <- count + 1;
+        if (file.exists(filename_data)) {
+            data_field = read.table(filename_data, header=TRUE);
+            if (nrow(data_field) > 0) {
+                thisid <- data_samples[i, "SampleName"];
+                listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$AlignmentSize);
+                count <- count + 1;
+            }
+        }
     }
     
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_alignment_size.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 1;
+    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Alignment size"));
     garbage <- dev.off();
 }
 
 #AlignmentPercentIdentity
-for (t in 1:3) {
-    df <- data.frame();
-    listOfDataFrames <- NULL;
-    count <- c(1);
-    for (i in 1:nrow(data_samples)) {
-        type = types[t];
-        sampledir <- data_samples[i, "SampleDir"];
-        filename_data <- paste(sampledir, "/analysis/", reference, "/", reference, "_",type,"_alignments.txt", sep="");
-        data_field = read.table(filename_data, header=TRUE);
-        thisid <- data_samples[i, "SampleName"];
-        message(thisid);
-        listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$AlignmentPercentIdentity);
-        count <- count + 1;
-    }
-    
-    df <- do.call("rbind", listOfDataFrames);
-    output_file <- paste(outdir, "/graphs/", reference, "_", type, "_alignment_identity.pdf", sep="");
-    message(output_file);
-    imagewidth <- nrow(data_samples) * 1;
-    pdf(output_file, width=imagewidth, height = 4);
-    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Alignment identity %"));
-    garbage <- dev.off();
-}
+#for (t in 1:3) {
+#    df <- data.frame();
+#    listOfDataFrames <- NULL;
+#    count <- c(1);
+#    for (i in 1:nrow(data_samples)) {
+#        type = types[t];
+#        sampledir <- data_samples[i, "SampleDir"];
+#        filename_data <- paste(sampledir, "/analysis/", reference, "/", reference, "_",type,"_alignments.txt", sep="");
+#        if (file.exists(filename_data)) {
+#            data_field = read.table(filename_data, header=TRUE);
+#            thisid <- data_samples[i, "SampleName"];
+#            message(thisid);
+#            listOfDataFrames[[count]] <- data.frame(Sample=thisid, Variable=data_field$AlignmentPercentIdentity);
+#            count <- count + 1;
+#        }
+#    }
+#
+#    df <- do.call("rbind", listOfDataFrames);
+#    output_file <- paste(outdir, "/graphs/", reference, "_", type, "_alignment_identity.pdf", sep="");
+#    message(output_file);
+#    imagewidth <- nrow(data_samples) * 0.5;
+#    pdf(output_file, width=imagewidth, height = 4);
+#    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Alignment identity %"));
+#    garbage <- dev.off();
+#}

@@ -16,7 +16,7 @@ import java.util.*;
  * @author Richard Leggett
  */
 public class KmerMotifStatistic implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     public final static int TYPE_TOP = 1;
     public final static int TYPE_BOTTOM = 2;
     private int kSize;

@@ -2,6 +2,7 @@ library(ggplot2)
 library(scales)
 library(grid)
 library(gridExtra)
+library(reshape2)
 
 # Filenames
 args <- commandArgs(TRUE)
@@ -53,8 +54,19 @@ for (t in 1:3) {
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", type, "_lengths.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 1;
+    imagewidth <- 2 + (nrow(data_samples) * 0.5);
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Length, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]));
+    garbage <- dev.off();
+
+    filename_maps <- paste(outdir, "/", type,"_map_summary.txt", sep="");
+    #filename_maps <- c("~/temp/2D_map_summary.txt");
+    imagewidth <- 2 + (nrow(data_samples) * 0.5);
+    data_maps = read.table(filename_maps, header=TRUE);
+    df <- melt(data_maps, id.var="Sample")
+    output_file <- paste(outdir, "/graphs/", type, "_maps.pdf", sep="");
+    message(output_file);
+    pdf(output_file, width=imagewidth, height = 4);
+    print(ggplot(df, aes(x = Sample, y = value, fill = variable)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("%"));
     garbage <- dev.off();
 }

@@ -23,7 +23,8 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.33";
+    public final static String VERSION_STRING = "v0.46";
+    public final static long SERIAL_VERSION = 3L;
     
     /**
      * Check for program dependencies - R, pdflatex
@@ -129,9 +130,6 @@ public class NanoOK {
         OverallStats overallStats = new OverallStats(options);
         options.getReferences().setOverallStats(overallStats);
 
-        // Load references
-        System.out.println("Reading references");
-        
         // Load reference data
         options.getReferences().loadReferences();
         options.setReadFormat(options.getParser().getReadFormat());
@@ -167,22 +165,19 @@ public class NanoOK {
 
                     summary.addReadSetStats(overallStats.getStatsByType(type));
                     overallStats.getStatsByType(type).closeKmersFile();
+                    overallStats.getStatsByType(type).writeSubstitutionStats();
+                    overallStats.getStatsByType(type).writeErrorMotifStats();
+                    
+                    int ignoredDuplicates = overallStats.getStatsByType(type).getIgnoredDuplicates();
+                    if (ignoredDuplicates > 0) {
+                        System.out.println(ignoredDuplicates + " ignored duplicate read IDs.");
+                    }
+                    
                     System.out.println("");
                     
                 }
             }
             summary.close();            
-
-            System.out.println("Writing object");
-            try {
-                FileOutputStream fos = new FileOutputStream(options.getAnalysisDir() + File.separator + "OverallStats.ser");
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                oos.writeObject(overallStats);
-                oos.close();
-            } catch (Exception e) {
-                System.out.println("Exception trying to write object:");
-                e.printStackTrace();
-            }
             
             // Write files
             System.out.println("Writing analysis files");
@@ -207,12 +202,24 @@ public class NanoOK {
                 for (int i=0; i<s; i++) {
                     System.out.print(" ");
                 }
-                System.out.print("] " + completed +"/" +  total);
+                System.out.print("] " + completed +"/" +  total);                
                 options.getReferences().writeReferenceStatFiles(type);
                 options.getReferences().writeReferenceSummary(type);
                 counter++;
             }
             System.out.println("");
+
+            System.out.println("Writing object");
+            try {
+                FileOutputStream fos = new FileOutputStream(options.getAnalysisDir() + File.separator + "OverallStats.ser");
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(overallStats);
+                oos.close();
+            } catch (Exception e) {
+                System.out.println("Exception trying to write object:");
+                e.printStackTrace();
+            }
+        
         }
         
         // Plot graphs
@@ -275,6 +282,17 @@ public class NanoOK {
         crw.makePDF();
     }
     
+    private static void memoryReport() {
+        Runtime runtime = Runtime.getRuntime();
+        long mb = 1024 * 1024;
+        long totalMem = runtime.totalMemory() / mb;
+        long maxMem = runtime.maxMemory() / mb;
+        long freeMem = runtime.freeMemory() / mb;
+        System.out.println("totalMem: " + totalMem + "Mb");
+        System.out.println("  maxMem: " + maxMem + "Mb");
+        System.out.println(" freeMem: " + freeMem + "Mb");
+    }
+    
     /**
      * Entry to tool.
      * @param args command line arguments
@@ -306,6 +324,8 @@ public class NanoOK {
         } else if (options.getRunMode() == NanoOKOptions.MODE_COMPARE) {
             compare(options);
         }
+        
+        //memoryReport();
         
         options.getLog().close();
     }

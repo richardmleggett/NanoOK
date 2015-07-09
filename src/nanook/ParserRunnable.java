@@ -99,8 +99,8 @@ public class ParserRunnable implements Runnable
                 Alignment a = al.get(i);
                 merger.addAlignment(a);
             }
-            AlignmentInfo stat = merger.endMergeAndStoreStats();
-            readReference.getStatsByType(stats.getType()).getAlignmentsTableFile().writeMergedAlignment(file.getName(), merger, stat);
+            AlignmentInfo ais = merger.endMergeAndStoreStats();
+            readReference.getStatsByType(stats.getType()).getAlignmentsTableFile().writeMergedAlignment(stats, file.getName(), merger, ais);
         }
     }
     
@@ -132,7 +132,7 @@ public class ParserRunnable implements Runnable
                 System.exit(1);
             }
             
-            stats.addLength(id, sr.getLength(i));
+            stats.addLength(id, sr.getLength(i), sr.getGC(i));
         }
     }
 

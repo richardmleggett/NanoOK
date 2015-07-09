@@ -7,12 +7,15 @@
 
 package nanook;
 
+import java.io.Serializable;
+
 /**
  * Represent abundance of a kmer
  * 
  * @author Richard Leggett
  */
-public class KmerAbundance implements Comparable {
+public class KmerAbundance implements Comparable, Serializable {
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     String kmer;
     double refAbundance;
     double readAbundance;

@@ -133,12 +133,24 @@ for (t in 1:3) {
     # Length vs Identity histograms
     if (format=="png") {
         identity_hist_png <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_length_vs_identity_hist.png", sep="")
-        png(identity_hist_png, , width=1200, height=800)
+        png(identity_hist_png, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$QueryPercentIdentity)) + geom_histogram(fill=colourcode) + xlab("Read identity %") +ylab("Count") + ggtitle(type) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) )
     } else {
         identity_hist_pdf <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_length_vs_identity_hist.pdf", sep="")
         pdf(identity_hist_pdf, width=6, height=4)
         print(ggplot(data_alignments, aes(x=data_alignments$QueryPercentIdentity)) + geom_histogram(fill=colourcode) + xlab("Read identity %") +ylab("Count") + ggtitle(type) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
+    }
+    garbage <- dev.off()
+    
+    # GC histogram
+    if (format=="png") {
+        identity_hist_png <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_GC_hist.png", sep="")
+        png(identity_hist_png, width=1200, height=800)
+        print(ggplot(data_alignments, aes(x=data_alignments$QueryGC)) + geom_histogram(fill=colourcode, binwidth=1) + xlab("GC %") +ylab("Read count") + ggtitle(type) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) + scale_x_continuous(limits=c(0, 100)) )
+    } else {
+        identity_hist_pdf <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_GC_hist.pdf", sep="")
+        pdf(identity_hist_pdf, width=6, height=4)
+        print(ggplot(data_alignments, aes(x=data_alignments$QueryGC)) + geom_histogram(fill=colourcode, binwidth = 1) + xlab("GC %") +ylab("Read count") + ggtitle(type) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) + scale_x_continuous(limits=c(0, 100)))
     }
     garbage <- dev.off()
 

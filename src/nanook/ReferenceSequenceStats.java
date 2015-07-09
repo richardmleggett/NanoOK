@@ -20,11 +20,12 @@ import java.util.Collections;
  * @author Richard Leggett
  */
 public class ReferenceSequenceStats implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private static final int MAX_INDEL = 100;
     private int size;
     private String name;
-    private int[] coverage;
+    private SequenceCoverage cov;
+    //int[] coverage;
     private int[] perfectKmerCounts = new int[NanoOKOptions.MAX_KMER];
     private int[] readBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
     private int[] readCumulativeBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
@@ -59,7 +60,8 @@ public class ReferenceSequenceStats implements Serializable {
     public ReferenceSequenceStats(int s, String n) {
         size = s;
         name = n;
-        coverage = new int[size];
+        cov = new SequenceCoverage(size);
+        //coverage = new int[size];
     }
     
     /**
@@ -93,24 +95,6 @@ public class ReferenceSequenceStats implements Serializable {
     public synchronized int getLongestPerfectKmer() {
         return longestPerfectKmer;
     }
-
-    /**
-     * Clear all stats.
-     */
-    public synchronized void clearStats() {
-        for (int i=0; i<NanoOKOptions.MAX_KMER; i++) {
-            perfectKmerCounts[i] = 0;
-            readBestPerfectKmer[i] = 0;
-            readCumulativeBestPerfectKmer[i] = 0;
-        }
-        
-        for (int i=0; i<size; i++) {
-            coverage[i] = 0;
-        }
-        
-        longestPerfectKmer = 0;
-        nReadsWithAlignments = 0;
-    }    
     
     /**
      * Store all perfect kmer sizes for later analysis.
@@ -135,9 +119,10 @@ public class ReferenceSequenceStats implements Serializable {
      * @param size size
      */
     public synchronized void addCoverage(int start, int size) {
-        for (int i=start; i<(start+size); i++) {
-            coverage[i]++;
-        }
+        cov.addCoverage(start, size);
+        //for (int i=start; i<(start+size); i++) {
+        //    coverage[i]++;
+        //}
     }
     
     /**
@@ -160,22 +145,23 @@ public class ReferenceSequenceStats implements Serializable {
      * @param binSize bin size
      */
     public synchronized void writeCoverageData(String filename, int binSize) {
-        try {
-            PrintWriter pw = new PrintWriter(new FileWriter(filename));            
-            for (int i=0; i<(size-binSize); i+=binSize) {
-                int count = 0;
-                for (int j=0; j<binSize; j++) {
-                    count += coverage[i+j];
-                }
-                pw.printf("%d\t%.2f", i, ((double)count / (double)binSize));
-                pw.println("");
-            }            
-            pw.close();
-        } catch (IOException e) {
-            System.out.println("writeCoverageData exception:");
-            e.printStackTrace();
-            System.exit(1);
-        }
+        cov.writeCoverageData(filename, binSize);
+//        try {
+//            PrintWriter pw = new PrintWriter(new FileWriter(filename));            
+//            for (int i=0; i<(size-binSize); i+=binSize) {
+//                int count = 0;
+//                for (int j=0; j<binSize; j++) {
+//                    count += coverage[i+j];
+//                }
+//                pw.printf("%d\t%.2f", i, ((double)count / (double)binSize));
+//                pw.println("");
+//            }            
+//            pw.close();
+//        } catch (IOException e) {
+//            System.out.println("writeCoverageData exception:");
+//            e.printStackTrace();
+//            System.exit(1);
+//        }
     }
 
     /**

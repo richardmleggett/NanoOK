@@ -15,7 +15,7 @@ import java.io.*;
  * @author Richard Leggett
  */
 public class NanoOKOptions implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     public final static int MAX_KMER = 5000;
     public final static int MAX_READ_LENGTH = 1000000;
     public final static int MAX_READS = 1000000;
@@ -67,6 +67,7 @@ public class NanoOKOptions implements Serializable {
     private String jobQueue = "";
     private NanoOKLog logFile = new NanoOKLog();
     private String imageFormat = "pdf";
+    private int specifiedType = TYPE_2D;
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_SCRIPT_DIR");
@@ -164,6 +165,15 @@ public class NanoOKOptions implements Serializable {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-log")) {
                 logFile.open(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-type")) {
+                if (args[i+1].equalsIgnoreCase("template")) {
+                    specifiedType = TYPE_TEMPLATE;
+                } else if (args[i+1].equalsIgnoreCase("complement")) {
+                    specifiedType = TYPE_COMPLEMENT;
+                } else if (args[i+1].equalsIgnoreCase("2d")) {
+                    specifiedType = TYPE_2D;
+                }
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-nofail") || args[i].equalsIgnoreCase("-passonly")) {
                 processPassReads = true;
@@ -429,7 +439,7 @@ public class NanoOKOptions implements Serializable {
      * @return filename String
      */
     public String getAlignmentSummaryFilename() {
-        return getAnalysisDir() + File.separator + "alignment_summary.txt";
+        return getAnalysisDir() + File.separator + "all_summary.txt";
     }
 
     /**
@@ -726,5 +736,9 @@ public class NanoOKOptions implements Serializable {
     
     public String getComparisonDir() {
         return comparisonDir;
+    }
+    
+    public int getSpecifiedType() {
+        return specifiedType;
     }
  }

@@ -12,7 +12,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Represent statistics about a read set (for example Template read set).
@@ -20,7 +22,7 @@ import java.util.Hashtable;
  * @author Richard Leggett
  */
 public class ReadSetStats implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     NanoOKOptions options;
     private transient PrintWriter pwLengths = null;
     private transient PrintWriter pwKmers = null;
@@ -35,6 +37,7 @@ public class ReadSetStats implements Serializable {
     private int n90Count = 0;
     private int[] lengths = new int[NanoOKOptions.MAX_READ_LENGTH];
     private Hashtable<String,Integer> readLengths = new Hashtable();
+    private Hashtable<String,Double> readGC = new Hashtable();
     private int nReads = 0;
     private int nReadFiles = 0;
     private int nPassFiles = 0;
@@ -48,6 +51,7 @@ public class ReadSetStats implements Serializable {
     private int nSubstitutions = 0;
     private int nInsertions = 0;
     private int nDeletions = 0;
+    private int ignoredDuplicates = 0;
     private int type;
    
     /**
@@ -91,6 +95,9 @@ public class ReadSetStats implements Serializable {
         pwLengths.close();
     }
     
+    /**
+     * Close the kmers file
+     */
     public synchronized void closeKmersFile() {
         pwKmers.close();
     }
@@ -254,7 +261,7 @@ public class ReadSetStats implements Serializable {
      * @param id ID of read
      * @param l length
      */
-    public synchronized void addLength(String id, int l) {
+    public synchronized void addLength(String id, int l, double gc) {
         lengths[l]++;
         
         pwLengths.println(id + "\t" + l);
@@ -271,9 +278,11 @@ public class ReadSetStats implements Serializable {
         nReads++;
         
         if (readLengths.containsKey(id)) {
-            System.out.println("Error: Read ID "+id+" occurs more than once.");
+            System.out.println("Error: Read ID "+id+"  . This occurrance ignored.");
+            ignoredDuplicates++;
         } else {
             readLengths.put(id, l);
+            readGC.put(id, gc);
         }
     }    
         
@@ -293,6 +302,23 @@ public class ReadSetStats implements Serializable {
         
         return length;
     }
+
+    /**
+     * Get GC of read
+     * @param id of read
+     * @return GC percent
+     */
+    public synchronized double getGC(String id) {
+        double gc = -1;
+        
+        Double g = readGC.get(id);
+        
+        if (g != null) {
+            gc = g.intValue();
+        }
+        
+        return gc;
+    }    
     
     /**
      * Store a read with an alignment.
@@ -379,7 +405,8 @@ public class ReadSetStats implements Serializable {
      * Write a short summary file for this read set.
      * @param filename output filename
      */
-    public synchronized void writeSummaryFile(String filename) {
+    public synchronized void writeSummaryFile() {
+        String filename = options.getAlignmentSummaryFilename();
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename, true));
             pw.println("");
@@ -493,7 +520,83 @@ public class ReadSetStats implements Serializable {
         pwKmers.println("");
     }
     
+    /**
+     * Get options
+     */
     public NanoOKOptions getOptions() {
         return options;
+    }
+    
+    /**
+     * Write substitution stats to a file
+     */
+    public void writeSubstitutionStats() {
+        String filenamePc = options.getAnalysisDir() + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) + "_substitutions_percent.txt";
+        String bases[] = {"A","C","G","T"};
+        try {
+            PrintWriter pwPc = new PrintWriter(new FileWriter(filenamePc)); 
+            pwPc.println("\tSubA\tSubC\tSubG\tSubT");            
+            for (int r=0; r<4; r++) {
+                pwPc.print("Ref"+bases[r]);
+                for (int s=0; s<4; s++) {
+                    double pc = 0;
+
+                    if (substitutionErrors[r][s] > 0) {
+                        pc = (100.0 * (double)substitutionErrors[r][s]) / nSubstitutions;
+                    }                    
+                    pwPc.printf("\t%.2f", pc);
+                }
+                pwPc.println("");
+            }
+            pwPc.close();
+        } catch (IOException e) {
+            System.out.println("writeSubstitutionStats exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }                
+    }
+    
+    /**
+     * Write error motif stats to a file
+     */
+    public void writeErrorMotifStats() {
+        try {
+            for (int t=0; t<3; t++) {
+                for (int n=3; n<=5; n++) {
+                    ArrayList<Map.Entry<String, Double>> motifs = null;
+                    String typeString = "";
+                    String filename = "";
+                    
+                    if (t == 0) {
+                        typeString = "insertion";
+                        motifs = motifStats.getSortedInsertionMotifPercentages(n);
+                    } else if (t == 1) {
+                        typeString = "deletion";
+                        motifs = motifStats.getSortedDeletionMotifPercentages(n);
+                    } else {
+                        typeString = "substitution";
+                        motifs = motifStats.getSortedSubstitutionMotifPercentages(n);
+                    }
+                    
+                    filename = options.getAnalysisDir() + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) + "_"+typeString+"_"+n+"mer_motifs.txt";
+                    PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
+                    pw.println("Kmer\tPercentage");
+                    
+                    for (int i=0; i<motifs.size(); i++) {
+                        pw.printf("%s\t%.4f", motifs.get(i).getKey(), motifs.get(i).getValue());
+                        pw.println("");
+                    }
+                    pw.close();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("writeSubstitutionStats exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }   
+    }
+    
+    public int getIgnoredDuplicates() {
+        return ignoredDuplicates;
     }
 }

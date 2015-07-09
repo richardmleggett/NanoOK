@@ -180,7 +180,7 @@ public class ReadSet {
         System.out.println("");
         
         stats.closeLengthsFile();
-        stats.writeSummaryFile(options.getAlignmentSummaryFilename());        
+        stats.writeSummaryFile();        
         stats.calculateStats();    
         
         return nFastaFiles;

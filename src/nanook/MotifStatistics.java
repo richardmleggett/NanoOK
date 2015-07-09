@@ -22,7 +22,7 @@ import static nanook.NanoOKOptions.TYPE_TEMPLATE;
  * @author Richard Leggett
  */
 public class MotifStatistics implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private KmerMotifStatistic[] insertionMotifs = new KmerMotifStatistic[3];
     private KmerMotifStatistic[] deletionMotifs = new KmerMotifStatistic[3];
     private KmerMotifStatistic[] substitutionMotifs = new KmerMotifStatistic[3];

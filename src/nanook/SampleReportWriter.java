@@ -20,6 +20,7 @@ import java.util.Set;
  * @author Richard Leggett
  */
 public class SampleReportWriter {
+    private static final int LONGTABLE_THRESHOLD = 25;
     private NanoOKOptions options;
     private References references;
     private OverallStats overallStats;
@@ -74,9 +75,13 @@ public class SampleReportWriter {
         pw.println("\\usepackage[compact]{titlesec}");
         pw.println("\\usepackage[portrait,top=1cm, bottom=2cm, left=1cm, right=1cm]{geometry}");
         pw.println("\\usepackage{float}");
+        if (references.getNumberOfReferences() >= LONGTABLE_THRESHOLD) {
+            pw.println("\\usepackage{longtable}");
+        }
         pw.println("\\restylefloat{table}");
         pw.println("\\begin{document}");
         pw.println("\\renewcommand*{\\familydefault}{\\sfdefault}");
+        pw.println("\\normalfont");
         pw.println("\\section*{\\large{NanoOK report for " + sample + "}}");
     }
     
@@ -381,7 +386,16 @@ public class SampleReportWriter {
         includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_kmer_scatter", "} \\\\");
         includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_kmer_scatter", "} \\\\");
         pw.println("\\end{figure}");         
-    
+
+        if (options.getNumberOfTypes() == 1) {
+            graphSize = "width=.4\\linewidth";
+        } else {
+            graphSize = "height=3.5cm";
+        }
+        pw.println("\\subsection*{" + id + " GC content}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_TEMPLATE, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Template_GC_hist", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_COMPLEMENT, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_Complement_GC_hist", "}");
+        includeGraphicsIfExists(NanoOKOptions.TYPE_2D, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + File.separator + refSeq.getName() + "_2D_GC_hist", "}");        
     }
 
     private void writeKmerTable(String[] lines) {
@@ -690,15 +704,12 @@ public class SampleReportWriter {
         ArrayList<ReferenceSequence> sortedRefs = references.getSortedReferences();
         for (int i=0; i<sortedRefs.size(); i++) {
             ReferenceSequence rs = sortedRefs.get(i);
-            int totalAlignments = rs.getStatsByType(NanoOKOptions.TYPE_TEMPLATE).getNumberOfReadsWithAlignments() +
-                                  rs.getStatsByType(NanoOKOptions.TYPE_COMPLEMENT).getNumberOfReadsWithAlignments() + 
-                                  rs.getStatsByType(NanoOKOptions.TYPE_2D).getNumberOfReadsWithAlignments();
-                        
-            if ((options.getNumberOfTypes() > 1) || (references.getNumberOfReferences() > 1)) {
-                pw.println("\\clearpage");
-            }        
+
+            if (rs.getTotalNumberOfAlignments() > NanoOKOptions.MIN_ALIGNMENTS) {
+                if ((options.getNumberOfTypes() > 1) || (references.getNumberOfReferences() > 1)) {
+                    pw.println("\\clearpage");
+                }        
             
-            if (totalAlignments > NanoOKOptions.MIN_ALIGNMENTS) {
                 writeReferenceSection(rs);
             }
         }
@@ -732,7 +743,7 @@ public class SampleReportWriter {
                 writeAlignmentsSection(overallStats.getStatsByType(type));            
         //        references.writeReferenceStatFiles(type);
         //        references.writeReferenceSummary(type);
-                references.writeTexSummary(type, pw);
+                writeAlignmentSummary(type, pw);
             }
         }
         
@@ -752,6 +763,53 @@ public class SampleReportWriter {
         writeLaTeXFooter();
         close();
     }
+    
+        /**
+     * Write reference summary to LaTeX report.
+     * @param type type from NanoOKOptions
+     * @param pw handle to LaTeX file
+     */
+    public void writeAlignmentSummary(int type, PrintWriter pw) {
+        if (references.getNumberOfReferences() < LONGTABLE_THRESHOLD) {
+            pw.println("\\begin{table}[H]");
+        }
+        pw.println("{\\footnotesize");
+        if (references.getNumberOfReferences() < LONGTABLE_THRESHOLD) {
+            pw.println("\\fontsize{9pt}{11pt}\\selectfont");
+            pw.println("\\begin{tabular}{l c c c c c c c}");
+        } else {
+            pw.println("\\begin{longtable}[l]{l c c c c c c c}");
+        }
+        pw.println("          &             & {\\bf Number of} & {\\bf \\% of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest} \\\\");
+        pw.println("{\\bf ID} & {\\bf Size} & {\\bf Reads}     & {\\bf Reads}  & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} \\\\");
+        ArrayList<ReferenceSequence> sortedRefs = references.getSortedReferences();
+        for (int i=0; i<sortedRefs.size(); i++) {
+            ReferenceSequence r = sortedRefs.get(i);
+            ReferenceSequenceStats refStats = r.getStatsByType(type);
+            if ((sortedRefs.size() < 100) || (refStats.getNumberOfReadsWithAlignments() > 0)) {
+                pw.printf("%s & %d & %d & %.2f & %.2f & %d & %.2f & %d \\\\",
+                           r.getName().replaceAll("_", " "),
+                           r.getSize(),
+                           refStats.getNumberOfReadsWithAlignments(),
+                           100.0 * (double)refStats.getNumberOfReadsWithAlignments() / (double)overallStats.getStatsByType(type).getNumberOfReads(),
+                           refStats.getMeanReadLength(),
+                           refStats.getTotalAlignedBases(),
+                           (double)refStats.getTotalAlignedBases() / r.getSize(),
+                           refStats.getLongestPerfectKmer());
+                pw.println("");
+            }
+        }
+        if (references.getNumberOfReferences() < LONGTABLE_THRESHOLD) {
+            pw.println("\\end{tabular}");
+        } else {
+            pw.println("\\end{longtable}");
+        }
+        pw.println("}");
+        if (references.getNumberOfReferences() < LONGTABLE_THRESHOLD) {
+            pw.println("\\end{table}");        
+        }
+    }
+
     
     public void makePDF() {
         ProcessLogger pl = new ProcessLogger();

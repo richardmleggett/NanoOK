@@ -15,7 +15,7 @@ import java.io.*;
  * @author Richard Leggett
  */
 public class AlignmentsTableFile implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private String filename;
     private transient PrintWriter pw = null;
     private int count = 0;
@@ -45,6 +45,7 @@ public class AlignmentsTableFile implements Serializable {
         openFile(false);
         pw.print("Filename\t");
         pw.print("QueryName\t");
+        pw.print("QueryGC\t");
         pw.print("QueryStart\t");
         pw.print("QueryBasesCovered\t");
         pw.print("QueryStrand\t");
@@ -71,12 +72,13 @@ public class AlignmentsTableFile implements Serializable {
      * @param alignmentFilename filename of alignment
      * @param hitLine hit object
      * @param queryLine query object
-     * @param stat AlignmentInfo statistics
+     * @param ais AlignmentInfo statistics
      */
-    public synchronized void writeAlignment(String alignmentFilename, MAFAlignmentLine hitLine, MAFAlignmentLine queryLine, AlignmentInfo stat) {
-        String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
+    public synchronized void writeAlignment(ReadSetStats stats, String alignmentFilename, MAFAlignmentLine hitLine, MAFAlignmentLine queryLine, AlignmentInfo ais) {
+        String outputLine = String.format("%s\t%s\t%.2f\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
                 queryLine.getName(),
+                stats.getGC(ais.getQueryName()),
                 queryLine.getStart(),
                 queryLine.getAlnSize(),
                 queryLine.getStrand(),
@@ -86,14 +88,14 @@ public class AlignmentsTableFile implements Serializable {
                 hitLine.getAlnSize(),
                 hitLine.getStrand(),
                 hitLine.getSeqSize(),
-                stat.getAlignmentSize(),
-                stat.getIdenticalBases(),
-                stat.getAlignmentId(),
-                stat.getQueryId(),
-                stat.getLongestPerfectKmer(),
-                stat.getMeanPerfectKmer(),
-                stat.getPercentQueryAligned(),
-                stat.getkCounts());
+                ais.getAlignmentSize(),
+                ais.getIdenticalBases(),
+                ais.getAlignmentId(),
+                ais.getQueryId(),
+                ais.getLongestPerfectKmer(),
+                ais.getMeanPerfectKmer(),
+                ais.getPercentQueryAligned(),
+                ais.getkCounts());
         
         openFile(true);
         pw.println(outputLine);
@@ -102,27 +104,28 @@ public class AlignmentsTableFile implements Serializable {
         count++;
     }
     
-    public synchronized void writeMergedAlignment(String alignmentFilename, AlignmentMerger merger, AlignmentInfo stat) {
-        String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
+    public synchronized void writeMergedAlignment(ReadSetStats stats, String alignmentFilename, AlignmentMerger merger, AlignmentInfo ais) {
+        String outputLine = String.format("%s\t%s\t%.2f\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
-                stat.getQueryName(),
+                ais.getQueryName(),
+                stats.getGC(ais.getQueryName()),
                 merger.getOverallQueryStart(),
                 merger.getOverallQuerySize(),
                 "+",
-                stat.getQuerySize(),
-                stat.getHitName(),
+                ais.getQuerySize(),
+                ais.getHitName(),
                 merger.getOverallHitStart(),
                 merger.getOverallHitSize(),
                 "+",
-                stat.getHitSize(),
-                stat.getAlignmentSize(),
-                stat.getIdenticalBases(),
-                stat.getAlignmentId(),
-                stat.getQueryId(),
-                stat.getLongestPerfectKmer(),
-                stat.getMeanPerfectKmer(),
-                stat.getPercentQueryAligned(),
-                stat.getkCounts());
+                ais.getHitSize(),
+                ais.getAlignmentSize(),
+                ais.getIdenticalBases(),
+                ais.getAlignmentId(),
+                ais.getQueryId(),
+                ais.getLongestPerfectKmer(),
+                ais.getMeanPerfectKmer(),
+                ais.getPercentQueryAligned(),
+                ais.getkCounts());
         
         openFile(true);
         pw.println(outputLine);

@@ -18,7 +18,7 @@ import java.io.Serializable;
  * @author Richard Leggett
  */
 public class NanoOKLog  implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private transient PrintWriter pw = null;
     
     public NanoOKLog() {

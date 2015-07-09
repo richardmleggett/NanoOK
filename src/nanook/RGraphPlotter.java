@@ -108,11 +108,14 @@ public class RGraphPlotter {
        
         Set<String> ids = options.getReferences().getAllIds();
         for (String id : ids) {
-            String name = options.getReferences().getReferenceById(id).getName();
+            ReferenceSequence rs = options.getReferences().getReferenceById(id);
+            String name = rs.getName();
             if (fComparison) {
                 runScript(fComparison, "nanook_plot_comparison_reference.R", "plot_reference", name);            
             } else {
-                runScript(fComparison, "nanook_plot_reference.R", "plot_reference", name);
+                if (rs.getTotalNumberOfAlignments() > NanoOKOptions.MIN_ALIGNMENTS) {
+                    runScript(fComparison, "nanook_plot_reference.R", "plot_reference", name);
+                }
             }
             writeProgress();
         }          

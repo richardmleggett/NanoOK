@@ -15,7 +15,7 @@ import java.io.Serializable;
  * @author Richard Leggett
  */
 public class OverallStats implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private ReadSetStats[] readStats = new ReadSetStats[3];
     
     /**

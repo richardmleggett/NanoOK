@@ -91,45 +91,74 @@ public class ComparisonReportWriter {
     
     private void writeLengthSection() {
         String graphSize = "height=6cm";
+        int type = options.getSpecifiedType();
         
-        //if (options.getNumberOfTypes() == 1) {
-        //    graphSize = "width=.4\\linewidth";
-        //}
-
         pw.println("\\subsection*{Read lengths}");
-        //pw.println("\\vspace{-3mm}");
-                        
-        for (int type=0; type<3; type++) {
-            if (options.isProcessingReadType(type)) {
-                includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + NanoOKOptions.getTypeFromInt(type)+"_lengths", "} \\\\");
-            }
-        }        
+                 
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + NanoOKOptions.getTypeFromInt(type)+"_lengths", "} \\\\");
+
+        pw.println("\\subsection*{Alignment summary}");
+        
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + NanoOKOptions.getTypeFromInt(type)+"_maps", "} \\\\");
     }
     
     public void writeReferenceSection(ReferenceSequence refSeq) {
         String id = refSeq.getName().replaceAll("_", " ");
         String graphSize = "height=6cm";
+        int type = options.getSpecifiedType();
 
         pw.println("\\clearpage");
         pw.println("\\subsection*{" + id + " identity}");
-        for (int type=0; type<3; type++) {
-            if (options.isProcessingReadType(type)) {
-                includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_query_identity", "} \\\\");
-            }
-        }        
-
-        for (int type=0; type<3; type++) {
-            if (options.isProcessingReadType(type)) {
-                includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_percent_query_aligned", "} \\\\");
-            }
-        }        
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_query_identity", "} \\\\");
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_query_identity_zoom", "} \\\\");
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_percent_query_aligned", "} \\\\");
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_percent_query_aligned_zoom", "} \\\\");
 
         pw.println("\\subsection*{" + id + " best perfect kmer}");
-        for (int type=0; type<3; type++) {
-            if (options.isProcessingReadType(type)) {
-                includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_best_perfect_kmer", "} \\\\");
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_best_perfect_kmer", "} \\\\");
+
+        pw.println("\\subsection*{" + id + " GC}");
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + refSeq.getName() + "_" + NanoOKOptions.getTypeFromInt(type)+"_query_gc", "} \\\\");
+
+        for (int ou=0; ou<2; ou++) { 
+            if (ou == 0) {
+                pw.println("\\subsection*{" + id + " " + NanoOKOptions.getTypeFromInt(type) + " Over-represented 5-mers}");
+            } else {
+                pw.println("\\subsection*{" + id + " " + NanoOKOptions.getTypeFromInt(type) + " Under-represented 5-mers}");
             }
-        }            
+            
+            pw.println("\\vspace{-3mm}");
+            pw.println("\\begin{table}[H]");
+            pw.println("{\\footnotesize");
+            pw.println("\\fontsize{8pt}{10pt}\\selectfont");
+            pw.println("\\tabcolsep=0.15cm");
+            pw.println("\\begin{tabular}{|c|c c c c c c c c c c|}");
+            pw.println("\\cline{1-11}");
+            pw.println("Sample & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\\\");
+            pw.println("\\cline{1-11}");
+            for (int i=0; i<sampleComparer.getNumberOfSamples(); i++) {
+                OverallStats os = sampleComparer.getSample(i);
+                ReferenceSequence rs = os.getStatsByType(type).getOptions().getReferences().getReferenceById(refSeq.getId());
+                rs.getStatsByType(type).sortKmerAbundance();
+                ArrayList<KmerAbundance> ka = rs.getStatsByType(type).getKmerAbundance();
+                pw.print(sampleComparer.getSampleName(i).replaceAll("_", "\\\\_"));
+                for (int j=0; j<10; j++) {
+                    KmerAbundance ko;
+                    
+                    if (ou == 0) {
+                        ko = ka.get(j);
+                    } else {
+                        ko = ka.get(ka.size() - 1 - j);
+                    }
+                    pw.print(" & "+ko.getKmer());
+                }
+                pw.println(" \\\\");            
+            }
+            pw.println("\\cline{1-11}");
+            pw.println("\\end{tabular}");
+            pw.println("}");
+            pw.println("\\end{table}");                          
+        }
     }
     
     private void writeReferenceSection() {
@@ -138,7 +167,7 @@ public class ComparisonReportWriter {
             ReferenceSequence rs = sortedRefs.get(i);
             writeReferenceSection(rs);
         }
-    }
+    }   
     
     public void writeReport() {
         open();

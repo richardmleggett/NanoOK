@@ -16,7 +16,7 @@ import java.util.*;
  * @author Richard Leggett
  */
 public class References implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private NanoOKOptions options;
     private File sizesFile;
     private Hashtable<String,ReferenceSequence> referenceSeqIds = new Hashtable();
@@ -52,6 +52,8 @@ public class References implements Serializable {
             System.exit(1);
         }        
         
+        System.out.println("Reading reference sizes and making directories");
+        
         try
         {
             BufferedReader br = new BufferedReader(new FileReader(sizesFile));
@@ -71,6 +73,8 @@ public class References implements Serializable {
                     System.out.println("Error: reference contig name "+values[2]+" occurs more than once.");
                     System.exit(1);
                 }
+                
+                System.out.println("\t" + values[2] + "\t" + size);
                 
                 refSeqById = new ReferenceSequence(values[0], size, values[2]);
                 options.checkAndMakeReferenceAnalysisDir(refSeqById.getName());
@@ -108,7 +112,10 @@ public class References implements Serializable {
             String name = null;
             String seq = "";
             String previousKmerString = "";
-                                    
+ 
+            System.out.println("");
+            System.out.println("Calculating reference GC");
+            
             do {
                 line = br.readLine();
                 if (line != null) {
@@ -127,7 +134,7 @@ public class References implements Serializable {
                         String[] parts = line.substring(1).split("(\\s+)");
                         id = parts[0];
                         currentRef = getReferenceById(id);
-                        System.out.println("- Reference " + currentRef.getName() + "\t" + currentRef.getSize());
+                        System.out.println("\t" + currentRef.getName());
                         refKmerTable = currentRef.getKmerTable();
                         gcc = new GCCounter(currentRef.getBinSize(), options.getAnalysisDir() + File.separator + currentRef.getName() + File.separator + currentRef.getName() + "_gc.txt");
                     }                                        
@@ -253,12 +260,11 @@ public class References implements Serializable {
      */
     public void writeReferenceSummary(int type) {
        try {
-            PrintWriter pw = new PrintWriter(new FileWriter(options.getAlignmentSummaryFilename(), true));
+            String filename = options.getAnalysisDir() + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) + "_alignment_summary.txt";
+            PrintWriter pw = new PrintWriter(new FileWriter(filename));
             String formatString = "%-"+longestId+"s %-12s %-10s %-10s %-10s %-12s %-10s %-10s";
-            pw.println("");
-            pw.println(NanoOKOptions.getTypeFromInt(type) + " stats");
-            pw.println("");
-            pw.printf(formatString, "ID", "Size", "ReadsAlign", "PcReads", "MeanLen", "TotalBases", "MeanCov", "LongPerfKm");    
+            //pw.printf(formatString, "ID", "Size", "ReadsAlign", "PcReads", "MeanLen", "TotalBases", "MeanCov", "LongPerfKm");    
+            pw.print("ID\tSize\tReadsAlign\tPcReads\tMeanLen\tTotalBases\tMeanCov\tLongPerfKm");
             pw.println("");
             
             //List<String> keys = new ArrayList<String>(referenceSeqIds.keySet());
@@ -267,13 +273,13 @@ public class References implements Serializable {
             //    referenceSeqIds.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10.2f %-10d");
             //}
 
-            formatString = "%-"+longestId+"s %-12d %-10d %-10.2f %-10.2f %-12d %-10.2f %-10d";
+            formatString = "%s\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%d";
             ArrayList<ReferenceSequence> sortedRefs = getSortedReferences();
             for (int i=0; i<sortedRefs.size(); i++) {
                 ReferenceSequence r = sortedRefs.get(i);
                 ReferenceSequenceStats refStats = r.getStatsByType(type);
                 pw.printf(formatString,
-                           r.getName().replaceAll("_", " "),
+                           r.getName(),
                            r.getSize(),
                            refStats.getNumberOfReadsWithAlignments(),
                            100.0 * (double)refStats.getNumberOfReadsWithAlignments() / (double)overallStats.getStatsByType(type).getNumberOfReads(),
@@ -293,35 +299,37 @@ public class References implements Serializable {
         }
     }
     
-    /**
-     * Write reference summary to LaTeX report.
-     * @param type type from NanoOKOptions
-     * @param pw handle to LaTeX file
-     */
-    public void writeTexSummary(int type, PrintWriter pw) {
-        pw.println("\\begin{table}[H]");
-        pw.println("{\\footnotesize");
-        pw.println("\\fontsize{9pt}{11pt}\\selectfont");
-        pw.println("\\begin{tabular}{l c c c c c c c}");
-        pw.println("          &             & {\\bf Number of} & {\\bf \\% of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest} \\\\");
-        pw.println("{\\bf ID} & {\\bf Size} & {\\bf Reads}     & {\\bf Reads}  & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} \\\\");
-        ArrayList<ReferenceSequence> sortedRefs = getSortedReferences();
-        for (int i=0; i<sortedRefs.size(); i++) {
-            ReferenceSequence r = sortedRefs.get(i);
-            ReferenceSequenceStats refStats = r.getStatsByType(type);
-            pw.printf("%s & %d & %d & %.2f & %.2f & %d & %.2f & %d \\\\",
-                       r.getName().replaceAll("_", " "),
-                       r.getSize(),
-                       refStats.getNumberOfReadsWithAlignments(),
-                       100.0 * (double)refStats.getNumberOfReadsWithAlignments() / (double)overallStats.getStatsByType(type).getNumberOfReads(),
-                       refStats.getMeanReadLength(),
-                       refStats.getTotalAlignedBases(),
-                       (double)refStats.getTotalAlignedBases() / r.getSize(),
-                       refStats.getLongestPerfectKmer());
-            pw.println("");
-        }
-        pw.println("\\end{tabular}");
-        pw.println("}");
-        pw.println("\\end{table}");
-    }
+//    /**
+//     * Write reference summary to LaTeX report.
+//     * @param type type from NanoOKOptions
+//     * @param pw handle to LaTeX file
+//     */
+//    public void writeTexSummary(int type, PrintWriter pw) {
+//        pw.println("\\begin{table}[H]");
+//        pw.println("{\\footnotesize");
+//        pw.println("\\fontsize{9pt}{11pt}\\selectfont");
+//        pw.println("\\begin{tabular}{l c c c c c c c}");
+//        pw.println("          &             & {\\bf Number of} & {\\bf \\% of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest} \\\\");
+//        pw.println("{\\bf ID} & {\\bf Size} & {\\bf Reads}     & {\\bf Reads}  & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} \\\\");
+//        ArrayList<ReferenceSequence> sortedRefs = getSortedReferences();
+//        for (int i=0; i<sortedRefs.size(); i++) {
+//            ReferenceSequence r = sortedRefs.get(i);
+//            ReferenceSequenceStats refStats = r.getStatsByType(type);
+//            if ((sortedRefs.size() < 100) || (refStats.getNumberOfReadsWithAlignments() > 0)) {
+//                pw.printf("%s & %d & %d & %.2f & %.2f & %d & %.2f & %d \\\\",
+//                           r.getName().replaceAll("_", " "),
+//                           r.getSize(),
+//                           refStats.getNumberOfReadsWithAlignments(),
+//                           100.0 * (double)refStats.getNumberOfReadsWithAlignments() / (double)overallStats.getStatsByType(type).getNumberOfReads(),
+//                           refStats.getMeanReadLength(),
+//                           refStats.getTotalAlignedBases(),
+//                           (double)refStats.getTotalAlignedBases() / r.getSize(),
+//                           refStats.getLongestPerfectKmer());
+//                pw.println("");
+//            }
+//        }
+//        pw.println("\\end{tabular}");
+//        pw.println("}");
+//        pw.println("\\end{table}");
+//    }
 }

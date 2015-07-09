@@ -24,12 +24,20 @@ public class SequenceReader {
     private ArrayList<String> seqIDs = new ArrayList();
     private ArrayList<Integer> seqLengths = new ArrayList();
     private ArrayList<String> sequence = new ArrayList();
+    private ArrayList<Double> gcPc = new ArrayList();
     private int nSeqs = 0;
     private boolean cacheSequence = false;
     private String currentFilename;
     
     public SequenceReader(boolean cache) {
         cacheSequence = cache;
+    }
+    
+    public int countGC(String s) {
+        int g = s.length() - s.replace("G", "").length();
+        int c = s.length() - s.replace("C", "").length();
+        
+        return g + c;
     }
     
     public int indexFASTQFile(String filename) {
@@ -43,6 +51,7 @@ public class SequenceReader {
             int contigLength = 0;
             int readsInThisFile = 0;
             boolean gotRead;
+            int gc = 0;
                     
             do {
                 String sh = br.readLine();
@@ -61,6 +70,7 @@ public class SequenceReader {
                             if (id != null) {
                                 seqIDs.add(id);
                                 seqLengths.add(seq.length());
+                                gcPc.add(new Double(100.0 * (double)countGC(seq) / (double)seq.length()));
                                 if (cacheSequence) {
                                     sequence.add(seq);
                                 }
@@ -115,6 +125,7 @@ public class SequenceReader {
             int contigLength = 0;
             int readsInThisFile = 0;
             String seq = "";
+            int gc = 0;
             
             if (indexFilename != null) {
                 pw = new PrintWriter(new FileWriter(indexFilename, false)); 
@@ -131,6 +142,7 @@ public class SequenceReader {
                         if (storeIds) {
                             seqIDs.add(id);
                             seqLengths.add(contigLength);
+                            gcPc.add(new Double(100.0*(double)gc / (double)contigLength));
                         }
                         
                         if (pw != null) {
@@ -141,7 +153,7 @@ public class SequenceReader {
                         if (cacheSequence) {
                             sequence.add(seq);
                         }
-                        nSeqs++;                        
+                        nSeqs++;  
                     }
                     
                     if (line != null) {
@@ -151,8 +163,10 @@ public class SequenceReader {
                     }                   
                     
                     contigLength = 0;
+                    gc = 0;
                 } else if (line != null) {
                     contigLength += line.length();
+                    gc += countGC(line);
                     
                     if (cacheSequence) {
                         seq = seq + line;
@@ -183,6 +197,10 @@ public class SequenceReader {
     
     public int getLength(int i) {
         return seqLengths.get(i);
+    }
+    
+    public double getGC(int i) {
+        return gcPc.get(i);
     }
     
     public String getSubSequence(String id, int start, int end) {
