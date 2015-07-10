@@ -49,7 +49,10 @@ public class References implements Serializable {
         
         if (!sizesFile.exists()) {
             System.out.println("Error: can't read sizes file.");
-            System.exit(1);
+            System.out.println("Generating .sizes file for reference. You may want to edit the display names.");
+            SequenceReader sr = new SequenceReader(false);
+            sr.indexFASTAFile(options.getReferenceFile(), options.getReferenceFile()+".sizes" , false);
+            sizesFile = new File(options.getReferenceFile()+".sizes");
         }        
         
         System.out.println("Reading reference sizes and making directories");
@@ -59,31 +62,33 @@ public class References implements Serializable {
             BufferedReader br = new BufferedReader(new FileReader(sizesFile));
             String line = br.readLine();
             while (line != null) {
-                String[] values = line.split("\\t");
-                int size = Integer.parseInt(values[1]);
+                if (!line.startsWith("#") && (!line.startsWith("SequenceID"))) {
+                    String[] values = line.split("\\t");
+                    int size = Integer.parseInt(values[1]);
 
-                ReferenceSequence refSeqById = referenceSeqIds.get(values[0]);
-                if (refSeqById != null) {
-                    System.out.println("Error: reference contig ID "+values[0]+" occurs more than once.");
-                    System.exit(1);
-                }
+                    ReferenceSequence refSeqById = referenceSeqIds.get(values[0]);
+                    if (refSeqById != null) {
+                        System.out.println("Error: reference contig ID "+values[0]+" occurs more than once.");
+                        System.exit(1);
+                    }
 
-                ReferenceSequence refSeqByName = referenceSeqNames.get(values[2]);
-                if (refSeqByName != null) {
-                    System.out.println("Error: reference contig name "+values[2]+" occurs more than once.");
-                    System.exit(1);
-                }
-                
-                System.out.println("\t" + values[2] + "\t" + size);
-                
-                refSeqById = new ReferenceSequence(values[0], size, values[2]);
-                options.checkAndMakeReferenceAnalysisDir(refSeqById.getName());
-                referenceSeqIds.put(values[0], refSeqById);
-                referenceSeqNames.put(values[2], refSeqById);
-                refSeqById.openAlignmentSummaryFiles(options.getAnalysisDir());
+                    ReferenceSequence refSeqByName = referenceSeqNames.get(values[2]);
+                    if (refSeqByName != null) {
+                        System.out.println("Error: reference contig name "+values[2]+" occurs more than once.");
+                        System.exit(1);
+                    }
 
-                if (values[0].length() > longestId) {
-                    longestId = values[0].length();
+                    System.out.println("\t" + values[2] + "\t" + size);
+
+                    refSeqById = new ReferenceSequence(values[0], size, values[2]);
+                    options.checkAndMakeReferenceAnalysisDir(refSeqById.getName());
+                    referenceSeqIds.put(values[0], refSeqById);
+                    referenceSeqNames.put(values[2], refSeqById);
+                    refSeqById.openAlignmentSummaryFiles(options.getAnalysisDir());
+
+                    if (values[0].length() > longestId) {
+                        longestId = values[0].length();
+                    }
                 }
 
                 line = br.readLine();

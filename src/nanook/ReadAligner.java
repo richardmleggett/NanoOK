@@ -107,7 +107,7 @@ public class ReadAligner {
         File sizesFile = new File(sizesFilename);
         if (!sizesFile.exists()) {
             System.out.println("");
-            System.out.println("Generating .sizes file for reference");
+            System.out.println("Generating .sizes file for reference. You may want to edit the display names.");
             SequenceReader sr = new SequenceReader(false);
             sr.indexFASTAFile(referenceFile, sizesFilename , false);
         }

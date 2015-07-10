@@ -104,6 +104,7 @@ public class SequenceReader {
         
         name=name.replaceAll("\\.", "_");
         name=name.replaceAll(" ", "_");
+        name=name.replaceAll("\\|", "_");
         
         return name;
     }
