@@ -87,7 +87,7 @@ public abstract class SAMParser {
      * @param outputFilename .maf file to write
      * @return ]
      */
-    private Alignment processAlignmentLine(String s, String outputFilename, ReadSetStats overallStats) {
+    private Alignment processAlignmentLine(String alignmentFile, String s, String outputFilename, ReadSetStats overallStats) {
         String[] cols = s.split("\t");
         String queryName = cols[0];
         int flags = Integer.parseInt(cols[1]);
@@ -111,7 +111,7 @@ public abstract class SAMParser {
         if (mapped) {
             ReferenceSequence readReference = references.getReferenceById(hitName);
             if (readReference != null) {        
-                int readLength = overallStats.getReadLength(queryName);
+                int readLength = overallStats.getReadLength(alignmentFile, queryName);
                 if (readLength != -1) {
                     CIGARString cs = new CIGARString(cigar, seq, leafName, queryName, hitStart, options.getReferenceFile(), readReference);
                     if (cs.processString()) {
@@ -168,7 +168,7 @@ public abstract class SAMParser {
                     } else if (line.startsWith("@PG")) {
                         processProgramTag(line);
                     } else if (!line.startsWith("@")) {
-                        Alignment al = processAlignmentLine(line, filename+".last", overallStats);
+                        Alignment al = processAlignmentLine(filename, line, filename+".last", overallStats);
                         if (al != null) {
                             alignments.add(al);
                         }                         

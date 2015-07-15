@@ -256,15 +256,24 @@ public class ReadSetStats implements Serializable {
         return nReadFiles;
     }    
     
+    private String getPrefix(String path) {
+        String leafname = new File(path).getName();
+        leafname.replaceAll(":", "_");
+        return leafname.substring(0, leafname.indexOf(".fa"));
+    }
+    
     /**
      * Store a read length in the array of read lengths.
      * @param id ID of read
      * @param l length
      */
-    public synchronized void addLength(String id, int l, double gc) {
+    public synchronized void addLength(String readPath, String id, int l, double gc) {
+        
         lengths[l]++;
         
         pwLengths.println(id + "\t" + l);
+        
+        id = getPrefix(readPath) + ":"+id;
         
         if (l > longest) {
             longest = l;
@@ -291,9 +300,11 @@ public class ReadSetStats implements Serializable {
      * @param id of read
      * @return length, in bases
      */
-    public synchronized int getReadLength(String id) {
+    public synchronized int getReadLength(String alignmentFile, String id) {
         int length = -1;
-        
+
+        id = getPrefix(alignmentFile) + ":"+id;
+
         Integer l = readLengths.get(id);
         
         if (l != null) {
@@ -308,8 +319,10 @@ public class ReadSetStats implements Serializable {
      * @param id of read
      * @return GC percent
      */
-    public synchronized double getGC(String id) {
+    public synchronized double getGC(String alignmentFile, String id) {
         double gc = -1;
+
+        id = getPrefix(alignmentFile) + ":"+id;
         
         Double g = readGC.get(id);
         

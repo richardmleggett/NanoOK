@@ -7,6 +7,8 @@
 
 package nanook;
 
+import java.io.File;
+
 /**
  * Parser for BWA files
  * @author Richard Leggett
@@ -40,4 +42,25 @@ public class BWAParser extends SAMParser implements AlignmentFileParser {
         
         return "bwa mem " + alignmentParams + " " + reference + " " + query;
     }
+    
+    public void checkForIndex(String referenceFile) {
+        String[] files = {referenceFile + ".bwt",
+                          referenceFile + ".pac"};
+
+        for (int i=0; i<files.length; i++) {
+            File f = new File(files[i]);
+
+            if (!f.exists()) {
+                System.out.println("");
+                System.out.println("Error:");
+                System.out.println("Can't find file " + f.getPath());
+                System.out.println("Have you indexed the reference with bwa index?");
+                System.out.println("Will continue in case naming of index files has changed, but anticipate failure!");
+                System.out.println("");
+                return;
+            }
+        }
+        
+        return;
+    }    
 }

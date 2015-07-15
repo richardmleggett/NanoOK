@@ -64,4 +64,8 @@ public class MarginAlignParser extends SAMParser implements AlignmentFileParser 
     public boolean outputsToStdout() {
         return false;
     }
+    
+    public void checkForIndex(String referenceFile) {
+        return;
+    }
 }

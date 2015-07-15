@@ -132,7 +132,7 @@ public class ParserRunnable implements Runnable
                 System.exit(1);
             }
             
-            stats.addLength(id, sr.getLength(i), sr.getGC(i));
+            stats.addLength(readPath, id, sr.getLength(i), sr.getGC(i));
         }
     }
 

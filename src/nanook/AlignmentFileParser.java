@@ -74,4 +74,10 @@ public interface AlignmentFileParser {
      * @return true or false
      */
     public boolean outputsToStdout();
+    
+    /**
+     * Check index files are present before aligning
+     * @param referenceFile name of FASTA file
+     */
+    public void checkForIndex(String referenceFile);
 }

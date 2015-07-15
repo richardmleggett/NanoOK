@@ -23,7 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.47";
+    public final static String VERSION_STRING = "v0.50";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -149,14 +149,18 @@ public class NanoOK {
                     int nReads = readSet.processReads();
 
                     if (nReads < 1) {
-                        System.out.println("Error: unable to find any reads to process.");
+                        System.out.println("Error: unable to find any " + NanoOKOptions.getTypeFromInt(type) + " reads to process.");
                         System.out.println("");
                         System.exit(1);
                     }
 
                     int nReadsWithAlignments = readSet.getStats().getNumberOfReadsWithAlignments();
                     if (nReadsWithAlignments < 1) {
-                        System.out.println("Error: unable to find any alignments to process.");
+                        System.out.println("");
+                        System.out.println("Error: unable to find any " + NanoOKOptions.getTypeFromInt(type) + " alignments to process.");
+                        System.out.println("Common reasons for this:");
+                        System.out.println("1. Failure to index the reference with the alignment tool, resulting in alignment files of 0 bytes");
+                        System.out.println("2. Wrong reference specified to the align stage, resulting in no alignments");
                         System.out.println("");
                         System.exit(1);
                     } else if (nReadsWithAlignments < 400) {
@@ -256,6 +260,7 @@ public class NanoOK {
     
     private static void align(NanoOKOptions options) throws InterruptedException {
         AlignmentFileParser parser = options.getParser();
+        parser.checkForIndex(options.getReferenceFile());
         ReadAligner aligner = new ReadAligner(options, parser);
         options.setReadFormat(parser.getReadFormat());
         aligner.createDirectories();

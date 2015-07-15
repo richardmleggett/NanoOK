@@ -43,4 +43,8 @@ public class BLASRParser extends SAMParser implements AlignmentFileParser {
     public boolean outputsToStdout() {
         return false;
     }
+    
+    public void checkForIndex(String referenceFile) {
+        return;
+    }    
 }
