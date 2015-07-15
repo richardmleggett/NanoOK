@@ -115,7 +115,7 @@ public class SequenceReader {
      */
     public int indexFASTAFile(String filename, String indexFilename, boolean storeIds) {
         currentFilename = filename;
-        
+                
         try
         {
             BufferedReader br = new BufferedReader(new FileReader(filename)); 
@@ -125,7 +125,8 @@ public class SequenceReader {
             String name = null;
             int contigLength = 0;
             int readsInThisFile = 0;
-            String seq = "";
+            //String seq = "";
+            StringBuilder seq = new StringBuilder(100000);
             int gc = 0;
             
             if (indexFilename != null) {
@@ -145,14 +146,14 @@ public class SequenceReader {
                             seqLengths.add(contigLength);
                             gcPc.add(new Double(100.0*(double)gc / (double)contigLength));
                         }
-                        
+
                         if (pw != null) {
                             pw.printf("%s\t%d\t%s", id, contigLength, name);
                             pw.println("");
                         }
                         
                         if (cacheSequence) {
-                            sequence.add(seq);
+                            sequence.add(seq.toString());
                         }
                         nSeqs++;  
                     }
@@ -170,11 +171,12 @@ public class SequenceReader {
                     gc += countGC(line);
                     
                     if (cacheSequence) {
-                        seq = seq + line;
+                        seq.append(line);
+                        //seq = seq + line;
                     }
-                }                
+                }  
             } while (line != null);
-
+            
             br.close();
             if (pw != null) {
                 pw.close();

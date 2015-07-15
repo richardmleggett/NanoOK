@@ -115,7 +115,7 @@ public abstract class SAMParser {
                 if (readLength != -1) {
                     CIGARString cs = new CIGARString(cigar, seq, leafName, queryName, hitStart, options.getReferenceFile(), readReference);
                     if (cs.processString()) {
-                        //System.out.println("hitName "+hitName);
+                    //System.out.println("hitName "+hitName);
                         al = new Alignment(mapQuality,
                                            queryName, 
                                            readLength,
@@ -135,7 +135,9 @@ public abstract class SAMParser {
                         }
 
                         al.writeMafFile(outputFilename);
+                        
                     }
+                    
                 } else {
                     System.out.println("Error: can't find read length for ["+queryName+"]");
                     System.exit(1);
@@ -157,6 +159,7 @@ public abstract class SAMParser {
         // Read all alignmnets and put into an ArrayList
         try
         {
+            options.getLog().println("Got file");
             BufferedReader br = new BufferedReader(new FileReader(filename));
             String line;
             
@@ -168,14 +171,18 @@ public abstract class SAMParser {
                     } else if (line.startsWith("@PG")) {
                         processProgramTag(line);
                     } else if (!line.startsWith("@")) {
+                        options.getLog().println("Got line");
                         Alignment al = processAlignmentLine(filename, line, filename+".last", overallStats);
                         if (al != null) {
                             alignments.add(al);
                         }                         
+                        options.getLog().println("Added");
                     }
                 }
             } while (line != null);            
             br.close();
+ 
+            options.getLog().println("Finished file");
             
             if (alignments.size() == 0) {
                 nonAlignedSummaryFile.writeNoAlignmentMessage(leafName);
@@ -188,6 +195,8 @@ public abstract class SAMParser {
             System.exit(1);
         }
                 
+        options.getLog().println("Returning");
+
         return alignments.size();
     }
     

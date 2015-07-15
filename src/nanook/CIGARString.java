@@ -244,6 +244,7 @@ public class CIGARString {
             }
             
             i++;
+            //System.out.println("i="+i+" and length="+cigarString.length());
         }
         
         //if (displayResult) {

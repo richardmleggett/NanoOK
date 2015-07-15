@@ -151,6 +151,7 @@ public class ReadSet {
                         if (isValidReadExtension(file.getName())) {
                             String alignmentFilename = alignDir + File.separator + file.getName() + parser.getAlignmentFileExtension();
                             //System.out.println(alignmentFilename);
+                            //options.getLog().println("File: " + alignmentFilename);
                             if (new File(alignmentFilename).exists()) {
                                 queryExecutor.execute(new ParserRunnable(options, stats, file.getAbsolutePath(), alignmentFilename, type, readTypes[dirIndex], nonAlignedSummary));
                                 writeProgress(queryExecutor);
