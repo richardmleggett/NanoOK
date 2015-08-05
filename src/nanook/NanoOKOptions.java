@@ -61,6 +61,7 @@ public class NanoOKOptions implements Serializable {
     private boolean fixIDs = false;
     private boolean fixRandom = false;
     private boolean doKmerCounting = true;
+    private boolean showAlignerCommand = false;
     private int runMode = 0;
     private int readFormat = FASTA;
     private int numThreads = 1;
@@ -113,6 +114,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -r|-reference <path> specifies path to reference database");
             System.out.println("    -aligner <name> specifies the aligner (default last)"); 
             System.out.println("    -alignerparams <params> specifies paramters to the aligner");
+            System.out.println("    -showaligns echoes aligner commands to screen");
             System.out.println("");
             System.out.println("'analyse' options:");
             System.out.println("    -r|-reference <path> specifies path to reference database");
@@ -203,6 +205,9 @@ public class NanoOKOptions implements Serializable {
             } else if (args[i].equalsIgnoreCase("-fixids")) {
                 fixIDs = true;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-showaligns")) {
+                showAlignerCommand = true;
+                i++;
             } else if (args[i].equalsIgnoreCase("-deterministic")) {
                 fixRandom = true;
                 i++;                
@@ -211,6 +216,7 @@ public class NanoOKOptions implements Serializable {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-alignerparams")) {
                 alignerParams = args[i+1];
+                System.out.println("Alignment parameters: "+alignerParams);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-scheduler")) {
                 scheduler = args[i+1];
@@ -740,5 +746,9 @@ public class NanoOKOptions implements Serializable {
     
     public int getSpecifiedType() {
         return specifiedType;
+    }
+    
+    public boolean showAlignerCommand() {
+        return showAlignerCommand;
     }
  }

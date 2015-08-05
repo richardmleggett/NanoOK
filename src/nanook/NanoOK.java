@@ -23,7 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.51";
+    public final static String VERSION_STRING = "v0.53";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -161,6 +161,8 @@ public class NanoOK {
                         System.out.println("Common reasons for this:");
                         System.out.println("1. Failure to index the reference with the alignment tool, resulting in alignment files of 0 bytes");
                         System.out.println("2. Wrong reference specified to the align stage, resulting in no alignments");
+                        System.out.println("3. When indexing with LAST, the output prefix needs to be the same as the reference FASTA file, minus the .fasta extension");
+                        System.out.println("   e.g. lastdb -Q 0 referencename referencename.fasta");
                         System.out.println("");
                         System.exit(1);
                     } else if (nReadsWithAlignments < 400) {
@@ -260,7 +262,7 @@ public class NanoOK {
     
     private static void align(NanoOKOptions options) throws InterruptedException {
         AlignmentFileParser parser = options.getParser();
-        parser.checkForIndex(options.getReferenceFile());
+        parser.checkForIndex(options.getReferenceFile().substring(0, options.getReferenceFile().lastIndexOf('.')));
         ReadAligner aligner = new ReadAligner(options, parser);
         options.setReadFormat(parser.getReadFormat());
         aligner.createDirectories();

@@ -55,7 +55,7 @@ public class BWAParser extends SAMParser implements AlignmentFileParser {
                 System.out.println("Error:");
                 System.out.println("Can't find file " + f.getPath());
                 System.out.println("Have you indexed the reference with bwa index?");
-                System.out.println("Will continue in case naming of index files has changed, but anticipate failure!");
+                System.out.println("Will continue but anticipate failure at analyse stage.");
                 System.out.println("");
                 return;
             }

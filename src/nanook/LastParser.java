@@ -56,8 +56,10 @@ public class LastParser extends MAFParser implements AlignmentFileParser {
                 System.out.println("");
                 System.out.println("Error:");
                 System.out.println("Can't find file " + f.getPath());
-                System.out.println("Have you indexed the reference with lastdb?");
-                System.out.println("Will continue in case naming of index files has changed, but anticipate failure!");
+                System.out.println("1. Have you indexed the reference with lastdb?");
+                System.out.println("2. Have you made sure that the output prefix is the same name as the reference file, apart from the .fasta or .fa extension?");
+                System.out.println("   e.g. lastdb -Q 0 referencename referencename.fasta");
+                System.out.println("Will continue but anticipate failure at analyse stage.");
                 System.out.println("");
                 return;
             }

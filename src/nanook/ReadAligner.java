@@ -144,6 +144,9 @@ public class ReadAligner {
                             String outPath = outputDirName + File.separator + file.getName() + parser.getAlignmentFileExtension();
                             String logFile = logDirName + File.separator + file.getName() + ".log";
                             String command = parser.getRunCommand(inPath, outPath, reference);                            
+                            if (options.showAlignerCommand()) {
+                                System.out.println("Running: " + command);
+                            }
                             executor.execute(new SystemCommandRunnable(options, null, command, parser.outputsToStdout() ? outPath:null, logFile));
                             writeProgress();
                             readCount++;

@@ -35,6 +35,9 @@ if (format=="png") {
 data_samples = read.table(samplelist, header=TRUE);
 
 for (t in 1:3) {
+    colourcode = colours[t];
+    
+    # Gather data for box plots of length
     df <- data.frame();
     listOfDataFrames <- NULL;
     count <- c(1);
@@ -59,6 +62,7 @@ for (t in 1:3) {
     print(ggplot(df, aes(x=Sample, y=Length, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]));
     garbage <- dev.off();
 
+    # Bar stacked plot of mapping
     filename_maps <- paste(outdir, "/", type,"_map_summary.txt", sep="");
     #filename_maps <- c("~/temp/2D_map_summary.txt");
     imagewidth <- 2 + (nrow(data_samples) * 0.5);
@@ -69,4 +73,22 @@ for (t in 1:3) {
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x = Sample, y = value, fill = variable)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("%"));
     garbage <- dev.off();
+    
+    # Number of reads
+    filename_comparison <- paste(outdir, "/", type,"_comparison.txt", sep="");
+    data_comparison = read.table(filename_comparison, header=TRUE);
+    output_file <- paste(outdir, "/graphs/", type, "_number_of_reads.pdf", sep="");
+    message(output_file);
+    pdf(output_file, width=imagewidth, height = 4);
+    print(ggplot(data_comparison, aes(x=data_comparison$Name, y=data_comparison$NumReads)) + geom_bar(stat="identity", fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Sample") + ylab("Number of reads") + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) + theme(axis.text.x = element_text(angle = 45, hjust = 1)))
+    garbage <- dev.off();
+
+    # Total bases
+    data_comparison = read.table(filename_comparison, header=TRUE);
+    output_file <- paste(outdir, "/graphs/", type, "_total_bases.pdf", sep="");
+    message(output_file);
+    pdf(output_file, width=imagewidth, height = 4);
+    print(ggplot(data_comparison, aes(x=data_comparison$Name, y=data_comparison$TotalBases)) + geom_bar(stat="identity", fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Sample") + ylab("Total bases") + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) + theme(axis.text.x = element_text(angle = 45, hjust = 1)))
+    garbage <- dev.off();
+
 }

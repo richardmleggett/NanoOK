@@ -90,15 +90,22 @@ public class ComparisonReportWriter {
     }
     
     private void writeLengthSection() {
-        String graphSize = "height=6cm";
+        String graphSize = "height=5.2cm";
         int type = options.getSpecifiedType();
         
         pw.println("\\subsection*{Read lengths}");
-                 
         includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + NanoOKOptions.getTypeFromInt(type)+"_lengths", "} \\\\");
 
+        pw.println("\\vspace{-3mm}");
+        pw.println("\\subsection*{Number of reads}");                 
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + NanoOKOptions.getTypeFromInt(type)+"_number_of_reads", "} \\\\");
+
+        pw.println("\\vspace{-3mm}");
+        pw.println("\\subsection*{Total bases}");                 
+        includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + NanoOKOptions.getTypeFromInt(type)+"_total_bases", "} \\\\");        
+
+        pw.println("\\vspace{-3mm}");
         pw.println("\\subsection*{Alignment summary}");
-        
         includeGraphicsIfExists(type, "\\includegraphics["+graphSize+"]{", options.getGraphsDir() + File.separator + NanoOKOptions.getTypeFromInt(type)+"_maps", "} \\\\");
     }
     
