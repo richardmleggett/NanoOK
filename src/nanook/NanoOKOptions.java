@@ -108,7 +108,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
             System.out.println("");
             System.out.println("'extract' options:");
-            System.out.println("    -f|-reads specifies subdirectory name for FAST5 files within sample directory (default fast5)");
+            System.out.println("    -f|-reads specifies subdir name for FAST5 files within sample dir (default fast5)");
             System.out.println("              e.g. -f reads/downloads if replicating Metrichor file structure");
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
