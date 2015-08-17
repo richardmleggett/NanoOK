@@ -69,6 +69,7 @@ public class NanoOKOptions implements Serializable {
     private NanoOKLog logFile = new NanoOKLog();
     private String imageFormat = "pdf";
     private int specifiedType = TYPE_2D;
+    private String readsDir = "fast5";
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_SCRIPT_DIR");
@@ -107,6 +108,8 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
             System.out.println("");
             System.out.println("'extract' options:");
+            System.out.println("    -f|-reads specifies subdirectory name for FAST5 files within sample directory (default fast5)");
+            System.out.println("              e.g. -f reads/downloads if replicating Metrichor file structure");
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
             System.out.println("");
@@ -161,6 +164,9 @@ public class NanoOKOptions implements Serializable {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-outputdir") |  args[i].equalsIgnoreCase("-o")) {
                 comparisonDir = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-reads") |  args[i].equalsIgnoreCase("-f")) {
+                readsDir = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-maxreads")) {
                 maxReads = Integer.parseInt(args[i+1]);
@@ -489,7 +495,7 @@ public class NanoOKOptions implements Serializable {
     }    
     
     public String getFast5Dir() {
-        return sampleDirectory + File.separator + "fast5";
+        return sampleDirectory + File.separator + readsDir;
     }
     
     /**

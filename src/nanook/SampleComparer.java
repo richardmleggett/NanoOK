@@ -61,7 +61,12 @@ public class SampleComparer {
                 if (line != null) {
                     if (!line.startsWith("SampleDir")) {
                         String[] fields = line.split("\t");
-                        readSample(fields[0], fields[1]);
+                        if (fields.length != 2) {
+                            System.out.println("Error: invalid format for sample list file. This file should be two fields, tab separated.");
+                            System.exit(1);
+                        } else {
+                            readSample(fields[0], fields[1]);
+                        }
                     }
                 }
             } while (line != null);            

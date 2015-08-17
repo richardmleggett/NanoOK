@@ -23,7 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.53";
+    public final static String VERSION_STRING = "v0.54";
     public final static long SERIAL_VERSION = 3L;
     
     /**
