@@ -53,19 +53,20 @@ for (t in 1:3) {
         listOfDataFrames[[count]] <- data.frame(Sample=thisid, Length=data_lengths$length);
         count <- count + 1;
     }
-    
+ 
+    # Read lengths
+    imagewidth <- 1 + (nrow(data_samples) * 0.5);
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", type, "_lengths.pdf", sep="");
     message(output_file);
-    imagewidth <- 2 + (nrow(data_samples) * 0.5);
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Length, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]));
     garbage <- dev.off();
 
     # Bar stacked plot of mapping
+    imagewidth <- 1 + (nrow(data_samples) * 0.5) + 1.5;
     filename_maps <- paste(outdir, "/", type,"_map_summary.txt", sep="");
     #filename_maps <- c("~/temp/2D_map_summary.txt");
-    imagewidth <- 2 + (nrow(data_samples) * 0.5);
     data_maps = read.table(filename_maps, header=TRUE);
     df <- melt(data_maps, id.var="Sample")
     output_file <- paste(outdir, "/graphs/", type, "_maps.pdf", sep="");
@@ -73,7 +74,9 @@ for (t in 1:3) {
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x = Sample, y = value, fill = variable)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("%"));
     garbage <- dev.off();
-    
+
+    imagewidth <- 1 + (nrow(data_samples) * 0.5);
+
     # Number of reads
     filename_comparison <- paste(outdir, "/", type,"_comparison.txt", sep="");
     data_comparison = read.table(filename_comparison, header=TRUE);

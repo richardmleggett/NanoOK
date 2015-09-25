@@ -268,7 +268,6 @@ public class ReadSetStats implements Serializable {
      * @param l length
      */
     public synchronized void addLength(String readPath, String id, int l, double gc) {
-        
         lengths[l]++;
         
         pwLengths.println(id + "\t" + l);
@@ -326,11 +325,12 @@ public class ReadSetStats implements Serializable {
         
         Double g = readGC.get(id);
         
-        if (g != null) {
-            gc = g.intValue();
-        }
+        //if (g != null) {
+        //    gc = g.intValue();
+        //}
         
-        return gc;
+        //return gc;
+        return g;
     }    
     
     /**

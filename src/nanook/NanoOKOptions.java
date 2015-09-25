@@ -70,6 +70,7 @@ public class NanoOKOptions implements Serializable {
     private String imageFormat = "pdf";
     private int specifiedType = TYPE_2D;
     private String readsDir = "fast5";
+    private int returnValue = 0;
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_SCRIPT_DIR");
@@ -92,6 +93,14 @@ public class NanoOKOptions implements Serializable {
         references = r;
     }
     
+    public void setReturnValue(int r) {
+        returnValue = r;
+    }
+    
+    public int getReturnValue() {
+        return returnValue;
+    }
+    
     /**
      * Parse command line arguments.
      * @param args array of command line arguments
@@ -101,25 +110,24 @@ public class NanoOKOptions implements Serializable {
         
         if (args.length <= 1) {
             System.out.println("");
-            System.out.println("Syntax nanook <extract|align|analyse> -s <sample> [options]");
+            System.out.println("Syntax nanook <extract|align|analyse|compare> [options]");
             System.out.println("");
-            System.out.println("Standard options:");
+            System.out.println("extract options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
-            System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
-            System.out.println("");
-            System.out.println("'extract' options:");
             System.out.println("    -f|-reads specifies subdir name for FAST5 files within sample dir (default fast5)");
             System.out.println("              e.g. -f reads/downloads if replicating Metrichor file structure");
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
             System.out.println("");
-            System.out.println("'align' options:");
+            System.out.println("align options:");
+            System.out.println("    -s|-sample <dir> specifies sample directory");
             System.out.println("    -r|-reference <path> specifies path to reference database");
             System.out.println("    -aligner <name> specifies the aligner (default last)"); 
             System.out.println("    -alignerparams <params> specifies paramters to the aligner");
             System.out.println("    -showaligns echoes aligner commands to screen");
             System.out.println("");
-            System.out.println("'analyse' options:");
+            System.out.println("analyse options:");
+            System.out.println("    -s|-sample <dir> specifies sample directory");
             System.out.println("    -r|-reference <path> specifies path to reference database");
             System.out.println("    -aligner <name> specifies the aligner (default last)");            
             System.out.println("    -coveragebin <int> specifies coverage bin size (default 100)");            
@@ -127,6 +135,16 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -failonly to analyse only fail reads");            
             System.out.println("    -2donly to analyse only 2D reads"); 
             System.out.println("    -bitmaps to output bitmap PNG graphs instead of PDF");
+            System.out.println("");
+            System.out.println("compare options:");
+            System.out.println("    -l|-samplelist <file> specifies a sample list file");
+            System.out.println("    -o|-outputdir <directory> specifies an output directory");
+            System.out.println("    -type <2d|template|complement> specifies an output directory");
+            System.out.println("");
+            System.out.println("Multithreading:");
+            System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
+            System.out.println("");
+            System.out.println("Comments/bugs to: richard.leggett@tgac.ac.uk");
             System.out.println("");
             System.exit(0);
         }
@@ -557,6 +575,19 @@ public class NanoOKOptions implements Serializable {
         
         return rc;
     }
+
+    public boolean isNewStyleReadDir() {
+        File passDir = new File(getReadDir() + File.separator + "pass");
+        File failDir = new File(getReadDir() + File.separator + "pass");
+        boolean rc = false;
+        
+        if (passDir.exists() && passDir.isDirectory() && failDir.exists() && failDir.isDirectory()) {
+            rc = true;
+        }
+        
+        return rc;
+    }
+    
     
     /**
      * Get analysis directory.

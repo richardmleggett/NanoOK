@@ -142,9 +142,10 @@ public class SequenceReader {
                 if ((line == null) || (line.startsWith(">"))) {                    
                     if (id != null) {
                         if (storeIds) {
+                            double gcpc = 100.0*(double)gc / (double)contigLength;
                             seqIDs.add(id);
                             seqLengths.add(contigLength);
-                            gcPc.add(new Double(100.0*(double)gc / (double)contigLength));
+                            gcPc.add(new Double(gcpc));
                         }
 
                         if (pw != null) {
@@ -156,6 +157,7 @@ public class SequenceReader {
                             sequence.add(seq.toString());
                         }
                         nSeqs++;  
+                        seq = new StringBuilder(100000);
                     }
                     
                     if (line != null) {

@@ -112,7 +112,7 @@ public class ReadSet {
                 
         stats.openLengthsFile();
 
-        if (options.isNewStyleDir()) {
+        if (options.isNewStyleReadDir()) {
             if (options.isProcessingPassReads()) {
                 readDirs[nDirs] = options.getReadDir() + File.separator + "pass";
                 alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "pass";

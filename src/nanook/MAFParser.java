@@ -92,6 +92,8 @@ public abstract class MAFParser {
         } catch (Exception e) {
             System.out.println("parseFile Exception:");
             e.printStackTrace();
+            options.getLog().println("Exception parsing "+filename);
+            options.getLog().close();
             System.exit(1);
         }
         

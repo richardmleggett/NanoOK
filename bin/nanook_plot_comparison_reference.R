@@ -34,6 +34,8 @@ if (format=="png") {
 
 data_samples = read.table(samplelist, header=TRUE);
 
+imagewidth <- 1 + nrow(data_samples) * 0.5;
+
 # Query identity
 for (t in 1:3) {
     df <- data.frame();
@@ -53,18 +55,16 @@ for (t in 1:3) {
             }
         }
     }
-    
+
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_query_identity.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Read identity %"));
     garbage <- dev.off();
 
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_query_identity_zoom.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Read identity %") + scale_y_continuous(limits=c(60, 100)));
     garbage <- dev.off();
@@ -93,7 +93,6 @@ for (t in 1:3) {
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_query_gc.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Read GC %"));
     garbage <- dev.off();
@@ -121,7 +120,6 @@ for (t in 1:3) {
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_best_perfect_kmer.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Best perfect kmer"));
     garbage <- dev.off();
@@ -149,14 +147,12 @@ for (t in 1:3) {
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_percent_query_aligned.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("% read aligned"));
     garbage <- dev.off();
 
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_percent_query_aligned_zoom.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("% read aligned") + scale_y_continuous(limits=c(75, 100)));
     garbage <- dev.off();
@@ -184,7 +180,6 @@ for (t in 1:3) {
     df <- do.call("rbind", listOfDataFrames);
     output_file <- paste(outdir, "/graphs/", reference, "_", type, "_alignment_size.pdf", sep="");
     message(output_file);
-    imagewidth <- nrow(data_samples) * 0.5;
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Alignment size"));
     garbage <- dev.off();
@@ -211,7 +206,6 @@ for (t in 1:3) {
 #    df <- do.call("rbind", listOfDataFrames);
 #    output_file <- paste(outdir, "/graphs/", reference, "_", type, "_alignment_identity.pdf", sep="");
 #    message(output_file);
-#    imagewidth <- nrow(data_samples) * 0.5;
 #    pdf(output_file, width=imagewidth, height = 4);
 #    print(ggplot(df, aes(x=Sample, y=Variable, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("Alignment identity %"));
 #    garbage <- dev.off();

@@ -47,6 +47,7 @@ public class CIGARString {
         hitStart = hs;
         hitFilename = hf;
         hitReference = hr;
+        queryStart = 0;
         
         //trimCIGAR(cs, qseq);
     }
@@ -117,7 +118,7 @@ public class CIGARString {
         String value = "";        
         SequenceReader r = new SequenceReader(true);
         r.indexFASTAFile(hitFilename, null, true);
-        int l = (3*querySeq.length())/2;
+        int l = 3*querySeq.length();
         String hitSeq = r.getSubSequence(hitReference.getId(), hitStart, hitStart+l);
         int hitPtr = 0;
         int queryPtr = 0;
@@ -132,6 +133,7 @@ public class CIGARString {
         int matchCount = 0;
         boolean processed = true;
         
+        //System.out.println("CIGAR: "+cigarString);
         //System.out.println("  Hit: "+hitSeq.length()+" "+hitSeq);
         //System.out.println("Query: "+querySeq.length()+" "+querySeq);
 
@@ -154,6 +156,8 @@ public class CIGARString {
                     case 'M':
                     case '=':
                     case 'X':
+                        //System.out.println(hitString.length() + " " + hitPtr);
+                        //System.out.println("Hit up: " + hitSeq.substring(hitPtr));
                         queryString.append(querySeq.substring(queryPtr, queryPtr + n));
                         hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
                         queryPtr += n;

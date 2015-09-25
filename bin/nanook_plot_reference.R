@@ -8,6 +8,12 @@ args <- commandArgs(TRUE)
 sampledir <- args[1];
 refid <- args[2];
 format <- args[3];
+maxk <- 0;
+
+roundUp <- function(x,to=10)
+{
+    to*(x%/%to + as.logical(x%%to))
+}
 
 types = c("2D", "Template", "Complement");
 colours = c("#68B5B9", "#CF746D", "#91A851");
@@ -79,19 +85,19 @@ for (t in 1:3) {
     garbage <- dev.off()
 
     # Plot %reads vs best perfect kmer
-    data_perfect_best_filename <- paste(sampledir, "/analysis/", refid, "/", refid, "_",type,"_best_perfect_kmers.txt", sep="");
-    if (format=="png") {
-        png_perfect_best <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_best_perfect_kmers.png", sep="");
-        png(png_perfect_best, width=1200, height=800)
-        data_perfect_best = read.table(data_perfect_best_filename, col.name=c("Size", "n", "Perfect"))
-        print(ggplot(data_perfect_best, aes(x=data_perfect_best$Size, y=data_perfect_best$Perfect)) + geom_bar(stat="identity", width=0.7, fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Best perfect kmer") + ylab("% reads") + scale_x_continuous(limits=c(0, 140)) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-    } else {
-        pdf_perfect_best <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_best_perfect_kmers.pdf", sep="");
-        pdf(pdf_perfect_best, width=6, height=4)
-        data_perfect_best = read.table(data_perfect_best_filename, col.name=c("Size", "n", "Perfect"))
-        print(ggplot(data_perfect_best, aes(x=data_perfect_best$Size, y=data_perfect_best$Perfect)) + geom_bar(stat="identity", width=0.7, fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Best perfect kmer") + ylab("% reads") + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + scale_x_continuous(limits=c(0, 140)) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-    }
-    garbage <- dev.off()
+    #data_perfect_best_filename <- paste(sampledir, "/analysis/", refid, "/", refid, "_",type,"_best_perfect_kmers.txt", sep="");
+    #if (format=="png") {
+    #    png_perfect_best <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_best_perfect_kmers.png", sep="");
+    #    png(png_perfect_best, width=1200, height=800)
+    #    data_perfect_best = read.table(data_perfect_best_filename, col.name=c("Size", "n", "Perfect"))
+    #    print(ggplot(data_perfect_best, aes(x=data_perfect_best$Size, y=data_perfect_best$Perfect)) + geom_bar(stat="identity", width=0.7, fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Best perfect kmer") + ylab("% reads") + scale_x_continuous(limits=c(0, 140)) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
+    #} else {
+    #    pdf_perfect_best <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_best_perfect_kmers.pdf", sep="");
+    #    pdf(pdf_perfect_best, width=6, height=4)
+    #    data_perfect_best = read.table(data_perfect_best_filename, col.name=c("Size", "n", "Perfect"))
+    #    print(ggplot(data_perfect_best, aes(x=data_perfect_best$Size, y=data_perfect_best$Perfect)) + geom_bar(stat="identity", width=0.7, fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Best perfect kmer") + ylab("% reads") + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + scale_x_continuous(limits=c(0, 140)) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
+    #}
+    #garbage <- dev.off()
 
     # ========== Indels files ==========
 
@@ -218,6 +224,28 @@ for (t in 1:3) {
         print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$LongestPerfectKmer)) + geom_point(shape=pointshape, alpha=pointalpha, color=colourcode) + xlab("Read length") +ylab("Longest perfect kmer") + ggtitle(type) + theme(text = element_text(size=textsize)) + scale_x_continuous(limits=c(0, 10000)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
     }
     garbage <- dev.off()
+
+    # Plot %reads vs best perfect kmer
+    if (maxk == 0) {
+        maxk <- max(data_alignments$LongestPerfectKmer);
+        maxk <- roundUp(maxk, 10);
+        message(maxk);
+    }
+    hdf <- hist(breaks=seq(0,maxk,by=10), x=data_alignments$LongestPerfectKmer, plot=FALSE, right=FALSE); # bins are 0-9, 10-19, 20-29 etc.
+    hdf$density = hdf$counts/sum(hdf$counts)*100
+    tdf <- data.frame(Pos=hdf$mids, Counts=hdf$density);
+
+    if (format=="png") {
+        png_perfect_best <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_best_perfect_kmers.png", sep="");
+        png(png_perfect_best, width=1200, height=800)
+        print(ggplot(tdf, aes(Pos, Counts)) + geom_bar(stat="identity", fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Best perfect kmer") + ylab("% reads") + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + scale_x_continuous(limits=c(0, maxk), breaks=seq(0,maxk,by=20)) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
+    } else {
+        pdf_perfect_best <- paste(sampledir, "/graphs/", refid, "/", refid, "_",type,"_best_perfect_kmers.pdf", sep="");
+        pdf(pdf_perfect_best, width=6, height=4)
+        print(ggplot(tdf, aes(Pos, Counts)) + geom_bar(stat="identity", fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Best perfect kmer") + ylab("% reads") + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + scale_x_continuous(limits=c(0, maxk), breaks=seq(0,maxk,by=20)) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
+    }
+    garbage <- dev.off()
+
 
     # Number of perfect 21mers verses length scatter
     if (format=="png") {

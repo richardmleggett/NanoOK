@@ -23,7 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.54";
+    public final static String VERSION_STRING = "v0.59";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -111,6 +111,14 @@ public class NanoOK {
         System.out.println("String (200,209) = ["+s+"]");
         s = r.getSubSequence("gi|223667766|ref|NZ_DS264586.1|", 200, 214);
         System.out.println("String (200,214) = ["+s+"]");
+    }
+    
+    public static void testSamToLast(NanoOKOptions options, References references) {
+        BWAParser parser = new BWAParser(options, references);
+        AlignmentsTableFile nonAlignedSummaryFile = new AlignmentsTableFile("atf.txt");
+        ReadSetStats readSetStats = new ReadSetStats(options, NanoOKOptions.TYPE_2D);
+        options.getReferences().loadReferences();
+        parser.parseFile("/Users/leggettr/Desktop/test.fasta.sam", nonAlignedSummaryFile, readSetStats);
     }
     
     /**
@@ -321,7 +329,7 @@ public class NanoOK {
         System.out.println("");
         System.out.println("Checking dependencies");
         checkDependencies();
-        
+                
         if (options.getRunMode() == NanoOKOptions.MODE_EXTRACT) {
             extract(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_ALIGN) {
@@ -335,5 +343,10 @@ public class NanoOK {
         //memoryReport();
         
         options.getLog().close();
+        
+        if (options.getReturnValue() != 0) {
+            System.out.println("Exiting with error code");
+            System.exit(options.getReturnValue());
+        }
     }
 }

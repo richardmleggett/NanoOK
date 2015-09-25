@@ -75,32 +75,39 @@ public class ParserRunnable implements Runnable
      */
     private void parseAlignment()
     {
-        File file = new File(alignmentPath);
-        AlignmentFileParser parser = options.getParser();
-        
-        options.getLog().println("");
-        options.getLog().println("> New file " + file.getName());
-        options.getLog().println("");
-        
-        int nAlignments = parser.parseFile(alignmentPath, nonAlignedSummary, stats);
-        
-        if (nAlignments > 0) {
-            parser.sortAlignments();
-            List<Alignment> al = parser.getHighestScoringSet();
-            int topAlignment = pickTopAlignment(al);
-            String readReferenceName = al.get(topAlignment).getHitName();
-            
-            options.getLog().println("Query size = " + al.get(topAlignment).getQuerySequenceSize());
-            options.getLog().println("  Hit size = " + al.get(topAlignment).getHitSequenceSize());
-            
-            readReference = options.getReferences().getReferenceById(readReferenceName);
-            AlignmentMerger merger = new AlignmentMerger(options, readReference, al.get(topAlignment).getQuerySequenceSize(), stats, stats.getType());
-            for (int i=topAlignment; i<al.size(); i++) {
-                Alignment a = al.get(i);
-                merger.addAlignment(a);
+        try {
+            File file = new File(alignmentPath);
+            AlignmentFileParser parser = options.getParser();
+
+            options.getLog().println("");
+            options.getLog().println("> New file " + file.getName());
+            options.getLog().println("");
+
+            int nAlignments = parser.parseFile(alignmentPath, nonAlignedSummary, stats);
+
+            if (nAlignments > 0) {
+                parser.sortAlignments();
+                List<Alignment> al = parser.getHighestScoringSet();
+                int topAlignment = pickTopAlignment(al);
+                String readReferenceName = al.get(topAlignment).getHitName();
+
+                options.getLog().println("Query size = " + al.get(topAlignment).getQuerySequenceSize());
+                options.getLog().println("  Hit size = " + al.get(topAlignment).getHitSequenceSize());
+
+                readReference = options.getReferences().getReferenceById(readReferenceName);
+                AlignmentMerger merger = new AlignmentMerger(options, readReference, al.get(topAlignment).getQuerySequenceSize(), stats, stats.getType());
+                for (int i=topAlignment; i<al.size(); i++) {
+                    Alignment a = al.get(i);
+                    merger.addAlignment(a);
+                }
+                AlignmentInfo ais = merger.endMergeAndStoreStats();
+                readReference.getStatsByType(stats.getType()).getAlignmentsTableFile().writeMergedAlignment(stats, file.getName(), merger, ais);
             }
-            AlignmentInfo ais = merger.endMergeAndStoreStats();
-            readReference.getStatsByType(stats.getType()).getAlignmentsTableFile().writeMergedAlignment(stats, file.getName(), merger, ais);
+        } catch (Exception e) {
+            System.out.println("Error parsing alignment "+ alignmentPath);
+            options.setReturnValue(1);
+            options.getLog().println("Error parsing alignment " + alignmentPath);
+            e.printStackTrace();
         }
     }
     

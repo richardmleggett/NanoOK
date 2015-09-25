@@ -44,8 +44,8 @@ public class BWAParser extends SAMParser implements AlignmentFileParser {
     }
     
     public void checkForIndex(String referenceFile) {
-        String[] files = {referenceFile + ".bwt",
-                          referenceFile + ".pac"};
+        String[] files = {referenceFile + ".fasta.bwt",
+                          referenceFile + ".fasta.pac"};
 
         for (int i=0; i<files.length; i++) {
             File f = new File(files[i]);
