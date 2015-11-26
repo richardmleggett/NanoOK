@@ -2,16 +2,20 @@
 
 JAVA_ARGS="-Xmx2048m"
 
-if [ -z "$NANOOK_SCRIPT_DIR" ] ; then
-    echo "Error: You must set NANOOK_SCRIPT_DIR before running."
+if [ -z "$NANOOK_DIR" ] ; then
+    echo "Error: You must set NANOOK_DIR before running."
     exit 1
 fi
 
-JARFILE=${NANOOK_SCRIPT_DIR}/NanoOK.jar
+JARFILE=${NANOOK_DIR}/dist/NanoOK.jar
 
 if [ ! -f ${JARFILE} ] ; then
-    echo "Error: Can't find NanoOK.jar - it needs to be inside the directory pointed to by NANOOK_SCRIPT_DIR which is currently ${NANOOK_SCRIPT_DIR}"
+    echo "Error: Can't find NanoOK.jar - it needs to be inside the dist subdirectory of the directory pointed to by NANOOK_DIR which is currently ${NANOOK_DIR}"
     exit 1
 fi
+
+# If your library path (DYLD_LIBRARY_PATH on MAC) doesn't include HDF5 libraries,
+# you can manually set it here by adding a -Djava.library.path=/path/to/lib/dir
+# to the java command...
 
 exec java ${JAVA_ARGS} -jar ${JARFILE} "$@"

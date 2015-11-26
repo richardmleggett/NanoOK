@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.h5.H5File;
 
 /**
  * Entry class for tool.
@@ -23,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.59";
+    public final static String VERSION_STRING = "v0.60";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -85,6 +87,17 @@ public class NanoOK {
             System.out.println(hVersion);
         }
         
+        try {
+            H5File file = new H5File();
+        } catch (NoClassDefFoundError | UnsatisfiedLinkError e) {
+            System.out.println("");
+            System.out.println("Error: Could not initialise HDF5 classes. Check that the HDF libraries are correctly installed (and pointed to by LD_LIBRARY_PATH or DYLD_LIBRARY_PATH).");
+            System.out.println("Consult HDF documentation and/or NanoOK documentation.");
+            System.out.println("");
+            System.exit(1);
+        }
+        
+        
         System.out.println("");
     }
 
@@ -132,6 +145,15 @@ public class NanoOK {
         AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile("blob.txt");
         //p.parseFile("/Users/leggettr/Documents/Projects/Nanopore/N79681_EvenMC_R7_06082014/last/2D/N79681_EvenMC_R7_0608215_5314_1_ch319_file116_strand.fast5_BaseCalled_2D.fasta.maf", nonAlignedSummary, overallStats);
         //System.exit(0);
+    }
+    
+    /**
+     * Test HDF5 library
+     */
+    public static void testHDF(NanoOKOptions options) {
+        ReadExtractorRunnable r = new ReadExtractorRunnable(options, null, null, null);        
+        String fastq = r.getFastq("/Users/leggettr/Desktop/TEST12345_ch1_file0.fast5", NanoOKOptions.TYPE_TEMPLATE);        
+        System.exit(0);        
     }
     
     private static void analyse(NanoOKOptions options) throws InterruptedException {
@@ -329,7 +351,7 @@ public class NanoOK {
         System.out.println("");
         System.out.println("Checking dependencies");
         checkDependencies();
-                
+        
         if (options.getRunMode() == NanoOKOptions.MODE_EXTRACT) {
             extract(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_ALIGN) {

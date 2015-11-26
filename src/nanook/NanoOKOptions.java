@@ -71,12 +71,13 @@ public class NanoOKOptions implements Serializable {
     private int specifiedType = TYPE_2D;
     private String readsDir = "fast5";
     private int returnValue = 0;
+    private int basecallIndex = -1;
     
     public NanoOKOptions() {
-        String value = System.getenv("NANOOK_SCRIPT_DIR");
+        String value = System.getenv("NANOOK_DIR");
         
         if (value != null) {
-            scriptsDir = value;
+            scriptsDir = value + File.separator + "scripts";
         } else {
             System.out.println("*** WARNING: You should set NANOOK_SCRIPT_DIR. Default value unlikely to work. ***");
             System.out.println("");
@@ -118,6 +119,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("              e.g. -f reads/downloads if replicating Metrichor file structure");
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
+            System.out.println("    -basecallindex specifies the index of the analysis (default: latest)");
             System.out.println("");
             System.out.println("align options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
@@ -247,6 +249,9 @@ public class NanoOKOptions implements Serializable {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-queue")) {
                 jobQueue = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-basecallindex")) {
+                basecallIndex = Integer.parseInt(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-numthreads") || args[i].equalsIgnoreCase("-t")) {
                 numThreads = Integer.parseInt(args[i+1]);
@@ -787,5 +792,9 @@ public class NanoOKOptions implements Serializable {
     
     public boolean showAlignerCommand() {
         return showAlignerCommand;
+    }
+    
+    public int getBasecallIndex() {
+        return basecallIndex;
     }
  }
