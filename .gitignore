@@ -2,4 +2,5 @@ build
 build.xml
 manifest.mf
 nbproject
-dist/README.TXT 
+dist/README.TXT
+
