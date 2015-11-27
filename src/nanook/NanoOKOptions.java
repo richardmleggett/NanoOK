@@ -77,7 +77,7 @@ public class NanoOKOptions implements Serializable {
         String value = System.getenv("NANOOK_DIR");
         
         if (value != null) {
-            scriptsDir = value + File.separator + "scripts";
+            scriptsDir = value + File.separator + "bin";
         } else {
             System.out.println("*** WARNING: You should set NANOOK_SCRIPT_DIR. Default value unlikely to work. ***");
             System.out.println("");
