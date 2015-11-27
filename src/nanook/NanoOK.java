@@ -90,6 +90,7 @@ public class NanoOK {
         try {
             H5File file = new H5File();
         } catch (NoClassDefFoundError | UnsatisfiedLinkError e) {
+            e.printStackTrace();
             System.out.println("");
             System.out.println("Error: Could not initialise HDF5 classes. Check that the HDF libraries are correctly installed (and pointed to by LD_LIBRARY_PATH or DYLD_LIBRARY_PATH).");
             System.out.println("Consult HDF documentation and/or NanoOK documentation.");
