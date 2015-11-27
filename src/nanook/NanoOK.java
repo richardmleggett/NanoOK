@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.h5.H5File;
+//import ncsa.hdf.object.FileFormat;
+//import ncsa.hdf.object.h5.H5File;
 
 /**
  * Entry class for tool.
@@ -25,7 +25,7 @@ import ncsa.hdf.object.h5.H5File;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.60";
+    public final static String VERSION_STRING = "v0.61";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -87,18 +87,17 @@ public class NanoOK {
             System.out.println(hVersion);
         }
         
-        try {
-            H5File file = new H5File();
-        } catch (NoClassDefFoundError | UnsatisfiedLinkError e) {
-            e.printStackTrace();
-            System.out.println("");
-            System.out.println("Error: Could not initialise HDF5 classes. Check that the HDF libraries are correctly installed (and pointed to by LD_LIBRARY_PATH or DYLD_LIBRARY_PATH).");
-            System.out.println("Consult HDF documentation and/or NanoOK documentation.");
-            System.out.println("");
-            System.exit(1);
-        }
-        
-        
+        //try {
+        //    H5File file = new H5File();
+        //} catch (NoClassDefFoundError | UnsatisfiedLinkError e) {
+        //    e.printStackTrace();
+        //    System.out.println("");
+        //    System.out.println("Error: Could not initialise HDF5 classes. Check that the HDF libraries are correctly installed (and pointed to by LD_LIBRARY_PATH or DYLD_LIBRARY_PATH).");
+        //    System.out.println("Consult HDF documentation and/or NanoOK documentation.");
+        //    System.out.println("");
+        //    System.exit(1);
+        //}
+                           
         System.out.println("");
     }
 
@@ -152,8 +151,21 @@ public class NanoOK {
      * Test HDF5 library
      */
     public static void testHDF(NanoOKOptions options) {
-        ReadExtractorRunnable r = new ReadExtractorRunnable(options, null, null, null);        
-        String fastq = r.getFastq("/Users/leggettr/Desktop/TEST12345_ch1_file0.fast5", NanoOKOptions.TYPE_TEMPLATE);        
+        //ReadExtractorRunnable r = new ReadExtractorRunnable(options, null, null, null);        
+        //String fastq = r.getFastq("/Users/leggettr/Desktop/TEST12345_ch1_file0.fast5", NanoOKOptions.TYPE_TEMPLATE);        
+
+        Fast5File f = new Fast5File(options, "/Users/leggettr/Desktop/TEST12345_ch1_file0.fast5");
+        Fast5File g = new Fast5File(options, "/Users/leggettr/Documents/Projects/Nanopore/NanoOK_lambda_test/fast5/pass/N79596_Lambda8kbp_LCv4_test_3559_1_ch37_file38_strand.fast5");
+        FastAQFile ff = f.getFastq(-1, NanoOKOptions.TYPE_TEMPLATE);
+        FastAQFile fg = g.getFastq(-1, NanoOKOptions.TYPE_TEMPLATE);
+        if (ff != null) {
+            ff.writeFastq("ff.fq");
+        }
+        
+        if (fg != null) {
+            fg.writeFastq("fg.fq");
+        }
+        //f.printGroups();
         System.exit(0);        
     }
     
@@ -352,6 +364,9 @@ public class NanoOK {
         System.out.println("");
         System.out.println("Checking dependencies");
         checkDependencies();
+        
+        //testHDF(options);
+        //System.exit(0);
         
         if (options.getRunMode() == NanoOKOptions.MODE_EXTRACT) {
             extract(options);
