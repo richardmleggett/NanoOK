@@ -23,8 +23,9 @@ public class Fast5File {
     private String filename = null;
     private HashSet<String> groups = new HashSet();
     private HashSet<String> datasets = new HashSet();
-    private int highestBasecall1D = -1;
-    private int highestBasecall2D = -1;
+    private NanoOKLog log;
+    private boolean oldFormat = false;
+    private int highestIndex = -1;
     private boolean isCorrupt = false;
     
     /**
@@ -34,6 +35,7 @@ public class Fast5File {
     public Fast5File(NanoOKOptions o, String f) {
         options = o;
         filename = f;
+        log = options.getLog();
         indexFile();
     }
     
@@ -44,6 +46,11 @@ public class Fast5File {
         boolean[] typesAvailable = new boolean[3];
         ProcessLogger pl = new ProcessLogger();
         ArrayList<String> response;
+        int highestBasecall1D = -1;
+        int highestBasecall2D = -1;
+       
+        log.println("Indexing file "+filename);
+
         response = pl.getCommandOutput("h5dump -n "+filename, true, true);
         for (int i=0; i<response.size(); i++) {
             String s = response.get(i).trim();
@@ -74,12 +81,25 @@ public class Fast5File {
             }            
         }
         
-        if ((highestBasecall1D >= 0) && (highestBasecall1D != highestBasecall2D)) {
+        // Old format files did not have separate Basecall_1D section
+        if ((highestBasecall1D == -1) && (highestBasecall2D == -1)) {
             isCorrupt = true;
-            System.out.println("Error: Basecall_1D count not equal to Basecall_2D");
+            log.println("Error: couldn't find Basecall_1D or Basecall_2D in "+filename);
+        } else if ((highestBasecall1D == -1) && (highestBasecall2D >= 0)) {
+            oldFormat = true;
+            highestIndex = highestBasecall2D;
+        } else {
+            if ((highestBasecall1D >=0) && (highestBasecall2D >=0)) {
+                if (highestBasecall1D != highestBasecall2D) {
+                    isCorrupt = true;
+                    log.println("Error: Basecall_1D and Basecall_2D indicies not the same in "+filename);
+                }
+            }
+
+            highestIndex = highestBasecall1D;
         }
-        
-        //System.out.println("Highest 1D = "+highestBasecall1D + " 2D = "+highestBasecall2D);
+
+        log.println("    Highest1D: "+highestBasecall1D+" Highest2D: "+highestBasecall2D+" HighestIndex: "+highestIndex);
     }
     
     /**
@@ -163,15 +183,14 @@ public class Fast5File {
         String indexString;
         FastAQFile ff = null;
         
+        log.println("    Trying to get type "+type+" from "+filename+" with index "+index);
+        
         if (!isCorrupt) {
             if (index == -1) {
-                index = highestBasecall2D;
+                index = highestIndex;
             } else {
-                if (index > highestBasecall2D) {
-                    System.out.println("Error: index higher than highest Basecall_2D");
-                    isCorrupt = true;
-                } else if ((highestBasecall1D >= 0) && (index > highestBasecall1D)) {
-                    System.out.println("Error: index higher than highest Basecall_1D");
+                if (index > highestIndex) {
+                    log.println("Error: index higher than highest Basecall available");
                     isCorrupt = true;
                 }            
             }
@@ -186,7 +205,7 @@ public class Fast5File {
                 datasetPath = "/Analyses/Basecall_2D_"+indexString+"/BaseCalled_2D/Fastq";
             } else { 
                 // Now look if we are new format (with Basecall_1D_XXX)
-                if (highestBasecall1D == -1) {
+                if (oldFormat) {
                     // Old format
                     if (type == NanoOKOptions.TYPE_TEMPLATE) {
                         datasetPath = "/Analyses/Basecall_2D_"+indexString+"/BaseCalled_template/Fastq";
@@ -199,7 +218,7 @@ public class Fast5File {
                 } else {
                     // New format
                     if (type == NanoOKOptions.TYPE_TEMPLATE) {
-                        datasetPath = "/Analyses/Basecall_1D_"+indexString+"/BaseCalled_templatey/Fastq";
+                        datasetPath = "/Analyses/Basecall_1D_"+indexString+"/BaseCalled_template/Fastq";
                     } else if (type == NanoOKOptions.TYPE_COMPLEMENT) {
                         datasetPath = "/Analyses/Basecall_1D_"+indexString+"/BaseCalled_complement/Fastq";
                     } else {
@@ -211,11 +230,12 @@ public class Fast5File {
         }
         
         if (datasetPath != null) {
+            log.println("    Path: "+datasetPath);
             if (datasets.contains(datasetPath)) {
-                //System.out.println("Path: "+datasetPath);
+                log.println("    Found data: "+datasetPath);
                 ff = getFastqFromDataset(datasetPath);
             } else {
-                //System.out.println("Not there "+datasetPath);
+                log.println("    Not there: "+datasetPath);
             }
         }
         
