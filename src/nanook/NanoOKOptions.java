@@ -143,8 +143,9 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -o|-outputdir <directory> specifies an output directory");
             System.out.println("    -type <2d|template|complement> specifies an output directory");
             System.out.println("");
-            System.out.println("Multithreading:");
+            System.out.println("Other options:");
             System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
+            System.out.println("    -log <filename> enables debug logging to file");
             System.out.println("");
             System.out.println("Comments/bugs to: richard.leggett@tgac.ac.uk");
             System.out.println("");
