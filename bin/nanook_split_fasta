@@ -63,7 +63,7 @@ while(<INPUTFILE>) {
                 print "\r$count";
             }
             
-            open($fh, ">".$out_filename);
+            open($fh, ">".$out_filename) or die "Can't open output ".$out_filename."\n";
         } else {
             print "WARNING: Repeat ID $id\n";
         }
