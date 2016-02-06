@@ -102,7 +102,7 @@ public class ReferenceSequenceStats implements Serializable {
      */
     public synchronized void addPerfectKmer(int size) {
         if (size >= NanoOKOptions.MAX_KMER) {
-            System.out.println("Error: very unlikely situation with perfect kmer of size " + size);
+            System.out.println("Error: very unlikely situation with perfect kmer of size " + size + " (Max " + NanoOKOptions.MAX_KMER + ")");
             System.exit(1);
         }
         
