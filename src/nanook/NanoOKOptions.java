@@ -16,7 +16,7 @@ import java.io.*;
  */
 public class NanoOKOptions implements Serializable {
     private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
-    public final static int MAX_KMER = 5000;
+    public final static int MAX_KMER = 20000;
     public final static int MAX_READ_LENGTH = 1000000;
     public final static int MAX_READS = 1000000;
     public final static int MODE_EXTRACT = 1;
@@ -79,7 +79,7 @@ public class NanoOKOptions implements Serializable {
         if (value != null) {
             scriptsDir = value + File.separator + "bin";
         } else {
-            System.out.println("*** WARNING: You should set NANOOK_SCRIPT_DIR. Default value unlikely to work. ***");
+            System.out.println("*** WARNING: You should set NANOOK_DIR. Default value unlikely to work. ***");
             System.out.println("");
         }
                 
