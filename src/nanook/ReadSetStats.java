@@ -353,7 +353,7 @@ public class ReadSetStats implements Serializable {
      */
     public synchronized void addReadBestKmer(int bestKmer) {
         if (bestKmer >= NanoOKOptions.MAX_KMER) {
-            System.out.println("Error: the unlikely event of a best kmer size of "+bestKmer+" has happened!");
+            System.out.println("Error: the unlikely event of a best kmer size of "+bestKmer+" has happened! (Max "+NanoOKOptions.MAX_KMER+")");
             System.exit(1);
         }
         
