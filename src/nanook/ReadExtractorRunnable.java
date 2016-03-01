@@ -54,12 +54,14 @@ public class ReadExtractorRunnable implements Runnable {
         String outName = new File(inputPathname).getName();
         
         for (int t=0; t<3; t++) {
-            FastAQFile ff = inputFile.getFastq(options.getBasecallIndex(), t);
-            if (ff != null) {
-                if (options.getReadFormat() == NanoOKOptions.FASTA) {
-                    ff.writeFasta(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta");
-                } else if (options.getReadFormat() == NanoOKOptions.FASTQ) {
-                    ff.writeFastq(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq");
+            if (options.isProcessingReadType(t)) {
+                FastAQFile ff = inputFile.getFastq(options.getBasecallIndex(), t);
+                if (ff != null) {
+                    if (options.getReadFormat() == NanoOKOptions.FASTA) {
+                        ff.writeFasta(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta");
+                    } else if (options.getReadFormat() == NanoOKOptions.FASTQ) {
+                        ff.writeFastq(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq");
+                    }
                 }
             }
         }
