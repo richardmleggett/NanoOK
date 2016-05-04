@@ -89,7 +89,7 @@ public class SampleReportWriter {
      * Add the pass/fail section
      */
     public void addPassFailSection() {
-        if (options.isNewStyleDir()) {
+        if (options.isNewStyleReadDir()) {
             pw.println("\\subsection*{Pass and fail counts}");
             pw.println("\\vspace{-3mm}");
             pw.println("\\begin{table}[H]");

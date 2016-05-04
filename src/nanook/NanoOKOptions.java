@@ -576,7 +576,7 @@ public class NanoOKOptions implements Serializable {
         File failDir = new File(getFast5Dir() + File.separator + "pass");
         boolean rc = false;
         
-        if (passDir.exists() && passDir.isDirectory() && failDir.exists() && failDir.isDirectory()) {
+        if (((passDir.exists() && passDir.isDirectory()) || (failDir.exists() && failDir.isDirectory()))) {
             rc = true;
         }
         
@@ -588,7 +588,7 @@ public class NanoOKOptions implements Serializable {
         File failDir = new File(getReadDir() + File.separator + "pass");
         boolean rc = false;
         
-        if (passDir.exists() && passDir.isDirectory() && failDir.exists() && failDir.isDirectory()) {
+        if (((passDir.exists() && passDir.isDirectory()) || failDir.exists() && failDir.isDirectory())) {
             rc = true;
         }
         

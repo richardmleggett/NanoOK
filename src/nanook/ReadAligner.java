@@ -170,7 +170,7 @@ public class ReadAligner {
     }
     
     public void align() throws InterruptedException {
-        if (options.isNewStyleDir()) {
+        if (options.isNewStyleReadDir()) {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getReadDir() + File.separator + "pass",
                                  options.getAlignerDir() + File.separator + "pass",
