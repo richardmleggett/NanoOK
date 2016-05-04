@@ -201,6 +201,7 @@ public class SampleReportWriter {
                 pw.print(fullFilename);
                 pw.println(postTex);            
             } else {
+                System.out.println("Can't find " + fullFilename);
                 pw.print(" ");
             }
         }
@@ -814,7 +815,7 @@ public class SampleReportWriter {
     public void makePDF() {
         ProcessLogger pl = new ProcessLogger();
         String command = "pdflatex -interaction=nonstopmode -output-directory " +options.getLatexDir() + " " + options.getLatexDir() + File.separator + options.getSample() + ".tex";
-        String logFilename = options.getLogsDir() + File.separator + "pdflatex_output_log.txt";
+        String logFilename = options.getLogsDir() + File.separator + "pdflatex_output_log" + options.getAnalysisSuffix() + ".txt";
         System.out.println("pdflatex output " + logFilename);
         pl.runAndLogCommand(command, logFilename, false);
     }

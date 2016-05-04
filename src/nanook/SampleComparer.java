@@ -33,7 +33,7 @@ public class SampleComparer {
     
     private void readSample(String sample, String name) {
         try {
-            FileInputStream fis = new FileInputStream(sample + File.separator + "analysis" + File.separator + "OverallStats.ser");
+            FileInputStream fis = new FileInputStream(sample + File.separator + "analysis" + options.getAnalysisSuffix() + File.separator + "OverallStats.ser");
             ObjectInputStream ois = new ObjectInputStream(fis);
             OverallStats os = (OverallStats)ois.readObject();
             sampleNames.add(name);

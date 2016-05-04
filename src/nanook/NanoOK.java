@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.64";
+    public final static String VERSION_STRING = "v0.70";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -358,7 +358,6 @@ public class NanoOK {
         
         // Parse command line
         options.parseArgs(args);
-        options.checkDirectoryStructure();
 
         // Check dependencies
         System.out.println("");
@@ -367,12 +366,19 @@ public class NanoOK {
         
         //testHDF(options);
         //System.exit(0);
+
+        File logsDir = new File(options.getLogsDir());
+        if (!logsDir.exists()) {
+            logsDir.mkdir();
+        }
+        
         
         if (options.getRunMode() == NanoOKOptions.MODE_EXTRACT) {
             extract(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_ALIGN) {
             align(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_ANALYSE) {
+            options.checkAnalysisDirectoryStructure();
             analyse(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_COMPARE) {
             compare(options);

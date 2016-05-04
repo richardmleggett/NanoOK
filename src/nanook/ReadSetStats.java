@@ -268,30 +268,32 @@ public class ReadSetStats implements Serializable {
      * @param l length
      */
     public synchronized void addLength(String readPath, String id, int l, double gc) {
-        lengths[l]++;
-        
         pwLengths.println(id + "\t" + l);
-        
         id = getPrefix(readPath) + ":"+id;
-        
-        if (l > longest) {
-            longest = l;
-        }
-        
-        if (l < shortest) {
-            shortest = l;
-        }
-        
-        basesSum += l;
-        nReads++;
-        
+
         if (readLengths.containsKey(id)) {
             System.out.println("Error: Read ID "+id+"  . This occurrance ignored.");
             ignoredDuplicates++;
         } else {
             readLengths.put(id, l);
             readGC.put(id, gc);
-        }
+        }                
+        
+        if (l < NanoOKOptions.MAX_READ_LENGTH) {
+            lengths[l]++;
+            if (l > longest) {
+                longest = l;
+            }
+
+            if (l < shortest) {
+                shortest = l;
+            }
+        } else {
+            System.out.println("Error: unexpectedly long ("+l+") read ignored - "+readPath);
+        }                
+
+        basesSum += l;
+        nReads++;
     }    
         
     /**
@@ -324,6 +326,11 @@ public class ReadSetStats implements Serializable {
         id = getPrefix(alignmentFile) + ":"+id;
         
         Double g = readGC.get(id);
+        
+        if (g == null) {
+            g = 50.0;
+            System.out.println("Warning: couldn't get GC from " + alignmentFile + " - assumed 50%");
+        }
         
         //if (g != null) {
         //    gc = g.intValue();

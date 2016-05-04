@@ -33,7 +33,7 @@ public class RGraphPlotter {
     public RGraphPlotter(NanoOKOptions o) {
         options = o;
         executor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-        logDirectory = options.getLogsDir() + File.separator + "R";
+        logDirectory = options.getLogsDir() + File.separator + "R" + options.getAnalysisSuffix();
         File f = new File(logDirectory);
         if (!f.exists()) {
             f.mkdir();
@@ -79,7 +79,8 @@ public class RGraphPlotter {
             args.add(options.getSampleList());
             args.add(options.getComparisonDir());
         } else {
-            args.add(options.getSampleDirectory());
+            args.add(options.getAnalysisDir());
+            args.add(options.getGraphsDir());
         }
         
         if (refName != null) {

@@ -115,7 +115,8 @@ public class NanoOKOptions implements Serializable {
             System.out.println("");
             System.out.println("extract options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
-            System.out.println("    -f|-reads specifies subdir name for FAST5 files within sample dir (default fast5)");
+            System.out.println("    -f|-reads specifies alternative dir for FAST5 files (default fast5)");
+            System.out.println("              Can be absolute (beginning with /) or relative");
             System.out.println("              e.g. -f reads/downloads if replicating Metrichor file structure");
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
@@ -379,13 +380,12 @@ public class NanoOKOptions implements Serializable {
     /**
      * Check if various required directories exist and create if not.
      */
-    public void checkDirectoryStructure() {
+    public void checkAnalysisDirectoryStructure() {
         File analysisDir = new File(getAnalysisDir());
         File unalignedAnalysisDir = new File(getAnalysisDir()+File.separator+"Unaligned");
         File graphsDir = new File(getGraphsDir());
         File motifsDir = new File(getGraphsDir() + File.separator + "motifs");
         File latexDir = new File(getLatexDir());
-        File logsDir = new File(getLogsDir());
         
         if (!analysisDir.exists()) {
             analysisDir.mkdir();
@@ -406,10 +406,6 @@ public class NanoOKOptions implements Serializable {
         if (!latexDir.exists()) {
             latexDir.mkdir();
         }    
-        
-        if (!logsDir.exists()) {
-            logsDir.mkdir();
-        }
     }
 
     public void checkAndMakeComparisonDirs() {
@@ -506,7 +502,7 @@ public class NanoOKOptions implements Serializable {
         if (runMode == MODE_COMPARE) {
             return comparisonDir + File.separator + "graphs";
         } else {
-            return sampleDirectory + File.separator + "graphs";
+            return sampleDirectory + File.separator + "graphs" + getAnalysisSuffix();
         }
     } 
 
@@ -519,7 +515,12 @@ public class NanoOKOptions implements Serializable {
     }    
     
     public String getFast5Dir() {
-        return sampleDirectory + File.separator + readsDir;
+        // Check for full path
+        if ((readsDir.startsWith("/")) || (readsDir.startsWith("~")) || (readsDir.startsWith("."))) {
+            return readsDir;
+        } else {
+            return sampleDirectory + File.separator + readsDir;
+        }
     }
     
     /**
@@ -552,9 +553,9 @@ public class NanoOKOptions implements Serializable {
      */
     public String getLatexDir() {
         if (runMode == MODE_COMPARE) {
-            return comparisonDir + File.separator + "latex";
+            return comparisonDir + File.separator + "latex" + getAnalysisSuffix();
         } else {
-            return sampleDirectory + File.separator + "latex";
+            return sampleDirectory + File.separator + "latex" + getAnalysisSuffix();
         }
     } 
 
@@ -594,13 +595,30 @@ public class NanoOKOptions implements Serializable {
         return rc;
     }
     
+    public String getAnalysisSuffix() {
+        String s = new String("_"+aligner);
+        if (processPassReads && processFailReads) {
+            s += "_passfail";
+        } else if (processPassReads) {
+            s += "_passonly";
+        } else if (processFailReads) {
+            s += "_failonly";
+        }
+        
+        if (!processTemplateReads && !processComplementReads) {
+            s += "_2donly";
+        }
+        
+        return s;
+    }
+    
     
     /**
      * Get analysis directory.
      * @return directory name as String
      */
     public String getAnalysisDir() {
-        return sampleDirectory + File.separator + "analysis";
+        return sampleDirectory + File.separator + "analysis" + getAnalysisSuffix();
     } 
     
     /**
@@ -608,7 +626,7 @@ public class NanoOKOptions implements Serializable {
      * @return filename as String
      */
     public String getTexFilename() {
-        return sampleDirectory + File.separator + "latex" + File.separator + sampleName + ".tex";
+        return sampleDirectory + File.separator + "latex" + getAnalysisSuffix() + File.separator + sampleName + ".tex";
     }
     
     /**
