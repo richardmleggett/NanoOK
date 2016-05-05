@@ -786,6 +786,10 @@ public class NanoOKOptions implements Serializable {
                 break;                      
         }
         
+        if (alignerParams != "") {
+            parser.setAlignmentParams(alignerParams);
+        }
+        
         return parser;
     }    
     
