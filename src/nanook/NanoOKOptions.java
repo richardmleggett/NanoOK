@@ -72,6 +72,7 @@ public class NanoOKOptions implements Serializable {
     private String readsDir = "fast5";
     private int returnValue = 0;
     private int basecallIndex = -1;
+    private boolean outputFast5Path = false;
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -121,6 +122,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
             System.out.println("    -basecallindex specifies the index of the analysis (default: latest)");
+            System.out.println("    -outputpath to output FAST5 path in FASTA read header");
             System.out.println("");
             System.out.println("align options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
@@ -226,6 +228,9 @@ public class NanoOKOptions implements Serializable {
             } else if (args[i].equalsIgnoreCase("-2donly")) {
                 processTemplateReads = false;
                 processComplementReads = false;
+                i++;
+            } else if (args[i].equalsIgnoreCase("-outputpath")) {
+                outputFast5Path = true;
                 i++;
             } else if (args[i].equalsIgnoreCase("-bitmaps")) {
                 imageFormat = "png";
@@ -819,5 +824,9 @@ public class NanoOKOptions implements Serializable {
     
     public int getBasecallIndex() {
         return basecallIndex;
+    }
+    
+    public boolean outputFast5Path() {
+        return outputFast5Path;
     }
  }

@@ -56,13 +56,17 @@ public class FastAQFile {
      * 
      * @param filename output filename
      */
-    public void writeFasta(String filename) {
+    public void writeFasta(String filename, String fast5Path) {
         PrintWriter pw;
         
         try {
             pw = new PrintWriter(new FileWriter(filename));
             pw.print(">");
-            pw.println(id);
+            pw.print(id);
+            if (fast5Path != null) {
+                pw.print(" "+fast5Path);
+            }
+            pw.println("");
             pw.println(sequence);
             pw.close();            
         } catch (IOException e) {

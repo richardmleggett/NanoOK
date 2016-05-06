@@ -58,7 +58,7 @@ public class ReadExtractorRunnable implements Runnable {
                 FastAQFile ff = inputFile.getFastq(options.getBasecallIndex(), t);
                 if (ff != null) {
                     if (options.getReadFormat() == NanoOKOptions.FASTA) {
-                        ff.writeFasta(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta");
+                        ff.writeFasta(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta", options.outputFast5Path() ? inputPathname:null);
                     } else if (options.getReadFormat() == NanoOKOptions.FASTQ) {
                         ff.writeFastq(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq");
                     }
