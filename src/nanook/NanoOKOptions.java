@@ -122,7 +122,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
             System.out.println("    -basecallindex specifies the index of the analysis (default: latest)");
-            System.out.println("    -outputpath to output FAST5 path in FASTA read header");
+            System.out.println("    -printpath to output FAST5 path in FASTA read header");
             System.out.println("");
             System.out.println("align options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
@@ -229,7 +229,7 @@ public class NanoOKOptions implements Serializable {
                 processTemplateReads = false;
                 processComplementReads = false;
                 i++;
-            } else if (args[i].equalsIgnoreCase("-outputpath")) {
+            } else if (args[i].equalsIgnoreCase("-printpath")) {
                 outputFast5Path = true;
                 i++;
             } else if (args[i].equalsIgnoreCase("-bitmaps")) {
