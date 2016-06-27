@@ -145,26 +145,27 @@ public class References implements Serializable {
                     }                                        
                 }
                 // Continuing sequence read 
-                else if (line != null) {
-                    String kmerSeq = previousKmerString + line;                    
-                    int k = refKmerTable.getKmerSize();
+                else if ((line != null) && (currentRef != null)) {
+                    if (!line.equals("")) {
+                        String kmerSeq = previousKmerString + line;                    
+                        int k = refKmerTable.getKmerSize();
 
-                    // Store kmers
-                    for (int o=0; o<kmerSeq.length() - k; o++) {
-                        refKmerTable.countKmer(kmerSeq.substring(o, o+5));
-                    }
-                    
-                    // Store end k-1 bases for start of next kmer
-                    if (line.length() > k) {
-                        previousKmerString = line.substring(line.length() - k + 1);
-                    } else {
-                        previousKmerString = "";
-                    }
-                    
-                    // Now for GC graph
-                    gcc.addString(line);
-                    
-                }                
+                        // Store kmers
+                        for (int o=0; o<kmerSeq.length() - k; o++) {
+                            refKmerTable.countKmer(kmerSeq.substring(o, o+5));
+                        }
+
+                        // Store end k-1 bases for start of next kmer
+                        if (line.length() > k) {
+                            previousKmerString = line.substring(line.length() - k + 1);
+                        } else {
+                            previousKmerString = "";
+                        }
+
+                        // Now for GC graph
+                        gcc.addString(line);
+                    }           
+                }
             } while (line != null);
 
             br.close();
