@@ -166,7 +166,7 @@ for (t in 1:3) {
         identity_scatter_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_length_vs_identity_scatter.png", sep="");
         png(identity_scatter_pdf, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$QueryPercentIdentity)) + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Length") +ylab("Read identity %") + ggtitle(type) + theme(text = element_text(size=textsize)) + scale_y_continuous(limits=c(0, 100)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         identity_scatter_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_length_vs_identity_scatter.pdf", sep="");
         pdf(identity_scatter_pdf, width=6, height=4)
@@ -179,7 +179,7 @@ for (t in 1:3) {
         aid_scatter_png <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_read_fraction_vs_alignment_identity_scatter.png", sep="");
         png(aid_scatter_png, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$PercentQueryAligned, y=data_alignments$AlignmentPercentIdentity)) + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Percentage of read aligned") +ylab("Alignment identity %") + ggtitle(type) + theme(text = element_text(size=textsize)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) )
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         aid_scatter_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_read_fraction_vs_alignment_identity_scatter.pdf", sep="");
         pdf(aid_scatter_pdf, width=6, height=4)
@@ -192,7 +192,7 @@ for (t in 1:3) {
         qid_scatter_png <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_read_fraction_vs_query_identity_scatter.png", sep="");
         png(qid_scatter_png, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$PercentQueryAligned, y=data_alignments$QueryPercentIdentity)) + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Percentage of read aligned") +ylab("Alignment identity %") + ggtitle(type) + theme(text = element_text(size=textsize)) + scale_x_continuous(limits=c(0, 105)) + scale_y_continuous(limits=c(0, 100)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         qid_scatter_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_read_fraction_vs_query_identity_scatter.pdf", sep="");
         pdf(qid_scatter_pdf, width=6, height=4)
@@ -205,7 +205,7 @@ for (t in 1:3) {
         best_perf_scatter_png <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_longest_perfect_vs_length_scatter.png", sep="");
         png(best_perf_scatter_png, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$LongestPerfectKmer)) + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Read length") +ylab("Longest perfect kmer") + ggtitle(type) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         best_perf_scatter_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_longest_perfect_vs_length_scatter.pdf", sep="");
         pdf(best_perf_scatter_pdf, width=6, height=4)
@@ -218,7 +218,7 @@ for (t in 1:3) {
         best_perf_zoom_scatter_png <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_longest_perfect_vs_length_zoom_scatter.png", sep="");
         png(best_perf_zoom_scatter_png, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$LongestPerfectKmer)) + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Read length") +ylab("Longest perfect kmer") + ggtitle(type) + theme(text = element_text(size=textsize)) + scale_x_continuous(limits=c(0, 10000)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         best_perf_zoom_scatter_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_longest_perfect_vs_length_zoom_scatter.pdf", sep="");
         pdf(best_perf_zoom_scatter_pdf, width=6, height=4)
@@ -253,7 +253,7 @@ for (t in 1:3) {
         nk21_scatter_png <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_nk21_vs_length_scatter.png", sep="");
         png(nk21_scatter_png, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$nk21)) + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Read length") +ylab("Number of perfect 21mers") + ggtitle(type) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         nk21_scatter_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_nk21_vs_length_scatter.pdf", sep="");
         pdf(nk21_scatter_pdf, width=6, height=4)
@@ -272,7 +272,7 @@ for (t in 1:3) {
         output_png <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_percent_aligned_vs_length_scatter.png", sep="");
         png(output_png, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$QueryLength, y=data_alignments$PercentQueryAligned)) + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Read length") +ylab("Percentage of read aligned") + ggtitle(type) + theme(text = element_text(size=textsize)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         output_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_percent_aligned_vs_length_scatter.pdf", sep="");
         pdf(output_pdf, width=6, height=4)
@@ -289,7 +289,7 @@ for (t in 1:3) {
         kmer_scatter_png <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_kmer_scatter.png", sep="");
         png(kmer_scatter_png, width=1200, height=1200)
         print(ggplot(data_kmers, aes(x=data_kmers$RefPc, y=data_kmers$ReadPc)) + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Reference abundance %") +ylab("Reads abundance %") + ggtitle(type) + theme(text = element_text(size=textsize)) + scale_x_continuous(limits=c(0, 0.3)) + scale_y_continuous(limits=c(0, 0.3)) + geom_text(aes(label=data_kmers$Kmer), size=4) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) )
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         kmer_scatter_pdf <- paste(graphsdir, "/", refid, "/", refid, "_",type,"_kmer_scatter.pdf", sep="");
         pdf(kmer_scatter_pdf, width=6, height=6)

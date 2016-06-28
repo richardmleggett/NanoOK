@@ -56,7 +56,7 @@ for (t in 1:3) {
         kmers_png <- paste(graphsdir, "/", "all_",type,"_21mers.png", sep="");
         png(kmers_png, width=1200, height=800)
         print(ggplot(data_alignments, aes(x=data_alignments$Length, y=data_alignments$nk21), xlab="Read length") + geom_point(shape=pointshape, size=pointsize, alpha=pointalpha, color=colourcode) + xlab("Read length") +ylab("Number of perfect 21mers") + ggtitle(type) + theme(text = element_text(size=textsize)) + scale_x_continuous(breaks=seq(0, 40000, 4000)) + scale_y_continuous(breaks=seq(0, 400, 20)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)))
-        grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
+        #grid.edit("geom_point.points", grep = TRUE, gp = gpar(lwd = pointwidth))
     } else {
         kmers_pdf <- paste(graphsdir, "/", "all_",type,"_21mers.pdf", sep="");
         pdf(kmers_pdf, width=6, height=4)
