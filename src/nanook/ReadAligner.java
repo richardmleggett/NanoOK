@@ -131,10 +131,10 @@ public class ReadAligner {
 
             if (listOfFiles == null) {
                 System.out.println("");
-                System.out.println("Directory "+inputDirName+" doesn't exist");
+                System.out.println("Directory "+inputDirName+" doesn't exist. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
             } else if (listOfFiles.length <= 0) {
                 System.out.println("");
-                System.out.println("Directory "+inputDirName+" empty");
+                System.out.println("Directory "+inputDirName+" empty. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
             } else {
                 int readCount = 0;
                 for (File file : listOfFiles) {

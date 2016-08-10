@@ -543,6 +543,18 @@ public class NanoOKOptions implements Serializable {
         
         return dir;
     } 
+    
+    public String getExpectedReadFormat() {
+        String format;
+        
+        if (readFormat == FASTQ) {
+            format = "FASTQ";
+        } else {
+            format = "FASTA"; 
+        }
+        
+        return format;
+    }
 
     /**
      * Get LAST directory.
