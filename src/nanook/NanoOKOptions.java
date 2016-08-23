@@ -139,6 +139,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -passonly to analyse only pass reads");
             System.out.println("    -failonly to analyse only fail reads");            
             System.out.println("    -2donly to analyse only 2D reads"); 
+            System.out.println("    -1d to analyse just Template reads"); 
             System.out.println("    -bitmaps to output bitmap PNG graphs instead of PDF");
             System.out.println("");
             System.out.println("compare options:");
@@ -227,6 +228,10 @@ public class NanoOKOptions implements Serializable {
                 i++;
             } else if (args[i].equalsIgnoreCase("-2donly")) {
                 processTemplateReads = false;
+                processComplementReads = false;
+                i++;
+            } else if (args[i].equalsIgnoreCase("-1d")) {
+                process2DReads = false;
                 processComplementReads = false;
                 i++;
             } else if (args[i].equalsIgnoreCase("-printpath")) {
