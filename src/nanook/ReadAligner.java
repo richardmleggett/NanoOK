@@ -121,49 +121,51 @@ public class ReadAligner {
         checkAndMakeDir(logDirName);
         
         for (int t=0; t<3; t++) {
-            String inputDirName = readsDir + File.separator + NanoOKOptions.getTypeFromInt(t);
-            String outputDirName = alignDir + File.separator + NanoOKOptions.getTypeFromInt(t);
-            
-            checkAndMakeDir(outputDirName);
-            
-            File inputDir = new File(inputDirName);
-            File[] listOfFiles = inputDir.listFiles();
+            if (options.isProcessingReadType(t)) {
+                String inputDirName = readsDir + File.separator + NanoOKOptions.getTypeFromInt(t);
+                String outputDirName = alignDir + File.separator + NanoOKOptions.getTypeFromInt(t);
 
-            if (listOfFiles == null) {
-                System.out.println("");
-                System.out.println("Directory "+inputDirName+" doesn't exist. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
-            } else if (listOfFiles.length <= 0) {
-                System.out.println("");
-                System.out.println("Directory "+inputDirName+" empty. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
-            } else {
-                int readCount = 0;
-                for (File file : listOfFiles) {
-                    if (file.isFile()) {
-                        if (isValidReadFile(file.getName())) {
-                            String inPath = inputDirName + File.separator + file.getName();
-                            String outPath = outputDirName + File.separator + file.getName() + parser.getAlignmentFileExtension();
-                            String logFile = logDirName + File.separator + file.getName() + ".log";
-                            String command = parser.getRunCommand(inPath, outPath, reference);                            
-                            if (options.showAlignerCommand()) {
-                                System.out.println("Running: " + command);
+                checkAndMakeDir(outputDirName);
+
+                File inputDir = new File(inputDirName);
+                File[] listOfFiles = inputDir.listFiles();
+
+                if (listOfFiles == null) {
+                    System.out.println("");
+                    System.out.println("Directory "+inputDirName+" doesn't exist. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
+                } else if (listOfFiles.length <= 0) {
+                    System.out.println("");
+                    System.out.println("Directory "+inputDirName+" empty. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
+                } else {
+                    int readCount = 0;
+                    for (File file : listOfFiles) {
+                        if (file.isFile()) {
+                            if (isValidReadFile(file.getName())) {
+                                String inPath = inputDirName + File.separator + file.getName();
+                                String outPath = outputDirName + File.separator + file.getName() + parser.getAlignmentFileExtension();
+                                String logFile = logDirName + File.separator + file.getName() + ".log";
+                                String command = parser.getRunCommand(inPath, outPath, reference);                            
+                                if (options.showAlignerCommand()) {
+                                    System.out.println("Running: " + command);
+                                }
+                                executor.execute(new SystemCommandRunnable(options, null, command, parser.outputsToStdout() ? outPath:null, logFile));
+                                writeProgress();
+                                readCount++;
                             }
-                            executor.execute(new SystemCommandRunnable(options, null, command, parser.outputsToStdout() ? outPath:null, logFile));
-                            writeProgress();
-                            readCount++;
                         }
                     }
-                }
-                
-                if (readCount == 0) {
-                    System.out.print("Error: unable to find any ");
-                    if (parser.getReadFormat() == NanoOKOptions.FASTA) {
-                        System.out.print("FASTA");
-                    } else if (parser.getReadFormat() == NanoOKOptions.FASTQ) {
-                        System.out.print("FASTQ");
+
+                    if (readCount == 0) {
+                        System.out.print("Error: unable to find any ");
+                        if (parser.getReadFormat() == NanoOKOptions.FASTA) {
+                            System.out.print("FASTA");
+                        } else if (parser.getReadFormat() == NanoOKOptions.FASTQ) {
+                            System.out.print("FASTQ");
+                        }
+                        System.out.println(" files to align");
+                        System.out.println("");
+                        System.exit(1);
                     }
-                    System.out.println(" files to align");
-                    System.out.println("");
-                    System.exit(1);
                 }
             }
         }

@@ -227,13 +227,21 @@ public class NanoOKOptions implements Serializable {
                 }
                 i++;
             } else if (args[i].equalsIgnoreCase("-2donly")) {
+                process2DReads = true;
                 processTemplateReads = false;
                 processComplementReads = false;
                 i++;
-            } else if (args[i].equalsIgnoreCase("-1d")) {
+            } else if ((args[i].equalsIgnoreCase("-1d")) || 
+                       (args[i].equalsIgnoreCase("-templateonly")) ) {
                 process2DReads = false;
+                processTemplateReads = true;
                 processComplementReads = false;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-complementonly")) {
+                process2DReads = false;
+                processTemplateReads = false;
+                processComplementReads = true;
+                i++;                
             } else if (args[i].equalsIgnoreCase("-printpath")) {
                 outputFast5Path = true;
                 i++;
