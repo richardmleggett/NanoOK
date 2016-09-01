@@ -136,10 +136,6 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -r|-reference <path> specifies path to reference database");
             System.out.println("    -aligner <name> specifies the aligner (default last)");            
             System.out.println("    -coveragebin <int> specifies coverage bin size (default 100)");            
-            System.out.println("    -passonly to analyse only pass reads");
-            System.out.println("    -failonly to analyse only fail reads");            
-            System.out.println("    -2donly to analyse only 2D reads"); 
-            System.out.println("    -1d to analyse just Template reads"); 
             System.out.println("    -bitmaps to output bitmap PNG graphs instead of PDF");
             System.out.println("");
             System.out.println("compare options:");
@@ -150,6 +146,11 @@ public class NanoOKOptions implements Serializable {
             System.out.println("Other options:");
             System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
             System.out.println("    -log <filename> enables debug logging to file");
+            System.out.println("    -passonly to analyse only pass reads");
+            System.out.println("    -failonly to analyse only fail reads");            
+            System.out.println("    -2donly to analyse only 2D reads"); 
+            System.out.println("    -templateonly to analyse just Template reads"); 
+            System.out.println("    -complementonly to analyse just Complement reads"); 
             System.out.println("");
             System.out.println("Comments/bugs to: richard.leggett@tgac.ac.uk");
             System.out.println("");
