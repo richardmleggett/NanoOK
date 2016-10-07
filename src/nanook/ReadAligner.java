@@ -113,62 +113,81 @@ public class ReadAligner {
         }
     }
     
-    private void processDirectory(String readsDir, String alignDir, String logDirName) {
+    private void processDirectory(String readsDir, String alignDir, String logDirName, boolean allowSubdir, boolean processThisDir) {
         String reference = options.getReferenceFile();
         
         checkReferenceSizesFile(reference);
         checkAndMakeDir(alignDir);
         checkAndMakeDir(logDirName);
         
-        for (int t=0; t<3; t++) {
-            if (options.isProcessingReadType(t)) {
-                String inputDirName = readsDir + File.separator + NanoOKOptions.getTypeFromInt(t);
-                String outputDirName = alignDir + File.separator + NanoOKOptions.getTypeFromInt(t);
-
-                checkAndMakeDir(outputDirName);
-
-                File inputDir = new File(inputDirName);
-                File[] listOfFiles = inputDir.listFiles();
-
-                if (listOfFiles == null) {
-                    System.out.println("");
-                    System.out.println("Directory "+inputDirName+" doesn't exist. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
-                } else if (listOfFiles.length <= 0) {
-                    System.out.println("");
-                    System.out.println("Directory "+inputDirName+" empty. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
-                } else {
-                    int readCount = 0;
-                    for (File file : listOfFiles) {
-                        if (file.isFile()) {
-                            if (isValidReadFile(file.getName())) {
-                                String inPath = inputDirName + File.separator + file.getName();
-                                String outPath = outputDirName + File.separator + file.getName() + parser.getAlignmentFileExtension();
-                                String logFile = logDirName + File.separator + file.getName() + ".log";
-                                String command = parser.getRunCommand(inPath, outPath, reference);                            
-                                if (options.showAlignerCommand()) {
-                                    System.out.println("Running: " + command);
-                                }
-                                executor.execute(new SystemCommandRunnable(options, null, command, parser.outputsToStdout() ? outPath:null, logFile));
-                                writeProgress();
-                                readCount++;
-                            }
-                        }
-                    }
-
-                    if (readCount == 0) {
-                        System.out.print("Error: unable to find any ");
-                        if (parser.getReadFormat() == NanoOKOptions.FASTA) {
-                            System.out.print("FASTA");
-                        } else if (parser.getReadFormat() == NanoOKOptions.FASTQ) {
-                            System.out.print("FASTQ");
-                        }
-                        System.out.println(" files to align");
-                        System.out.println("");
-                        System.exit(1);
-                    }
+        if (allowSubdir) {
+            File inputDir = new File(readsDir);
+            File[] listOfFiles = inputDir.listFiles();
+            for (File file : listOfFiles) {
+                if (file.isDirectory() &&
+                    (!file.getName().equals("2D")) &&
+                    (!file.getName().equals("Template")) &&
+                    (!file.getName().equals("Complement"))) {
+                    processDirectory(readsDir + File.separator + file.getName(),
+                                     alignDir + File.separator + file.getName(),
+                                     logDirName + File.separator + file.getName(),
+                                     false,
+                                     true);
                 }
             }
         }
+                
+        if (processThisDir) {
+            for (int t=0; t<3; t++) {
+                if (options.isProcessingReadType(t)) {
+                    String inputDirName = readsDir + File.separator + NanoOKOptions.getTypeFromInt(t);
+                    String outputDirName = alignDir + File.separator + NanoOKOptions.getTypeFromInt(t);
+
+                    checkAndMakeDir(outputDirName);
+
+                    File inputDir = new File(inputDirName);
+                    File[] listOfFiles = inputDir.listFiles();
+
+                    if (listOfFiles == null) {
+                        System.out.println("");
+                        System.out.println("Directory "+inputDirName+" doesn't exist. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
+                    } else if (listOfFiles.length <= 0) {
+                        System.out.println("");
+                        System.out.println("Directory "+inputDirName+" empty. Have you extracted reads as "+options.getExpectedReadFormat()+ " (some aligners require FASTA, some FASTQ)?");
+                    } else {
+                        int readCount = 0;
+                        for (File file : listOfFiles) {
+                            if (file.isFile()) {
+                                if (isValidReadFile(file.getName())) {
+                                    String inPath = inputDirName + File.separator + file.getName();
+                                    String outPath = outputDirName + File.separator + file.getName() + parser.getAlignmentFileExtension();
+                                    String logFile = logDirName + File.separator + file.getName() + ".log";
+                                    String command = parser.getRunCommand(inPath, outPath, reference);                            
+                                    if (options.showAlignerCommand()) {
+                                        System.out.println("Running: " + command);
+                                    }
+                                    executor.execute(new SystemCommandRunnable(options, null, command, parser.outputsToStdout() ? outPath:null, logFile));
+                                    writeProgress();
+                                    readCount++;
+                                }
+                            }
+                        }
+
+                        if (readCount == 0) {
+                            System.out.print("Error: unable to find any ");
+                            if (parser.getReadFormat() == NanoOKOptions.FASTA) {
+                                System.out.print("FASTA");
+                            } else if (parser.getReadFormat() == NanoOKOptions.FASTQ) {
+                                System.out.print("FASTQ");
+                            }
+                            System.out.println(" files to align");
+                            System.out.println("");
+                            System.exit(1);
+                        }
+                    }
+                }
+            }
+        }  
     }
     
     public void align() throws InterruptedException {
@@ -176,16 +195,20 @@ public class ReadAligner {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getReadDir() + File.separator + "pass",
                                  options.getAlignerDir() + File.separator + "pass",
-                                 options.getLogsDir() + File.separator + options.getAligner() + File.separator + "pass");
+                                 options.getLogsDir() + File.separator + options.getAligner() + File.separator + "pass",
+                                 options.processSubdirs(),
+                                 options.processSubdirs() ? false:true);
             }
             
             if (options.isProcessingFailReads()) {
                 processDirectory(options.getReadDir() + File.separator + "fail",
                                  options.getAlignerDir() + File.separator + "fail",
-                                 options.getLogsDir() + File.separator + options.getAligner() + File.separator + "fail");
+                                 options.getLogsDir() + File.separator + options.getAligner() + File.separator + "fail",
+                                 options.processSubdirs(),
+                                 true);
             }
         } else {
-            processDirectory(options.getReadDir(), options.getAlignerDir(), options.getLogsDir() + File.separator + options.getAligner());
+            processDirectory(options.getReadDir(), options.getAlignerDir(), options.getLogsDir() + File.separator + options.getAligner(), false, true);
         }        
         
         // That's all - wait for all threads to finish

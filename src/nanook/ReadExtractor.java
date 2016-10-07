@@ -86,20 +86,28 @@ public class ReadExtractor {
      * @param inputDirName input directory name
      * @param outputDirName output directory name
      */
-    private void processDirectory(String inputDirName, String outputDirName) {
+    private void processDirectory(String inputDirName, String outputDirName, boolean allowSubdir, boolean processThisDir) {
         File f = new File(outputDirName);
         
+        options.getLog().println("Processing directory");
+        options.getLog().println("Input dir name: "+inputDirName);
+        options.getLog().println("Output dir name: "+outputDirName);
+        options.getLog().println("allowSubdir: "+allowSubdir);        
+        options.getLog().println("processThisDir: "+processThisDir);
+                
         // Make directory
         if (! f.exists()) {
             f.mkdir();
         }
         
-        // Make output Template, Complement and 2D directories
-        for (int t=0; t<3; t++) {
-            if (options.isProcessingReadType(t)) {
-                f = new File(outputDirName + File.separator + NanoOKOptions.getTypeFromInt(t));
-                if (! f.exists()) {
-                    f.mkdir();
+        if (processThisDir) {
+            // Make output Template, Complement and 2D directories
+            for (int t=0; t<3; t++) {
+                if (options.isProcessingReadType(t)) {
+                    f = new File(outputDirName + File.separator + NanoOKOptions.getTypeFromInt(t));
+                    if (! f.exists()) {
+                        f.mkdir();
+                    }
                 }
             }
         }
@@ -115,11 +123,17 @@ public class ReadExtractor {
             System.out.println("Directory "+inputDirName+" empty");
         } else {
             for (File file : listOfFiles) {
-                if (file.isFile()) {
+                if (file.isFile() && processThisDir) {
                     if (file.getName().endsWith(".fast5")) {
+                        options.getLog().println("Got file "+file.getName());
                         executor.execute(new ReadExtractorRunnable(options, inputDirName, file.getName(), outputDirName));
                         writeProgress();
                     }
+                } else if (file.isDirectory() && allowSubdir) {
+                    processDirectory(inputDirName + File.separator + file.getName(),
+                                     outputDirName + File.separator + file.getName(),
+                                     false,
+                                     true);
                 }
             }            
         }    
@@ -132,15 +146,19 @@ public class ReadExtractor {
         if (options.isNewStyleDir()) {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "pass",
-                                 options.getReadDir() + File.separator + "pass");
+                                 options.getReadDir() + File.separator + "pass",
+                                 options.processSubdirs(),
+                                 options.processSubdirs() ? false:true);
             }
             
             if (options.isProcessingFailReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "fail",
-                                 options.getReadDir() + File.separator + "fail");
+                                 options.getReadDir() + File.separator + "fail",
+                                 options.processSubdirs(),
+                                 true);
             }
         } else {
-            processDirectory(options.getFast5Dir(), options.getReadDir());
+            processDirectory(options.getFast5Dir(), options.getReadDir(), false, true);
         }
         
         // That's all - wait for all threads to finish

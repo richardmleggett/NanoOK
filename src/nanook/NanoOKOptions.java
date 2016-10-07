@@ -73,6 +73,7 @@ public class NanoOKOptions implements Serializable {
     private int returnValue = 0;
     private int basecallIndex = -1;
     private boolean outputFast5Path = false;
+    private boolean processSubdirs = false;
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -151,6 +152,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -2donly to analyse only 2D reads"); 
             System.out.println("    -templateonly to analyse just Template reads"); 
             System.out.println("    -complementonly to analyse just Complement reads"); 
+            System.out.println("    -subdirs|-barcoding to process subdirs of pass/fail (e.g. for barcodes)");
             System.out.println("");
             System.out.println("Comments/bugs to: richard.leggett@tgac.ac.uk");
             System.out.println("");
@@ -277,6 +279,9 @@ public class NanoOKOptions implements Serializable {
             } else if (args[i].equalsIgnoreCase("-numthreads") || args[i].equalsIgnoreCase("-t")) {
                 numThreads = Integer.parseInt(args[i+1]);
                 i+=2;
+            } else if (args[i].equalsIgnoreCase("-subdirs") || args[i].equalsIgnoreCase("-barcoding")) {
+                processSubdirs = true;
+                i++;
             } else {                
                 System.out.println("Unknown parameter: " + args[i]);
                 System.exit(0);
@@ -787,6 +792,10 @@ public class NanoOKOptions implements Serializable {
     
     public NanoOKLog getLog() {
         return logFile;
+    }
+    
+    public boolean processSubdirs() {
+        return processSubdirs;
     }
     
     /**

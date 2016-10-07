@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
  * @author Richard Leggett
  */
 public class ReadSet {
+    public final static int MAX_READ_DIRS = 1000;
     private ThreadPoolExecutor parserExecutor;
     private ThreadPoolExecutor queryExecutor;
     private NanoOKOptions options;
@@ -98,9 +99,9 @@ public class ReadSet {
      */
     public int processReads() throws InterruptedException {
         AlignmentFileParser parser = options.getParser();
-        String[] readDirs = new String[2];
-        String[] alignerDirs = new String[2];
-        int readTypes[] = new int[2];
+        String[] readDirs = new String[MAX_READ_DIRS];
+        String[] alignerDirs = new String[MAX_READ_DIRS];
+        int readTypes[] = new int[MAX_READ_DIRS];
         int nDirs = 0;
         int maxReads = options.getMaxReads();
         String outputFilename = options.getAnalysisDir() + File.separator + "Unaligned" + File.separator + options.getTypeFromInt(type) + "_nonaligned.txt";
@@ -113,14 +114,48 @@ public class ReadSet {
         stats.openLengthsFile();
 
         if (options.isNewStyleReadDir()) {
-            if (options.isProcessingPassReads()) {
-                readDirs[nDirs] = options.getReadDir() + File.separator + "pass";
-                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "pass";
-                readTypes[nDirs] = NanoOKOptions.READTYPE_PASS;
-                nDirs++;
+            if (options.isProcessingPassReads()) {                
+                if (options.processSubdirs()) {
+                        File inputDir = new File(options.getReadDir() + File.separator + "pass");
+                        File[] listOfFiles = inputDir.listFiles();
+                        for (File file : listOfFiles) {
+                            if (file.isDirectory()) {
+                                if (nDirs == MAX_READ_DIRS) {
+                                    System.out.println("Error: too many directories.\n");
+                                    System.exit(1);
+                                }
+                                readDirs[nDirs] = options.getReadDir() + File.separator + "pass" + File.separator + file.getName();
+                                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "pass" + File.separator + file.getName();
+                                readTypes[nDirs++] = NanoOKOptions.READTYPE_PASS;
+                            }
+                        }
+                } else {                
+                    readDirs[nDirs] = options.getReadDir() + File.separator + "pass";
+                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "pass";
+                    readTypes[nDirs++] = NanoOKOptions.READTYPE_PASS;
+                }
             }
             
             if (options.isProcessingFailReads()) {
+                if (options.processSubdirs()) {
+                    File inputDir = new File(options.getReadDir() + File.separator + "fail");
+                    File[] listOfFiles = inputDir.listFiles();
+                    for (File file : listOfFiles) {
+                        if (file.isDirectory() && 
+                            (!file.getName().equals("2D")) &&
+                            (!file.getName().equals("Template")) &&
+                            (!file.getName().equals("Complement"))) {
+                            if (nDirs == MAX_READ_DIRS) {
+                                System.out.println("Error: too many directories.\n");
+                                System.exit(1);
+                            }
+                            readDirs[nDirs] = options.getReadDir() + File.separator + "fail" + File.separator + file.getName();
+                            alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "fail" + File.separator + file.getName();
+                            readTypes[nDirs++] = NanoOKOptions.READTYPE_FAIL;
+                        }
+                    }
+                }
+                
                 readDirs[nDirs] = options.getReadDir() + File.separator + "fail";
                 alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "fail";
                 readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
@@ -138,7 +173,7 @@ public class ReadSet {
             String alignDir = alignerDirs[dirIndex] + File.separator + options.getTypeFromInt(type);
             File folder = new File(inputDir);
             File[] listOfFiles = folder.listFiles();
-
+            
             if (listOfFiles == null) {
                 System.out.println("");
                 System.out.println("Directory "+inputDir+" doesn't exist");

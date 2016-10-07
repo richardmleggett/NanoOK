@@ -272,7 +272,7 @@ public class ReadSetStats implements Serializable {
         id = getPrefix(readPath) + ":"+id;
 
         if (readLengths.containsKey(id)) {
-            System.out.println("Error: Read ID "+id+"  . This occurrance ignored.");
+            System.out.println("Error: Read ID "+id+" already seen. This occurrance ignored.");
             ignoredDuplicates++;
         } else {
             readLengths.put(id, l);
