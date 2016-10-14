@@ -39,7 +39,11 @@ public class References implements Serializable {
     
     public void readSizesFile() {
         sizesFile = new File(options.getReferenceFile()+".sizes");
-        if (! sizesFile.exists()) {
+        
+        if (sizesFile.exists()) {
+            System.out.println("Using .sizes file "+sizesFile.getName());
+            System.out.println("Note: if you have changed the reference file, you need to delete the .sizes file and re-run.\n");
+        } else {
             int extensionIndex = options.getReferenceFile().lastIndexOf('.');
             if (extensionIndex > 0) {
                 String minusExtension = options.getReferenceFile().substring(0, extensionIndex);
@@ -193,7 +197,7 @@ public class References implements Serializable {
         
         if (r == null) {
             System.out.println("");
-            System.out.println("Error: Couldn't find reference for "+id);
+            System.out.println("Error: Couldn't find reference for "+id + ". This can occur if you have changed the refernce file, but not deleted the .sizes file associated with it. Try deleting reference.fasta.sizes and re-running.");
             System.exit(1);
         }
         
