@@ -30,7 +30,7 @@ public class ReadAligner {
      */
     public ReadAligner(NanoOKOptions o, AlignmentFileParser afp) {    
         options = o;
-        parser = afp;
+        parser = afp;     
         
         executor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }

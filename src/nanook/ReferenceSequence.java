@@ -62,9 +62,11 @@ public class ReferenceSequence implements Comparable, Serializable {
      * 
      * @param analysisDir directory to write files to 
      */
-    public void openAlignmentSummaryFiles(String analysisDir) {
+    public void openAlignmentSummaryFiles(NanoOKOptions options) {
         for (int t=0; t<3; t++) {
-            referenceStats[t].openAlignmentsTableFile(analysisDir + File.separator + name + File.separator + name + "_" + NanoOKOptions.getTypeFromInt(t) + "_alignments.txt");
+            if (options.isProcessingReadType(t)) {
+                referenceStats[t].openAlignmentsTableFile(options.getAnalysisDir() + File.separator + name + File.separator + name + "_" + NanoOKOptions.getTypeFromInt(t) + "_alignments.txt");
+            }
         }
     }
         

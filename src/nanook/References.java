@@ -88,7 +88,7 @@ public class References implements Serializable {
                     options.checkAndMakeReferenceAnalysisDir(refSeqById.getName());
                     referenceSeqIds.put(values[0], refSeqById);
                     referenceSeqNames.put(values[2], refSeqById);
-                    refSeqById.openAlignmentSummaryFiles(options.getAnalysisDir());
+                    refSeqById.openAlignmentSummaryFiles(options);
 
                     if (values[0].length() > longestId) {
                         longestId = values[0].length();

@@ -172,7 +172,7 @@ public class ReadExtractor {
         System.out.println("");
         System.out.println("");
         System.out.println("DONE");
-    }    
+    }  
 }
 
 

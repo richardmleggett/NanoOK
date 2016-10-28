@@ -8,6 +8,9 @@
 package nanook;
 
 import java.io.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Representation of program options and some global constants.
@@ -23,6 +26,7 @@ public class NanoOKOptions implements Serializable {
     public final static int MODE_ALIGN = 2;
     public final static int MODE_ANALYSE = 3;
     public final static int MODE_COMPARE = 4;
+    public final static int MODE_WATCH = 5;
     public final static int FASTA = 1;
     public final static int FASTQ = 2;
     public final static int TYPE_TEMPLATE = 0;
@@ -47,6 +51,9 @@ public class NanoOKOptions implements Serializable {
     private String scheduler="system";
     private String sampleList = null;
     private String comparisonDir = null;
+    private String bacteriaPath = null;
+    private String ntPath = null;
+    private String cardPath = null;
     private int coverageBinSize = 100;
     private boolean processPassReads = true;
     private boolean processFailReads = true;
@@ -74,6 +81,22 @@ public class NanoOKOptions implements Serializable {
     private int basecallIndex = -1;
     private boolean outputFast5Path = false;
     private boolean processSubdirs = false;
+    private int readsPerBlast = 500;
+    private boolean clearLogsOnStart = true;
+    private transient WatcherLog watcherReadLog = new WatcherLog(this);
+    private transient WatcherLog watcherCardFileLog = new WatcherLog(this);
+    private transient WatcherLog watcherntFileLog = new WatcherLog(this);
+    private transient WatcherLog watcherCardCommandLog = new WatcherLog(this);
+    private transient WatcherLog watcherntCommandLog = new WatcherLog(this);
+    private transient BlastMerger mergerCardPass = new BlastMerger(this);
+    private transient BlastMerger mergerntPass = new BlastMerger(this);
+    private transient BlastMerger mergerCardFail = new BlastMerger(this);
+    private transient BlastMerger mergerntFail = new BlastMerger(this);
+    private transient MergedFastAQFile mergedPass2D;
+    private transient MergedFastAQFile mergedPass1D;
+    private transient MergedFastAQFile mergedFail1D;
+    private transient MergedFastAQFile mergedFail2D;
+    private transient ThreadPoolExecutor executor;
     
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -171,6 +194,8 @@ public class NanoOKOptions implements Serializable {
             runMode = MODE_ANALYSE;
         } else if (args[i].equals("compare")) {
             runMode = MODE_COMPARE;
+        } else if (args[i].equals("watch")) {
+            runMode = MODE_WATCH;
         } else {
             System.out.println("Unknonwn mode " + args[i] + " - must be extract, align or analyse");
             System.exit(1);
@@ -183,6 +208,15 @@ public class NanoOKOptions implements Serializable {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-reference") || args[i].equalsIgnoreCase("-r")) {
                 referenceFile = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-bacteria")) {
+                bacteriaPath = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-nt")) {
+                ntPath = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-card")) {
+                cardPath = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-sample") |  args[i].equalsIgnoreCase("-s")) {
                 sampleDirectory = args[i+1];
@@ -273,6 +307,9 @@ public class NanoOKOptions implements Serializable {
             } else if (args[i].equalsIgnoreCase("-queue")) {
                 jobQueue = args[i+1];
                 i+=2;
+            } else if (args[i].equalsIgnoreCase("-readsperblast")) {
+                readsPerBlast = Integer.parseInt(args[i+1]);
+                i+=2;
             } else if (args[i].equalsIgnoreCase("-basecallindex")) {
                 basecallIndex = Integer.parseInt(args[i+1]);
                 i+=2;
@@ -281,6 +318,9 @@ public class NanoOKOptions implements Serializable {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-subdirs") || args[i].equalsIgnoreCase("-barcoding")) {
                 processSubdirs = true;
+                i++;
+            } else if (args[i].equalsIgnoreCase("-keeplogs")) {
+                clearLogsOnStart = false;
                 i++;
             } else {                
                 System.out.println("Unknown parameter: " + args[i]);
@@ -327,6 +367,8 @@ public class NanoOKOptions implements Serializable {
                 sampleName = s.getName();
             }
         }
+        
+        executor = new ThreadPoolExecutor(numThreads, numThreads, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
         
     public String getAligner() {
@@ -863,5 +905,115 @@ public class NanoOKOptions implements Serializable {
     
     public boolean outputFast5Path() {
         return outputFast5Path;
+    }    
+
+    public String getBacteriaPath() {
+        if (bacteriaPath == null) {
+            System.out.println("Error: no nt path set.\n");
+            System.exit(1);
+        }
+        
+        return bacteriaPath;
     }
- }
+
+    public String getntPath() {
+        if (ntPath == null) {
+            System.out.println("Error: no nt path set.\n");
+            System.exit(1);
+        }
+        
+        return ntPath;
+    }    
+    
+    public String getCardPath() {
+        if (cardPath == null) {
+            System.out.println("Error: no CARD path set.\n");
+            System.exit(1);
+        }
+        
+        return cardPath;
+    }
+    
+    public WatcherLog getWatcherReadLog() {
+        return watcherReadLog;
+    }
+
+    public WatcherLog getWatcherCardFileLog() {
+        return watcherCardFileLog;
+    }
+    
+    public WatcherLog getWatcherCardCommandLog() {
+        return watcherCardCommandLog;
+    }
+
+    public WatcherLog getWatcherntFileLog() {
+        return watcherntFileLog;
+    }
+    
+    public WatcherLog getWatcherntCommandLog() {
+        return watcherntCommandLog;
+    }
+    
+    public BlastMerger getMergerCardPass() {
+        return mergerCardPass;
+    }
+    
+    public BlastMerger getMergerntPass() {
+        return mergerntPass;
+    }
+
+    public BlastMerger getMergerCardFail() {
+        return mergerCardFail;
+    }
+    
+    public BlastMerger getMergerntFail() {
+        return mergerntFail;
+    }
+    
+    
+    public boolean clearLogsOnStart() {
+        return clearLogsOnStart;
+    }
+    
+    public void openMergedFile(String filename, int type, int pf) {
+        if (pf == NanoOKOptions.READTYPE_PASS) {
+            if (type == NanoOKOptions.TYPE_TEMPLATE) {
+                mergedPass1D = new MergedFastAQFile(this, filename);
+            } else if (type == NanoOKOptions.TYPE_2D) {
+                mergedPass2D = new MergedFastAQFile(this, filename);
+            }
+        } else if (pf == NanoOKOptions.READTYPE_FAIL) {
+            if (type == NanoOKOptions.TYPE_TEMPLATE) {
+                mergedFail1D = new MergedFastAQFile(this, filename);    
+            } else if (type == NanoOKOptions.TYPE_2D) {
+                mergedFail2D = new MergedFastAQFile(this, filename);
+            }
+        }
+    }
+
+    public MergedFastAQFile getMergedFile(int type, int pf) {
+        if (pf == NanoOKOptions.READTYPE_PASS) {
+            if (type == NanoOKOptions.TYPE_TEMPLATE) {
+                return mergedPass1D;
+            } else if (type == NanoOKOptions.TYPE_2D) {
+                return mergedPass2D;
+            }
+        } else if (pf == NanoOKOptions.READTYPE_FAIL) {
+            if (type == NanoOKOptions.TYPE_TEMPLATE) {
+                return mergedFail1D;    
+            } else if (type == NanoOKOptions.TYPE_2D) {
+                return mergedFail2D;
+            }
+        }
+        
+        return null;
+    }
+
+    public int getReadsPerBlast() {
+        return readsPerBlast;
+    }
+    
+    public ThreadPoolExecutor getThreadExecutor() {
+        return executor;
+    }
+}

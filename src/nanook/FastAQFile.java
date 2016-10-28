@@ -30,11 +30,19 @@ public class FastAQFile {
         qualities = q;
     }
     
+    public void writeFastqToHandle(PrintWriter pw) {
+        pw.print("@");
+        pw.println(id);
+        pw.println(sequence);
+        pw.println("+");
+        pw.println(qualities);
+    }
+    
     /**
      * Write as FASTQ file
      * @param filename output filename
      */
-    public void writeFastq(String filename) {
+    public synchronized void writeFastq(String filename) {
         PrintWriter pw;
         
         try {
@@ -51,6 +59,16 @@ public class FastAQFile {
         }
     }
     
+    public void writeFastaToHandle(PrintWriter pw, String fast5Path) {
+        pw.print(">");
+        pw.print(id);
+        if (fast5Path != null) {
+            pw.print(" "+fast5Path);
+        }
+        pw.println("");
+        pw.println(sequence);
+    }
+        
     /**
      * Write as FASTA file
      * 

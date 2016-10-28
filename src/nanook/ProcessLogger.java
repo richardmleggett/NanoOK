@@ -24,12 +24,51 @@ public class ProcessLogger {
     private boolean writeStdio = true;
     private boolean writeStderr = true;
     private boolean writeHeadings = true;
+
+    public ArrayList getCommandOutput(String[] command, boolean stdin, boolean stderr) {
+        ArrayList outputLines = new ArrayList();
+        
+        try {
+            Process p = Runtime.getRuntime().exec(command);
+            // ?? p.waitFor();
+            
+            if (stdin) {
+                BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                String s = null;
+                while ((s = stdInput.readLine()) != null) {            
+                    outputLines.add(s);
+                }
+            }
+            
+            if (stderr) {
+                BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                String s = null;
+                while ((s = stdError.readLine()) != null) {            
+                    outputLines.add(s);
+                }
+            }            
+        } catch (Exception e) {
+            System.out.println("ProcessLogger exception:");
+            e.printStackTrace();
+            System.exit(1);
+        } 
+            
+        return outputLines;
+    }    
+
+    public void runCommand(String[] command) {
+        ArrayList<String> response = getCommandOutput(command, true, true);
+        for (int i=0; i<response.size(); i++) {
+            System.out.println(response.get(i));
+        }        
+    }
     
     public ArrayList getCommandOutput(String command, boolean stdin, boolean stderr) {
         ArrayList outputLines = new ArrayList();
         
         try {
             Process p = Runtime.getRuntime().exec(command);
+            // ?? p.waitFor();
             
             if (stdin) {
                 BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));

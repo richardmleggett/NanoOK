@@ -76,6 +76,9 @@ public class ReadSetStats implements Serializable {
         String lengthsFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_lengths.txt";
         String kmersFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_kmers.txt";
         
+        System.out.println("Opening "+lengthsFilename);
+        System.out.println("Opening "+kmersFilename);
+        
         try {
             pwLengths = new PrintWriter(new FileWriter(lengthsFilename)); 
             pwKmers = new PrintWriter(new FileWriter(kmersFilename));

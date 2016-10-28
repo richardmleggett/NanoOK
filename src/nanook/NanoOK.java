@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.80";
+    public final static String VERSION_STRING = "v0.95";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -332,6 +332,17 @@ public class NanoOK {
         crw.makePDF();
     }
     
+    private static void watch(NanoOKOptions options) throws InterruptedException {
+        AlignmentFileParser parser = options.getParser();
+        parser.checkForIndex(options.getReferenceFile().substring(0, options.getReferenceFile().lastIndexOf('.')));
+        ReadAligner aligner = new ReadAligner(options, parser);
+        options.setReadFormat(parser.getReadFormat());
+        aligner.createDirectories();
+
+        DirectoryWatcher dw = new DirectoryWatcher(options, aligner, parser);
+        dw.watch();
+    }
+    
     private static void memoryReport() {
         Runtime runtime = Runtime.getRuntime();
         long mb = 1024 * 1024;
@@ -382,11 +393,15 @@ public class NanoOK {
             analyse(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_COMPARE) {
             compare(options);
+        } else if (options.getRunMode() == NanoOKOptions.MODE_WATCH) {
+            watch(options);
         }
         
         //memoryReport();
         
         options.getLog().close();
+        
+        options.getThreadExecutor().shutdown();
         
         if (options.getReturnValue() != 0) {
             System.out.println("Exiting with error code");
