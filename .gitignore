@@ -4,3 +4,5 @@ manifest.mf
 nbproject
 dist/README.TXT
 
+
+install-packages.R
