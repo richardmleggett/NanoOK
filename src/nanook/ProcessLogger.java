@@ -48,7 +48,7 @@ public class ProcessLogger {
                 }
             }            
         } catch (Exception e) {
-            System.out.println("ProcessLogger exception:");
+            System.out.println("\nProcessLogger exception:");
             e.printStackTrace();
             System.exit(1);
         } 

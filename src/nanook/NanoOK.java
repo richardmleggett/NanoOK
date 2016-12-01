@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v0.95";
+    public final static String VERSION_STRING = "v1.06";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -343,6 +343,19 @@ public class NanoOK {
         dw.watch();
     }
     
+    private static void scan(NanoOKOptions options) throws InterruptedException {
+        ReadProcessor rp = new ReadProcessor(options);
+        options.makeDirectories();
+        
+        rp.process();
+
+        //FileWatcher fw = new FileWatcher(options.getFast5Dir());
+        //while (true) {
+        //    fw.scan();
+        //    Thread.sleep(2000);
+        //}
+    }    
+    
     private static void memoryReport() {
         Runtime runtime = Runtime.getRuntime();
         long mb = 1024 * 1024;
@@ -395,6 +408,8 @@ public class NanoOK {
             compare(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_WATCH) {
             watch(options);
+        } else if (options.getRunMode() == NanoOKOptions.MODE_SCAN) {
+            scan(options);
         }
         
         //memoryReport();

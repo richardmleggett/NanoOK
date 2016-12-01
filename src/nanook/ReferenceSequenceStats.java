@@ -68,7 +68,7 @@ public class ReferenceSequenceStats implements Serializable {
      * Create an alignments table file.
      * @param filename flename
      */
-    public synchronized void openAlignmentsTableFile(String filename) {
+    public void openAlignmentsTableFile(String filename) {
         atf = new AlignmentsTableFile(filename);
     }
         
@@ -76,7 +76,7 @@ public class ReferenceSequenceStats implements Serializable {
      * Get the associated AlignmentsTableFile object
      * @return an AlignmentsTableFile
      */
-    public synchronized AlignmentsTableFile getAlignmentsTableFile() {
+    public AlignmentsTableFile getAlignmentsTableFile() {
             return  atf;
     }
     
@@ -144,7 +144,7 @@ public class ReferenceSequenceStats implements Serializable {
      * @param filename output filename
      * @param binSize bin size
      */
-    public synchronized void writeCoverageData(String filename, int binSize) {
+    public void writeCoverageData(String filename, int binSize) {
         cov.writeCoverageData(filename, binSize);
 //        try {
 //            PrintWriter pw = new PrintWriter(new FileWriter(filename));            
@@ -168,7 +168,7 @@ public class ReferenceSequenceStats implements Serializable {
      * Write data for perfect kmer histogram.
      * @param filename output filename
      */
-    public synchronized void writePerfectKmerHist(String filename) {
+    public void writePerfectKmerHist(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=longestPerfectKmer; i++) {
@@ -187,7 +187,7 @@ public class ReferenceSequenceStats implements Serializable {
      * Write data for best perfect kmer histogram.
      * @param filename output filename
      */
-    public synchronized void writeBestPerfectKmerHist(String filename) {
+    public void writeBestPerfectKmerHist(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=longestPerfectKmer; i++) {
@@ -212,7 +212,7 @@ public class ReferenceSequenceStats implements Serializable {
      * Write data for best perfect kmer cumulative histogram.
      * @param filename output filename
      */
-    public synchronized void writeBestPerfectKmerHistCumulative(String filename) {
+    public void writeBestPerfectKmerHistCumulative(String filename) {
         int nr = 0;
         
         for (int i=1; i<=longestPerfectKmer; i++) {
@@ -247,7 +247,7 @@ public class ReferenceSequenceStats implements Serializable {
      * @param pw PrintWriter object to write with
      * @param format format string for output
      */
-    public synchronized void writeSummary(PrintWriter pw, String format) {
+    public void writeSummary(PrintWriter pw, String format) {
         pw.printf(format, name, size, nReadsWithAlignments, longestPerfectKmer);
         pw.println("");
     }
@@ -467,7 +467,7 @@ public class ReferenceSequenceStats implements Serializable {
      * Write a file of insertion stats for plotting.
      * @param filename output filename
      */
-    public synchronized void writeInsertionStats(String filename) {
+    public void writeInsertionStats(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
             for (int i=1; i<=largestInsertion; i++) {
@@ -487,7 +487,7 @@ public class ReferenceSequenceStats implements Serializable {
      * Write a file of deletion stats for plotting.
      * @param filename output filename
      */
-    public synchronized void writeDeletionStats(String filename) {
+    public void writeDeletionStats(String filename) {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=largestDeletion; i++) {

@@ -251,11 +251,20 @@ for (t in 1:3) {
         garbage <- dev.off()
 
         # Plot %reads vs best perfect kmer
-        if (maxk == 0) {
-            maxk <- max(data_alignments$LongestPerfectKmer);
-            maxk <- roundUp(maxk, 10);
-            message(maxk);
+        this_maxk <- max(data_alignments$LongestPerfectKmer);
+        this_maxk  <- roundUp(this_maxk, 10);
+        message(this_maxk);
+        
+        if (this_maxk > maxk) {
+            maxk <- this_maxk;
         }
+        
+        #if (maxk == 0) {
+        #    maxk <- max(data_alignments$LongestPerfectKmer);
+        #    maxk <- roundUp(maxk, 10);
+        #    message(maxk);
+        #}
+        
         hdf <- hist(breaks=seq(0,maxk,by=10), x=data_alignments$LongestPerfectKmer, plot=FALSE, right=FALSE); # bins are 0-9, 10-19, 20-29 etc.
         hdf$density = hdf$counts/sum(hdf$counts)*100
         tdf <- data.frame(Pos=hdf$mids, Counts=hdf$density);

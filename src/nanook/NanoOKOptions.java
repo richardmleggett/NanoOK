@@ -8,9 +8,12 @@
 package nanook;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Representation of program options and some global constants.
@@ -27,6 +30,7 @@ public class NanoOKOptions implements Serializable {
     public final static int MODE_ANALYSE = 3;
     public final static int MODE_COMPARE = 4;
     public final static int MODE_WATCH = 5;
+    public final static int MODE_SCAN = 6;
     public final static int FASTA = 1;
     public final static int FASTQ = 2;
     public final static int TYPE_TEMPLATE = 0;
@@ -54,6 +58,7 @@ public class NanoOKOptions implements Serializable {
     private String bacteriaPath = null;
     private String ntPath = null;
     private String cardPath = null;
+    private String processFile = null;
     private int coverageBinSize = 100;
     private boolean processPassReads = true;
     private boolean processFailReads = true;
@@ -69,9 +74,14 @@ public class NanoOKOptions implements Serializable {
     private boolean fixRandom = false;
     private boolean doKmerCounting = true;
     private boolean showAlignerCommand = false;
+    private boolean extractingReads = false;
+    private boolean aligningReads = false;
+    private boolean parsingReads = false;
+    private boolean blastingReads = false;
     private int runMode = 0;
     private int readFormat = FASTA;
     private int numThreads = 1;
+    private int fileWatcherTimeout = 10;
     private String jobQueue = "";
     private NanoOKLog logFile = new NanoOKLog();
     private String imageFormat = "pdf";
@@ -97,7 +107,10 @@ public class NanoOKOptions implements Serializable {
     private transient MergedFastAQFile mergedFail1D;
     private transient MergedFastAQFile mergedFail2D;
     private transient ThreadPoolExecutor executor;
-    
+    private transient BlastHandler[][] blastHandlers = new BlastHandler[3][2];
+    private transient ArrayList<String> blastProcesses = new ArrayList<String>();
+    private int fileCounterOffset = 0;
+        
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
         
@@ -196,6 +209,8 @@ public class NanoOKOptions implements Serializable {
             runMode = MODE_COMPARE;
         } else if (args[i].equals("watch")) {
             runMode = MODE_WATCH;
+        } else if (args[i].equals("scan")) {
+            runMode = MODE_SCAN;
         } else {
             System.out.println("Unknonwn mode " + args[i] + " - must be extract, align or analyse");
             System.exit(1);
@@ -206,8 +221,18 @@ public class NanoOKOptions implements Serializable {
             if (args[i].equalsIgnoreCase("-coveragebin")) {
                 coverageBinSize = Integer.parseInt(args[i+1]);
                 i+=2;
+            } else if (args[i].equalsIgnoreCase("-timeout")) {
+                fileWatcherTimeout = Integer.parseInt(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-fileoffset")) {
+                fileCounterOffset = Integer.parseInt(args[i+1]);
+                i+=2;
             } else if (args[i].equalsIgnoreCase("-reference") || args[i].equalsIgnoreCase("-r")) {
                 referenceFile = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-process")) {
+                processFile = args[i+1];
+                readProcessFile();
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-bacteria")) {
                 bacteriaPath = args[i+1];
@@ -339,6 +364,13 @@ public class NanoOKOptions implements Serializable {
             }
         }
         
+        if (runMode == MODE_SCAN) {
+            if (processFile == null) {
+                System.out.println("Error: you must specify a process file");
+                System.exit(1);
+            }
+        }
+        
         if (runMode == MODE_COMPARE) {
             if (comparisonDir == null) {
                 System.out.println("Error: you must specify an output dir for the comparison");
@@ -367,6 +399,10 @@ public class NanoOKOptions implements Serializable {
                 sampleName = s.getName();
             }
         }
+        
+        initialiseBlastHandlers();
+        
+        System.out.println("Number of cores: "+Runtime.getRuntime().availableProcessors());
         
         executor = new ThreadPoolExecutor(numThreads, numThreads, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
@@ -419,6 +455,18 @@ public class NanoOKOptions implements Serializable {
             case TYPE_TEMPLATE: typeString = "Template"; break;
             case TYPE_COMPLEMENT: typeString = "Complement"; break;
             case TYPE_2D: typeString = "2D"; break;
+            default: typeString = "Unknown"; break;
+        }
+        
+        return typeString;
+    }
+    
+    public static String getPassFailFromInt(int n) {
+        String typeString;
+        
+        switch(n) {
+            case READTYPE_PASS: typeString = "pass"; break;
+            case READTYPE_FAIL: typeString = "fail"; break;
             default: typeString = "Unknown"; break;
         }
         
@@ -626,6 +674,14 @@ public class NanoOKOptions implements Serializable {
     } 
 
     /**
+     * Get LAST directory.
+     * @return directory name as String
+     */
+    public String getParserDir() {
+        return sampleDirectory + File.separator + aligner+"_parse";
+    }     
+    
+    /**
      * Get LaTeX directory.
      * @return directory name as String
      */
@@ -651,7 +707,7 @@ public class NanoOKOptions implements Serializable {
     
     public boolean isNewStyleDir() {
         File passDir = new File(getFast5Dir() + File.separator + "pass");
-        File failDir = new File(getFast5Dir() + File.separator + "pass");
+        File failDir = new File(getFast5Dir() + File.separator + "fail");
         boolean rc = false;
         
         if (((passDir.exists() && passDir.isDirectory()) || (failDir.exists() && failDir.isDirectory()))) {
@@ -1015,5 +1071,220 @@ public class NanoOKOptions implements Serializable {
     
     public ThreadPoolExecutor getThreadExecutor() {
         return executor;
+    }
+    
+    public boolean keepRunning() {
+        return true;
+    }
+    
+    public boolean isExtractingReads() {
+        return extractingReads;
+    }
+    
+    public boolean isAligningRead() {
+        return aligningReads;
+    }
+
+    public boolean isParsingRead() {
+        return parsingReads;
+    }    
+    
+    public boolean isBlastingRead() {
+        return blastingReads;
+    }
+    
+    public int getFileWatcherTimeout() {
+        return fileWatcherTimeout;
+    }
+
+    private void checkAndMakeDirectory(String dir) {
+        File f = new File(dir);
+        if (f.exists()) {
+            if (!f.isDirectory()) {
+                System.out.println("Error: " + dir + " is a file, not a directory!");
+                System.exit(1);
+            }
+        } else {
+            System.out.println("Making directory " + dir);
+            f.mkdir();
+        }
+    }      
+
+    private void checkAndMakeDirectoryWithChildren(String dirname) {
+        checkAndMakeDirectory(dirname);
+        for (int t=0; t<3; t++) {
+            if (this.isProcessingReadType(t)) {
+                checkAndMakeDirectory(dirname + File.separator + NanoOKOptions.getTypeFromInt(t));
+            }
+        }        
+    }
+    
+    // Directory structure
+    // fast5
+    //     - pass
+    //         - BC01
+    //         - BC02
+    //     - fail
+    //         - unaligned
+    // fasta
+    //     - pass
+    //         - BC01
+    //             - 2D
+    //             - Template
+    //             - Complement
+    //         - BC02
+    //         ...
+    //     - fail
+    public void makeDirectories() {
+        checkAndMakeDirectory(this.getLogsDir());
+        
+        if (this.isExtractingReads()) {
+            checkAndMakeDirectory(this.getReadDir());
+            checkAndMakeDirectory(this.getReadDir() + File.separator + "merged");
+            if (this.isNewStyleDir()) {
+                for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
+                    String pf = NanoOKOptions.getPassFailFromInt(i);
+                    checkAndMakeDirectoryWithChildren(this.getReadDir() + File.separator + pf);
+                    if (this.processSubdirs()) {
+                        File inputDir = new File(this.getFast5Dir());
+                        File[] listOfFiles = inputDir.listFiles();
+                        for (File file : listOfFiles) {
+                            if (file.isDirectory()) {
+                                checkAndMakeDirectoryWithChildren(this.getReadDir() + File.separator + file.getName());
+                            }
+                        }
+                    }
+                }
+            }                
+        }
+        
+        if (this.isAligningRead()) {
+            checkAndMakeDirectory(this.getAlignerDir());
+            checkAndMakeDirectory(this.getLogsDir() + File.separator + this.getAligner());
+            if (this.isNewStyleReadDir()) {
+                for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
+                    String pf = NanoOKOptions.getPassFailFromInt(i);
+                    checkAndMakeDirectoryWithChildren(this.getAlignerDir() + File.separator + pf);
+                    checkAndMakeDirectoryWithChildren(this.getLogsDir() + File.separator + this.getAligner() + File.separator + pf);
+                    if (this.processSubdirs()) {
+                        File inputDir = new File(this.getReadDir());
+                        File[] listOfFiles = inputDir.listFiles();
+                        for (File file : listOfFiles) {
+                            if (file.isDirectory()) {
+                                checkAndMakeDirectoryWithChildren(this.getAlignerDir() + File.separator + file.getName());
+                                checkAndMakeDirectoryWithChildren(this.getLogsDir() + File.separator + this.getAligner() + File.separator + file.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+     
+        if (this.isParsingRead()) {
+            checkAndMakeDirectory(this.getParserDir());
+            if (this.isNewStyleReadDir()) {
+                for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
+                    String pf = NanoOKOptions.getPassFailFromInt(i);
+                    checkAndMakeDirectoryWithChildren(this.getParserDir() + File.separator + pf);
+                    if (this.processSubdirs()) {
+                        File inputDir = new File(this.getReadDir());
+                        File[] listOfFiles = inputDir.listFiles();
+                        for (File file : listOfFiles) {
+                            if (file.isDirectory()) {
+                                checkAndMakeDirectoryWithChildren(this.getParserDir() + File.separator + file.getName());
+                            }
+                        }
+                    }
+                }
+            }                        
+        }
+        
+        if (this.isBlastingRead()) {
+            for (int i=0; i<blastProcesses.size(); i++) {
+                String[] params = blastProcesses.get(i).split(",");
+                if (params.length == 5) {
+                    String blastName = params[0];
+                    String blastTool = params[1];
+                    String blastDb = params[2];
+                    String memory = params[3];
+                    String queue = params[4];
+                    checkAndMakeDirectory(getSampleDirectory() + File.separator + blastTool + "_" + blastName + File.separator);
+                    checkAndMakeDirectory(getLogsDir() + File.separator + blastTool + "_" + blastName + File.separator);
+                }
+            }
+        }
+    }
+    
+    void readProcessFile() {
+        BufferedReader br;
+        
+        System.out.println("\nReading process file "+processFile);
+        try {
+            br = new BufferedReader(new FileReader(processFile));        
+            String line;
+
+            do {
+                line = br.readLine();
+                if (line != null) {
+                    if (line.length() > 1) {
+                        String[] tokens = line.split(":");
+                        if (tokens[0].compareToIgnoreCase("Extract") == 0) {
+                            extractingReads = true;
+                            System.out.println("  Extract "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("Fast5Dir") == 0) {
+                            readsDir = tokens[1];
+                            System.out.println("  Fast5Dir "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("Aligner") == 0) {
+                            aligningReads = true;
+                            System.out.println("  Aligner "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("Reference") == 0) {
+                            referenceFile = tokens[1];
+                            System.out.println("  Reference "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("Analysis") == 0) {
+                            parsingReads = true;
+                            System.out.println("  Analysis "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("Aligner") == 0) {
+                            aligner = tokens[1];
+                            System.out.println("  Aligner "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("Blast") == 0) {
+                            blastingReads = true;
+                            blastProcesses.add(tokens[1]);
+                            System.out.println("  Blast "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("ReadsPerBlast") == 0) {
+                            readsPerBlast = Integer.parseInt(tokens[1]);
+                            System.out.println("   ReadsPerBlast "+readsPerBlast);
+                        } else if (!tokens[0].startsWith("#")) {
+                            System.out.println("Unknown token "+tokens[0]);
+                        } 
+                    }
+                }
+            } while (line != null);
+        } catch (Exception e) {
+            System.out.println("readProcessFile Exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }
+        
+        System.out.println("");
+    }
+    
+    public void initialiseBlastHandlers() {
+        for (int t=0; t<3; t++) {
+            for (int pf=NanoOKOptions.READTYPE_PASS; pf<=NanoOKOptions.READTYPE_FAIL; pf++) {
+                blastHandlers[t][pf-1] = new BlastHandler(this, t, pf);
+            }
+        }
+    }
+    
+    public BlastHandler getBlastHandler(int t, int pf) {
+        return blastHandlers[t][pf-1];
+    }
+    
+    public ArrayList<String> getBlastProcesses() {
+        return blastProcesses;
+    }
+    
+    public int getFileCounterOffset() {
+        return fileCounterOffset;
     }
 }

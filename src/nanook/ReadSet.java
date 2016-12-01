@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class ReadSet {
     public final static int MAX_READ_DIRS = 1000;
-    private ThreadPoolExecutor parserExecutor;
     private ThreadPoolExecutor queryExecutor;
     private NanoOKOptions options;
     private ReadSetStats stats;
@@ -42,7 +41,6 @@ public class ReadSet {
         type = t;
         stats = s;
         
-        parserExecutor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
         queryExecutor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
         

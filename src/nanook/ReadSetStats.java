@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class ReadSetStats implements Serializable {
     private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
-    NanoOKOptions options;
+    private NanoOKOptions options;
     private transient PrintWriter pwLengths = null;
     private transient PrintWriter pwKmers = null;
     private String typeString = "";
@@ -72,7 +72,7 @@ public class ReadSetStats implements Serializable {
     /**
      * Open a text file to store read lengths.
      */
-    public synchronized void openLengthsFile() {
+    public void openLengthsFile() {
         String lengthsFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_lengths.txt";
         String kmersFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_kmers.txt";
         
@@ -94,21 +94,21 @@ public class ReadSetStats implements Serializable {
     /**
      * Close the read lengths file.
      */
-    public synchronized void closeLengthsFile() {
+    public void closeLengthsFile() {
         pwLengths.close();
     }
     
     /**
      * Close the kmers file
      */
-    public synchronized void closeKmersFile() {
+    public void closeKmersFile() {
         pwKmers.close();
     }
 
     /**
      * Calculate various statistics, e.g. N50 etc.
      */
-    public synchronized void calculateStats() {
+    public void calculateStats() {
         int total = 0;
         int c = 0;
                 
@@ -167,7 +167,7 @@ public class ReadSetStats implements Serializable {
      * Get type
      * @return type
      */
-    public synchronized int getType() {
+    public int getType() {
         return type;
     }
     
@@ -175,7 +175,7 @@ public class ReadSetStats implements Serializable {
      * Get type as a string.
      * @return type String
      */
-    public synchronized String getTypeString() {
+    public String getTypeString() {
         return typeString;
     }
     
@@ -428,7 +428,7 @@ public class ReadSetStats implements Serializable {
      * Write a short summary file for this read set.
      * @param filename output filename
      */
-    public synchronized void writeSummaryFile() {
+    public void writeSummaryFile() {
         String filename = options.getAlignmentSummaryFilename();
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename, true));

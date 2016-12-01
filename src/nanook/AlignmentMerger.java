@@ -71,12 +71,12 @@ public class AlignmentMerger {
      */
     private void checkStoreInsertionsOrDeletions() {
         if (deletionSize > 0) {
-            reference.getStatsByType(type).addDeletionError(deletionSize, errorKmer, overallStats);
+            reference.getStatsByType(type).addDeletionError(deletionSize, errorKmer, overallStats); // Reference
             deletionSize = 0;
         }
                 
         if (insertionSize > 0) {
-            reference.getStatsByType(type).addInsertionError(insertionSize, errorKmer, overallStats);
+            reference.getStatsByType(type).addInsertionError(insertionSize, errorKmer, overallStats); // Reference
             insertionSize = 0;
         }
         
@@ -86,7 +86,7 @@ public class AlignmentMerger {
     private void storePerfectKmerLength() {
         // Store perfect kmers
         if (currentPerfectKmerSize > 0) {
-            reference.getStatsByType(type).addPerfectKmer(currentPerfectKmerSize);
+            reference.getStatsByType(type).addPerfectKmer(currentPerfectKmerSize); // Reference
 
             // Bodge - need to change
             for (int l=0; l<nk; l++) {
@@ -278,7 +278,7 @@ public class AlignmentMerger {
                         errorKmer = currentKmer;
 
                         // Store substitution
-                        reference.getStatsByType(type).addSubstitutionError(errorKmer, hitSeq.charAt(i), querySeq.charAt(i), overallStats);
+                        reference.getStatsByType(type).addSubstitutionError(errorKmer, hitSeq.charAt(i), querySeq.charAt(i), overallStats); // Reference
 
                         // Mark this position and move on
                         covered[queryPos] = 1;
@@ -306,7 +306,7 @@ public class AlignmentMerger {
                 options.getLog().println("Modifying overallHitEnd = "+overallHitEnd);
             }
 
-            reference.getStatsByType(type).addCoverage(a.getHitStart(), a.getHitAlignmentSize());    
+            reference.getStatsByType(type).addCoverage(a.getHitStart(), a.getHitAlignmentSize()); // Reference
         }
     }  
     
@@ -329,12 +329,12 @@ public class AlignmentMerger {
 
         ai.addkCounts(nk, kSizes, kCounts);        
         
-        overallStats.writekCounts(queryName, querySeqSize, nk, kSizes, kCounts);
-        overallStats.addReadWithAlignment();
-        overallStats.addReadBestKmer(longestPerfectKmer);
+        overallStats.writekCounts(queryName, querySeqSize, nk, kSizes, kCounts); // ReadSetStats
+        overallStats.addReadWithAlignment(); // ReadSetStats
+        overallStats.addReadBestKmer(longestPerfectKmer); // ReadSetStats
         
-        reference.getStatsByType(type).addAlignmentStats(querySeqSize, alignmentSize, alignmentSizeWithoutIndels, identicalBases, "?", "?");
-        reference.getStatsByType(type).addReadBestKmer(longestPerfectKmer);       
+        reference.getStatsByType(type).addAlignmentStats(querySeqSize, alignmentSize, alignmentSizeWithoutIndels, identicalBases, "?", "?"); // Reference
+        reference.getStatsByType(type).addReadBestKmer(longestPerfectKmer); // Reference
         
         return ai;
     }

@@ -16,10 +16,10 @@ import java.io.Serializable;
  */
 public class KmerAbundance implements Comparable, Serializable {
     private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
-    String kmer;
-    double refAbundance;
-    double readAbundance;
-    double difference;
+    private String kmer;
+    private double refAbundance;
+    private double readAbundance;
+    private double difference;
     
     public KmerAbundance(String k, double ref, double read) {
         kmer = k;
