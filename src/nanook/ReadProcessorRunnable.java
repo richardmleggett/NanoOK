@@ -135,7 +135,7 @@ public class ReadProcessorRunnable implements Runnable {
         return outPathname;
     }      
     
-    private String getFilePrefixFromPathname(String pathname) {
+    public static String getFilePrefixFromPathname(String pathname) {
         File f = new File(pathname);
         String inName = f.getName();
         int suffixPos = inName.lastIndexOf(".");
@@ -223,6 +223,9 @@ public class ReadProcessorRunnable implements Runnable {
                     if (options.getReadFormat() == NanoOKOptions.FASTA) {
                         fastaqPathname = fastaqDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta";
                         options.getLog().println("        Writing "+fastaqPathname);
+                        if (options.mergeFastaFiles()) {
+                            options.getReadFileMerger().addReadFile(fastaqPathname, t);
+                        }                        
                         ff.writeFasta(fastaqPathname, options.outputFast5Path() ? fast5Pathname:null);
                         if (options.isBlastingRead()) {
                             addToBlast(fastaqPathname, t);
@@ -234,6 +237,9 @@ public class ReadProcessorRunnable implements Runnable {
                     } else if (options.getReadFormat() == NanoOKOptions.FASTQ) {
                         fastaqPathname = fastaqDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq";
                         options.getLog().println("        Writing "+fastaqPathname);
+                        if (options.mergeFastaFiles()) {
+                            options.getReadFileMerger().addReadFile(fastaqPathname, t);
+                        }
                         ff.writeFastq(fastaqPathname);
                         if (options.isBlastingRead()) {
                             addToBlast(fastaqPathname, t);

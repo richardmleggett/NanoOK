@@ -51,16 +51,27 @@ public class ReadExtractorRunnable implements Runnable {
     public void run() {
         String inputPathname = inDir + File.separator + filename;
         Fast5File inputFile = new Fast5File(options, inputPathname);
-        String outName = new File(inputPathname).getName();
+        //String outName = new File(inputPathname).getName();
+        String filePrefix = ReadProcessorRunnable.getFilePrefixFromPathname(inputPathname);
         
         for (int t=0; t<3; t++) {
             if (options.isProcessingReadType(t)) {
                 FastAQFile ff = inputFile.getFastq(options.getBasecallIndex(), t);
                 if (ff != null) {
                     if (options.getReadFormat() == NanoOKOptions.FASTA) {
-                        ff.writeFasta(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta", options.outputFast5Path() ? inputPathname:null);
+                        //String fastaqPathname = outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta";
+                        String fastaqPathname = outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta";
+                        ff.writeFasta(fastaqPathname, options.outputFast5Path() ? inputPathname:null);
+                        if (options.mergeFastaFiles()) {
+                            options.getReadFileMerger().addReadFile(fastaqPathname, t);
+                        }
                     } else if (options.getReadFormat() == NanoOKOptions.FASTQ) {
-                        ff.writeFastq(outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq");
+                        //String fastaqPathname = outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq";
+                        String fastaqPathname = outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq";
+                        ff.writeFastq(fastaqPathname);
+                        if (options.mergeFastaFiles()) {
+                            options.getReadFileMerger().addReadFile(fastaqPathname, t);
+                        }
                     }
                 }
             }

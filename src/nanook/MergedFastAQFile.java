@@ -36,7 +36,7 @@ public class MergedFastAQFile {
         nSeqs++;
         if (nSeqs == seqsPerFile) {
             System.out.println("Adding new thread...");
-            options.getThreadExecutor().execute(new FastAQMerger(options, mergedFilename, mergeList, fileCounter));
+            options.getThreadExecutor().execute(new FastAQBlastMerger(options, mergedFilename, mergeList, fileCounter));
             mergeList = new ArrayList(); 
             fileCounter++;
             nSeqs = 0;

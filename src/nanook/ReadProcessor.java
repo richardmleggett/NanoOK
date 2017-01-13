@@ -159,6 +159,11 @@ public class ReadProcessor {
         // That's all - wait for all threads to finish
         executor.shutdown();
 
+        if (options.mergeFastaFiles()) {        
+            System.out.println("");
+            options.getReadFileMerger().writeMergedFiles();
+        }        
+        
         //writeProgress();
         System.out.println("");
         System.out.println("");

@@ -169,7 +169,14 @@ public class ReadExtractor {
         }        
 
         writeProgress();
+
         System.out.println("");
+
+        if (options.mergeFastaFiles()) {        
+            System.out.println("");
+            options.getReadFileMerger().writeMergedFiles();
+        }
+        
         System.out.println("");
         System.out.println("DONE");
     }  

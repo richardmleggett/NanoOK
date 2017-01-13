@@ -78,6 +78,7 @@ public class NanoOKOptions implements Serializable {
     private boolean aligningReads = false;
     private boolean parsingReads = false;
     private boolean blastingReads = false;
+    private boolean mergeFastaFiles = false;
     private int runMode = 0;
     private int readFormat = FASTA;
     private int numThreads = 1;
@@ -110,6 +111,7 @@ public class NanoOKOptions implements Serializable {
     private transient BlastHandler[][] blastHandlers = new BlastHandler[3][2];
     private transient ArrayList<String> blastProcesses = new ArrayList<String>();
     private int fileCounterOffset = 0;
+    private ReadFileMerger readFileMerger = new ReadFileMerger(this);
         
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -160,6 +162,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
             System.out.println("    -basecallindex specifies the index of the analysis (default: latest)");
             System.out.println("    -printpath to output FAST5 path in FASTA read header");
+            System.out.println("    -mergereads to generate merged FASTA files in addition to single read files");
             System.out.println("");
             System.out.println("align options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
@@ -346,6 +349,9 @@ public class NanoOKOptions implements Serializable {
                 i++;
             } else if (args[i].equalsIgnoreCase("-keeplogs")) {
                 clearLogsOnStart = false;
+                i++;
+            } else if (args[i].equalsIgnoreCase("-mergereads")) {
+                mergeFastaFiles = true;
                 i++;
             } else {                
                 System.out.println("Unknown parameter: " + args[i]);
@@ -1286,5 +1292,13 @@ public class NanoOKOptions implements Serializable {
     
     public int getFileCounterOffset() {
         return fileCounterOffset;
+    }
+    
+    public boolean mergeFastaFiles() {
+        return mergeFastaFiles;
+    }
+    
+    public ReadFileMerger getReadFileMerger() {
+        return readFileMerger;
     }
 }

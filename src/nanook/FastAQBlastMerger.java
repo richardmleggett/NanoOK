@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-public class FastAQMerger implements Runnable {
+public class FastAQBlastMerger implements Runnable {
     private NanoOKOptions options;
     private ArrayList<String> listOfFiles;
     private String mergedFilePrefix;
     private int fileCounter;
 
-    public FastAQMerger(NanoOKOptions o, String m, ArrayList a, int fc) {
+    public FastAQBlastMerger(NanoOKOptions o, String m, ArrayList a, int fc) {
         options = o;
         mergedFilePrefix = m;
         listOfFiles = a;
