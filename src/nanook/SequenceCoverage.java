@@ -33,6 +33,8 @@ public class SequenceCoverage implements Serializable {
             binSize = 500 * (1 + Math.round(b / 500));   
         }        
 
+        //binSize=50;
+        
         numBins = (int) Math.ceil(genomeSize / (double)binSize);
         
         

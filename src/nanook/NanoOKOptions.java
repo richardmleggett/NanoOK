@@ -111,7 +111,7 @@ public class NanoOKOptions implements Serializable {
     private transient BlastHandler[][] blastHandlers = new BlastHandler[3][2];
     private transient ArrayList<String> blastProcesses = new ArrayList<String>();
     private int fileCounterOffset = 0;
-    private ReadFileMerger readFileMerger = new ReadFileMerger(this);
+    private transient ReadFileMerger readFileMerger = new ReadFileMerger(this);
         
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");

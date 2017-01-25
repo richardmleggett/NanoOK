@@ -165,8 +165,22 @@ public class AlignmentMerger {
                 options.getLog().println("WARNING: hitPos too far from (>"+maximumDistance+") from overallHitEnd ("+overallHitEnd+")");
                 mergeAlignment = false;
             }
-        }        
-
+        }
+        
+        if (overallQueryStart >= 0) {
+            int queryDistanceFromStart = Math.abs(queryPos - overallQueryStart);
+            int hitDistanceFromStart = Math.abs(hitPos - overallHitStart);
+            int difference = Math.abs(queryDistanceFromStart - hitDistanceFromStart);
+            options.getLog().println("queryDistanceFromStart = "+queryDistanceFromStart);
+            options.getLog().println("hitDistanceFromStart = "+hitDistanceFromStart);
+            options.getLog().println("difference = " + difference);
+            
+            if (difference > (queryDistanceFromStart * 0.2)) {
+                options.getLog().println("WARNING: query offset too far from hit offet - extra alignment ignored");
+                mergeAlignment = false;
+            }
+        }
+        
         if (mergeAlignment) {
             // Store alignment size
             if ((overallQueryStart == -1) || (queryPos < overallQueryStart)) {
@@ -306,8 +320,8 @@ public class AlignmentMerger {
                 options.getLog().println("Modifying overallHitEnd = "+overallHitEnd);
             }
 
-            reference.getStatsByType(type).addCoverage(a.getHitStart(), a.getHitAlignmentSize()); // Reference
-        }
+            //reference.getStatsByType(type).addCoverage(a.getHitStart(), a.getHitAlignmentSize()); // Reference
+        }        
     }  
     
     /**

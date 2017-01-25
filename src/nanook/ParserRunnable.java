@@ -101,6 +101,7 @@ public class ParserRunnable implements Runnable
                     merger.addAlignment(a);
                 }
                 AlignmentInfo ais = merger.endMergeAndStoreStats();
+                readReference.getStatsByType(stats.getType()).addCoverage(merger.getOverallHitStart(), merger.getOverallHitEnd()-merger.getOverallHitStart()+1);
                 readReference.getStatsByType(stats.getType()).getAlignmentsTableFile().writeMergedAlignment(stats, file.getName(), merger, ais);
             }
         } catch (Exception e) {

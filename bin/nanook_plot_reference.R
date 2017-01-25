@@ -64,22 +64,26 @@ for (t in 1:3) {
     if (file.exists(data_perfect_cumulative_filename)) {
         cat("Reading", data_perfect_cumulative_filename, "\n");
         data_perfect_cumulative = read.table(data_perfect_cumulative_filename, col.name=c("Size", "n", "Perfect"))
+        cat("Read", nrow(data_perfect_cumulative), "rows\n");
         
-        for (i in 1:length(data_perfect_cumulative$Perfect)) {
-            if (data_perfect_cumulative$Size[i] > maxk) {
-                maxk <- data_perfect_cumulative$Size[i];
-            }
-            if (data_perfect_cumulative$Size[i] > cum_maxk) {
-                if (data_perfect_cumulative$Perfect[i] > 5) {
-                    cum_maxk <- data_perfect_cumulative$Size[i];
+        if (nrow(data_perfect_cumulative) > 0) {
+            for (i in 1:length(data_perfect_cumulative$Perfect)) {
+                if (data_perfect_cumulative$Size[i] > maxk) {
+                    maxk <- data_perfect_cumulative$Size[i];
+                }
+                if (data_perfect_cumulative$Size[i] > cum_maxk) {
+                    if (data_perfect_cumulative$Perfect[i] > 5) {
+                        cum_maxk <- data_perfect_cumulative$Size[i];
+                    }
                 }
             }
         }
     }
 }
+maxk <- maxk + 10;
 cum_maxk <- roundUp(cum_maxk);
-cat("max k ", maxk, "\n");
-cat("cum_max k ", cum_maxk, "\n");
+cat("max k", maxk, "\n");
+cat("cum_max k", cum_maxk, "\n");
 
 
 for (t in 1:3) {
@@ -338,6 +342,8 @@ for (t in 1:3) {
         garbage <- dev.off()
 
         # Plot %reads vs best perfect kmer
+        cat(data_alignments$LongestPerfectKmer);
+        
         hdf <- hist(breaks=seq(0,maxk,by=10), x=data_alignments$LongestPerfectKmer, plot=FALSE, right=FALSE); # bins are 0-9, 10-19, 20-29 etc.
         hdf$density = hdf$counts/sum(hdf$counts)*100
         tdf <- data.frame(Pos=hdf$mids, Counts=hdf$density);
