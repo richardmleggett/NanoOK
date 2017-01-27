@@ -19,6 +19,8 @@ RUN cd /usr ; git clone https://github.com/TGAC/NanoOK
 ENV NANOOK_DIR="/usr/NanoOK"
 RUN echo "export PATH=/usr/NanoOK/bin:${PATH}" >> ~/.bashrc
 RUN Rscript -e "install.packages('ggplot2', repos='https://cran.ma.imperial.ac.uk/')"
+RUN Rscript -e "install.packages('ggmap’, repos='https://cran.ma.imperial.ac.uk/')"
+RUN Rscript -e "install.packages('plyr’, repos='https://cran.ma.imperial.ac.uk/')"
 RUN Rscript -e "install.packages('scales', repos='https://cran.ma.imperial.ac.uk/')"
 RUN Rscript -e "install.packages('gridExtra', repos='https://cran.ma.imperial.ac.uk/')"
 RUN Rscript -e "install.packages('reshape', repos='https://cran.ma.imperial.ac.uk/')"
