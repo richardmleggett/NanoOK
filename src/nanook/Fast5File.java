@@ -25,8 +25,9 @@ public class Fast5File {
     private HashSet<String> datasets = new HashSet();
     private NanoOKLog log;
     private boolean oldFormat = false;
-    private int highestIndex = -1;
     private boolean isCorrupt = false;
+    private int highestBasecall1D = -1;
+    private int highestBasecall2D = -1;
     
     /**
      * Constructor
@@ -46,8 +47,6 @@ public class Fast5File {
         boolean[] typesAvailable = new boolean[3];
         ProcessLogger pl = new ProcessLogger();
         ArrayList<String> response;
-        int highestBasecall1D = -1;
-        int highestBasecall2D = -1;
        
         log.println("Indexing file "+filename);
 
@@ -87,19 +86,17 @@ public class Fast5File {
             log.println("Error: couldn't find Basecall_1D or Basecall_2D in "+filename);
         } else if ((highestBasecall1D == -1) && (highestBasecall2D >= 0)) {
             oldFormat = true;
-            highestIndex = highestBasecall2D;
+            highestBasecall1D = highestBasecall2D;
         } else {
             if ((highestBasecall1D >=0) && (highestBasecall2D >=0)) {
                 if (highestBasecall1D != highestBasecall2D) {
-                    isCorrupt = true;
-                    log.println("Error: Basecall_1D and Basecall_2D indicies not the same in "+filename);
+                    //isCorrupt = true;
+                    log.println("Warning: Basecall_1D and Basecall_2D highest indicies not the same in "+filename);
                 }
             }
-
-            highestIndex = highestBasecall1D;
         }
 
-        log.println("    Highest1D: "+highestBasecall1D+" Highest2D: "+highestBasecall2D+" HighestIndex: "+highestIndex);
+        log.println("    Highest1D: "+highestBasecall1D+" Highest2D: "+highestBasecall2D);
     }
     
     /**
@@ -187,8 +184,18 @@ public class Fast5File {
         
         if (!isCorrupt) {
             if (index == -1) {
-                index = highestIndex;
+                if (type == NanoOKOptions.TYPE_2D) {
+                    index = highestBasecall2D;
+                } else {
+                    index = highestBasecall1D;
+                }
             } else {
+                int highestIndex = highestBasecall2D;
+                
+                if (type != NanoOKOptions.TYPE_2D) {
+                    highestIndex = highestBasecall1D;
+                } 
+                
                 if (index > highestIndex) {
                     log.println("Error: index higher than highest Basecall available");
                     isCorrupt = true;
