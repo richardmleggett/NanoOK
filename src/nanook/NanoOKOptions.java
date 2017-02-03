@@ -1246,6 +1246,9 @@ public class NanoOKOptions implements Serializable {
                         } else if (tokens[0].compareToIgnoreCase("Reference") == 0) {
                             referenceFile = tokens[1];
                             System.out.println("  Reference "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("Sample") == 0) {
+                            sampleDirectory = tokens[1];
+                            System.out.println("  Sample "+tokens[1]);
                         } else if (tokens[0].compareToIgnoreCase("Analysis") == 0) {
                             parsingReads = true;
                             System.out.println("  Analysis "+tokens[1]);
