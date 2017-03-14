@@ -1,8 +1,8 @@
 /*
  * Program: NanoOK
- * Author:  Richard M. Leggett
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
  * 
- * Copyright 2015 The Genome Analysis Centre (TGAC)
+ * Copyright 2015-17 Earlham Institute
  */
 
 package nanook;
@@ -196,15 +196,15 @@ public class ReadAligner {
                 processDirectory(options.getReadDir() + File.separator + "pass",
                                  options.getAlignerDir() + File.separator + "pass",
                                  options.getLogsDir() + File.separator + options.getAligner() + File.separator + "pass",
-                                 options.processSubdirs(),
-                                 options.processSubdirs() ? false:true);
+                                 options.isBarcoded(),
+                                 options.isBarcoded() ? false:true);
             }
             
             if (options.isProcessingFailReads()) {
                 processDirectory(options.getReadDir() + File.separator + "fail",
                                  options.getAlignerDir() + File.separator + "fail",
                                  options.getLogsDir() + File.separator + options.getAligner() + File.separator + "fail",
-                                 options.processSubdirs(),
+                                 options.isBarcoded(),
                                  true);
             }
         } else {

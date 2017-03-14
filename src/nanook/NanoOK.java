@@ -1,8 +1,8 @@
 /*
  * Program: NanoOK
- * Author:  Richard M. Leggett
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
  * 
- * Copyright 2015 The Genome Analysis Centre (TGAC)
+ * Copyright 2015-17 Earlham Institute
  */
 
 package nanook;
@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v1.11";
+    public final static String VERSION_STRING = "v1.14";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -343,17 +343,10 @@ public class NanoOK {
         dw.watch();
     }
     
-    private static void scan(NanoOKOptions options) throws InterruptedException {
+    private static void process(NanoOKOptions options) throws InterruptedException {
         ReadProcessor rp = new ReadProcessor(options);
-        options.makeDirectories();
-        
+        options.makeDirectories();        
         rp.process();
-
-        //FileWatcher fw = new FileWatcher(options.getFast5Dir());
-        //while (true) {
-        //    fw.scan();
-        //    Thread.sleep(2000);
-        //}
     }    
     
     private static void memoryReport() {
@@ -398,18 +391,21 @@ public class NanoOK {
         
         
         if (options.getRunMode() == NanoOKOptions.MODE_EXTRACT) {
-            extract(options);
+            //extract(options);
+            process(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_ALIGN) {
-            align(options);
+            //align(options);
+            process(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_ANALYSE) {
             options.checkAnalysisDirectoryStructure();
             analyse(options);
+            //scan(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_COMPARE) {
             compare(options);
         } else if (options.getRunMode() == NanoOKOptions.MODE_WATCH) {
             watch(options);
-        } else if (options.getRunMode() == NanoOKOptions.MODE_SCAN) {
-            scan(options);
+        } else if (options.getRunMode() == NanoOKOptions.MODE_PROCESS) {
+            process(options);
         }
         
         //memoryReport();

@@ -1,8 +1,8 @@
 /*
  * Program: NanoOK
- * Author:  Richard M. Leggett
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
  * 
- * Copyright 2015 The Genome Analysis Centre (TGAC)
+ * Copyright 2015-17 Earlham Institute
  */
 
 package nanook;
@@ -33,6 +33,9 @@ public class ReadExtractor {
     public ReadExtractor(NanoOKOptions o) {    
         options = o;
 
+        System.out.println("ERROR: ReadExtractor class deprecated.");
+        System.exit(1);
+        
         //executor = Executors.newFixedThreadPool(options.getNumberOfThreads());
         executor = new ThreadPoolExecutor(options.getNumberOfThreads(), options.getNumberOfThreads(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
@@ -147,14 +150,14 @@ public class ReadExtractor {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "pass",
                                  options.getReadDir() + File.separator + "pass",
-                                 options.processSubdirs(),
-                                 options.processSubdirs() ? false:true);
+                                 options.isBarcoded(),
+                                 options.isBarcoded() ? false:true);
             }
             
             if (options.isProcessingFailReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "fail",
                                  options.getReadDir() + File.separator + "fail",
-                                 options.processSubdirs(),
+                                 options.isBarcoded(),
                                  true);
             }
         } else {

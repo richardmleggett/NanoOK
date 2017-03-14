@@ -1,8 +1,8 @@
 /*
  * Program: NanoOK
- * Author:  Richard M. Leggett
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
  * 
- * Copyright 2015 The Genome Analysis Centre (TGAC)
+ * Copyright 2015-17 Earlham Institute
  */
 
 package nanook;
@@ -95,7 +95,7 @@ public class ReadSet {
     /**
      * Gather length statistics on reads and parse alignments
      */
-    public int processReads() throws InterruptedException {
+    public int processReadsOld() throws InterruptedException {
         AlignmentFileParser parser = options.getParser();
         String[] readDirs = new String[MAX_READ_DIRS];
         String[] alignerDirs = new String[MAX_READ_DIRS];
@@ -107,57 +107,40 @@ public class ReadSet {
         
         nFastaFiles=0;
 
-        typeString = options.getTypeFromInt(type);
-                
         stats.openLengthsFile();
-
+        
         if (options.isNewStyleReadDir()) {
-            if (options.isProcessingPassReads()) {                
-                if (options.processSubdirs()) {
-                        File inputDir = new File(options.getReadDir() + File.separator + "pass");
-                        File[] listOfFiles = inputDir.listFiles();
-                        for (File file : listOfFiles) {
-                            if (file.isDirectory()) {
-                                if (nDirs == MAX_READ_DIRS) {
-                                    System.out.println("Error: too many directories.\n");
-                                    System.exit(1);
+            for (int pf=NanoOKOptions.READTYPE_PASS; pf<=NanoOKOptions.READTYPE_FAIL; pf++) {
+                String passOrFail="";
+
+                if ((pf == NanoOKOptions.READTYPE_PASS) && (options.isProcessingPassReads())) {
+                    passOrFail="pass";
+                } else if ((pf == NanoOKOptions.READTYPE_FAIL) && (options.isProcessingFailReads())) {
+                    passOrFail="fail";
+                }
+
+                if (passOrFail != "") {
+                    if (options.isBarcoded()) {
+                            File inputDir = new File(options.getReadDir() + File.separator + passOrFail);
+                            File[] listOfFiles = inputDir.listFiles();
+                            for (File file : listOfFiles) {
+                                if (file.isDirectory()) {
+                                    if (nDirs == MAX_READ_DIRS) {
+                                        System.out.println("Error: too many directories.\n");
+                                        System.exit(1);
+                                    }
+                                    readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail + File.separator + file.getName();
+                                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail + File.separator + file.getName();
+                                    readTypes[nDirs++] = pf;
                                 }
-                                readDirs[nDirs] = options.getReadDir() + File.separator + "pass" + File.separator + file.getName();
-                                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "pass" + File.separator + file.getName();
-                                readTypes[nDirs++] = NanoOKOptions.READTYPE_PASS;
                             }
-                        }
-                } else {                
-                    readDirs[nDirs] = options.getReadDir() + File.separator + "pass";
-                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "pass";
-                    readTypes[nDirs++] = NanoOKOptions.READTYPE_PASS;
-                }
-            }
-            
-            if (options.isProcessingFailReads()) {
-                if (options.processSubdirs()) {
-                    File inputDir = new File(options.getReadDir() + File.separator + "fail");
-                    File[] listOfFiles = inputDir.listFiles();
-                    for (File file : listOfFiles) {
-                        if (file.isDirectory() && 
-                            (!file.getName().equals("2D")) &&
-                            (!file.getName().equals("Template")) &&
-                            (!file.getName().equals("Complement"))) {
-                            if (nDirs == MAX_READ_DIRS) {
-                                System.out.println("Error: too many directories.\n");
-                                System.exit(1);
-                            }
-                            readDirs[nDirs] = options.getReadDir() + File.separator + "fail" + File.separator + file.getName();
-                            alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "fail" + File.separator + file.getName();
-                            readTypes[nDirs++] = NanoOKOptions.READTYPE_FAIL;
-                        }
+                    } else {                
+                        readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail;
+                        alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail;
+                        readTypes[nDirs++] = pf;
                     }
+                    
                 }
-                
-                readDirs[nDirs] = options.getReadDir() + File.separator + "fail";
-                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + "fail";
-                readTypes[nDirs] = NanoOKOptions.READTYPE_FAIL;
-                nDirs++;
             }
         } else {
             readDirs[nDirs] = options.getReadDir();
@@ -202,6 +185,8 @@ public class ReadSet {
                 }
             }
         }
+
+
         
         // That's all - wait for all threads to finish
         queryExecutor.shutdown();
@@ -218,6 +203,136 @@ public class ReadSet {
         stats.calculateStats();    
         
         return nFastaFiles;
+    }
+    
+    /**
+     * Gather length statistics on reads and parse alignments
+     */
+    public int processReadsBatch() throws InterruptedException {
+        AlignmentFileParser parser = options.getParser();
+        String[] readDirs = new String[MAX_READ_DIRS];
+        String[] alignerDirs = new String[MAX_READ_DIRS];
+        int readTypes[] = new int[MAX_READ_DIRS];
+        int nDirs = 0;
+        int maxReads = options.getMaxReads();
+        String outputFilename = options.getAnalysisDir() + File.separator + "Unaligned" + File.separator + options.getTypeFromInt(type) + "_nonaligned.txt";
+        AlignmentsTableFile nonAlignedSummary = new AlignmentsTableFile(outputFilename);
+        
+        nFastaFiles=0;
+
+        typeString = options.getTypeFromInt(type);
+                
+        stats.openLengthsFile();
+
+        for (int pf=NanoOKOptions.READTYPE_PASS; pf<=NanoOKOptions.READTYPE_FAIL; pf++) {
+            String passOrFail="";
+
+            if ((pf == NanoOKOptions.READTYPE_PASS) && (options.isProcessingPassReads())) {
+                passOrFail="pass";
+            } else if ((pf == NanoOKOptions.READTYPE_FAIL) && (options.isProcessingFailReads())) {
+                passOrFail="fail";
+            }
+
+            if (passOrFail != "") {
+                if (options.isBarcoded()) {
+                        File inputDir = new File(options.getReadDir() + File.separator + passOrFail);
+                        File[] listOfFiles = inputDir.listFiles();
+                        for (File file : listOfFiles) {
+                            if (file.isDirectory()) {
+                                if (nDirs == MAX_READ_DIRS) {
+                                    System.out.println("Error: too many directories.\n");
+                                    System.exit(1);
+                                }
+                                readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail + File.separator + file.getName();
+                                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail + File.separator + file.getName();
+                                readTypes[nDirs++] = pf;
+                            }
+                        }
+                } else {                
+                    readDirs[nDirs] = options.getReadDir() + File.separator + typeString + File.separator + passOrFail;
+                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + typeString + File.separator + passOrFail;
+                    readTypes[nDirs++] = pf;
+                }
+
+            }
+        }
+                
+        // Dirs should be e.g.
+        // inputDir = sample/fasta/Template/pass
+        // alignDir = sample/last/Template/pass
+        for (int dirIndex=0; dirIndex<nDirs; dirIndex++) {        
+            String inputDir = readDirs[dirIndex];
+            String alignDir = alignerDirs[dirIndex];
+            File folder = new File(inputDir);
+            File[] listOfFilesTop = folder.listFiles();
+            
+            options.getLog().println("Input: "+inputDir);
+            options.getLog().println("Align: "+alignDir);
+            
+            // Now list of files should contain batch_XXX directories
+            if (listOfFilesTop == null) {
+                System.out.println("");
+                System.out.println("Directory "+inputDir+" doesn't exist");
+            } else if (listOfFilesTop.length <= 0) {
+                System.out.println("");
+                System.out.println("Directory "+inputDir+" empty");
+            } else {                
+                for (File topLevelFile : listOfFilesTop) {
+                    options.getLog().println("  Got dir "+ topLevelFile.getName());
+                    if (topLevelFile.isDirectory()) {
+                        // Now go through reads in directory
+                        File[] listOfFiles = topLevelFile.listFiles();
+                        for (File file : listOfFiles) {
+                            if (file.isFile()) {
+                                if (isValidReadExtension(file.getName())) {
+                                    String alignmentFilename = alignDir + File.separator + topLevelFile.getName() + File.separator + file.getName() + parser.getAlignmentFileExtension();
+                                    //System.out.println(alignmentFilename);
+                                    //options.getLog().println("File: " + alignmentFilename);
+                                    if (new File(alignmentFilename).exists()) {
+                                        queryExecutor.execute(new ParserRunnable(options, stats, file.getAbsolutePath(), alignmentFilename, type, readTypes[dirIndex], nonAlignedSummary));
+                                        writeProgress(queryExecutor);
+
+                                        nFastaFiles++;
+                                        if ((maxReads > 0) && (nFastaFiles >= maxReads)) {
+                                             break;
+                                        }
+
+                                    } else {
+                                        System.out.println("Error: Read ignored, can't find alignment "+alignmentFilename);
+                                    } 
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        
+        // That's all - wait for all threads to finish
+        queryExecutor.shutdown();
+        while (!queryExecutor.isTerminated()) {
+            writeProgress(queryExecutor);
+            Thread.sleep(100);
+        }        
+
+        writeProgress(queryExecutor);
+        System.out.println("");
+        
+        stats.closeLengthsFile();
+        stats.writeSummaryFile();        
+        stats.calculateStats();    
+        
+        return nFastaFiles;
+    }    
+    
+    public int processReads() throws InterruptedException {
+        if (options.usingBatchDirs()) {
+            return processReadsBatch();
+        } else {
+            return processReadsOld();
+        }
     }
     
     /**

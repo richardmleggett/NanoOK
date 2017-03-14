@@ -1,8 +1,8 @@
 /*
  * Program: NanoOK
- * Author:  Richard M. Leggett
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
  * 
- * Copyright 2015 The Genome Analysis Centre (TGAC)
+ * Copyright 2015-17 Earlham Institute
  */
 
 package nanook;
@@ -30,7 +30,7 @@ public class NanoOKOptions implements Serializable {
     public final static int MODE_ANALYSE = 3;
     public final static int MODE_COMPARE = 4;
     public final static int MODE_WATCH = 5;
-    public final static int MODE_SCAN = 6;
+    public final static int MODE_PROCESS = 6;
     public final static int FASTA = 1;
     public final static int FASTQ = 2;
     public final static int TYPE_TEMPLATE = 0;
@@ -90,8 +90,9 @@ public class NanoOKOptions implements Serializable {
     private String readsDir = "fast5";
     private int returnValue = 0;
     private int basecallIndex = -1;
-    private boolean outputFast5Path = false;
-    private boolean processSubdirs = false;
+    private boolean outputFast5Path = true;
+    private boolean usingBarcodes = false;
+    private boolean usingBatchDirs = false;
     private int readsPerBlast = 500;
     private boolean clearLogsOnStart = true;
     private transient WatcherLog watcherReadLog = new WatcherLog(this);
@@ -151,7 +152,7 @@ public class NanoOKOptions implements Serializable {
         
         if (args.length <= 1) {
             System.out.println("");
-            System.out.println("Syntax nanook <extract|align|analyse|compare> [options]");
+            System.out.println("Syntax nanook <extract|align|analyse|compare|process> [options]");
             System.out.println("");
             System.out.println("extract options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
@@ -161,7 +162,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -a|-fasta specifies FASTA file extraction (default)");
             System.out.println("    -q|-fastq specifies FASTQ file extraction");
             System.out.println("    -basecallindex specifies the index of the analysis (default: latest)");
-            System.out.println("    -printpath to output FAST5 path in FASTA read header");
+            //System.out.println("    -printpath to output FAST5 path in FASTA read header");
             System.out.println("    -mergereads to generate merged FASTA files in addition to single read files");
             System.out.println("");
             System.out.println("align options:");
@@ -183,17 +184,26 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -o|-outputdir <directory> specifies an output directory");
             System.out.println("    -type <2d|template|complement> specifies an output directory");
             System.out.println("");
-            System.out.println("Other options:");
-            System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
-            System.out.println("    -log <filename> enables debug logging to file");
+            System.out.println("process options:");
+            System.out.println("    -process <file> specifies a process file");
+            System.out.println("");
+            System.out.println("Sample type options:");
+            System.out.println("    -barcoding if reads are barcoded and sorted into subdirs");
+            System.out.println("    -batchdirs if using MinKNOW 1.4.2 or above with separate batch_ directories");
+            System.out.println("");
+            System.out.println("Read type options:");
             System.out.println("    -passonly to analyse only pass reads");
             System.out.println("    -failonly to analyse only fail reads");            
             System.out.println("    -2donly to analyse only 2D reads"); 
             System.out.println("    -templateonly to analyse just Template reads"); 
             System.out.println("    -complementonly to analyse just Complement reads"); 
-            System.out.println("    -subdirs|-barcoding to process subdirs of pass/fail (e.g. for barcodes)");
             System.out.println("");
-            System.out.println("Comments/bugs to: richard.leggett@tgac.ac.uk");
+            System.out.println("Other options:");
+            System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
+            System.out.println("    -log <filename> enables debug logging to file");
+            System.out.println("");
+            System.out.println("Comments/bugs to: richard.leggett@earlham.ac.uk");
+            System.out.println("Follow NanoOK on twitter: @NanoOK_Software");
             System.out.println("");
             System.exit(0);
         }
@@ -204,16 +214,34 @@ public class NanoOKOptions implements Serializable {
                         
         if (args[i].equals("extract")) {
             runMode = MODE_EXTRACT;
+            extractingReads = true;
+            aligningReads = false;
+            parsingReads = false;
+            blastingReads = false;
+            mergeFastaFiles = false;
+            fileWatcherTimeout = 2;
         } else if (args[i].equals("align")) {
             runMode = MODE_ALIGN;
+            extractingReads = false;
+            aligningReads = true;
+            parsingReads = false;
+            blastingReads = false;
+            mergeFastaFiles = false;
+            fileWatcherTimeout = 2;
         } else if (args[i].equals("analyse") || args[i].equals("analyze")) {
             runMode = MODE_ANALYSE;
+            extractingReads = false;
+            aligningReads = false;
+            parsingReads = true;
+            blastingReads = false;
+            mergeFastaFiles = false;
+            fileWatcherTimeout = 2;
         } else if (args[i].equals("compare")) {
             runMode = MODE_COMPARE;
         } else if (args[i].equals("watch")) {
             runMode = MODE_WATCH;
-        } else if (args[i].equals("scan")) {
-            runMode = MODE_SCAN;
+        } else if ((args[i].equals("process")) || (args[i].equals("scan"))) {
+            runMode = MODE_PROCESS;
         } else {
             System.out.println("Unknonwn mode " + args[i] + " - must be extract, align or analyse");
             System.exit(1);
@@ -224,6 +252,9 @@ public class NanoOKOptions implements Serializable {
             if (args[i].equalsIgnoreCase("-coveragebin")) {
                 coverageBinSize = Integer.parseInt(args[i+1]);
                 i+=2;
+            } else if (args[i].equalsIgnoreCase("-batchdirs")) {
+                usingBatchDirs = true;
+                i++;
             } else if (args[i].equalsIgnoreCase("-timeout")) {
                 fileWatcherTimeout = Integer.parseInt(args[i+1]);
                 i+=2;
@@ -345,7 +376,7 @@ public class NanoOKOptions implements Serializable {
                 numThreads = Integer.parseInt(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-subdirs") || args[i].equalsIgnoreCase("-barcoding")) {
-                processSubdirs = true;
+                usingBarcodes = true;
                 i++;
             } else if (args[i].equalsIgnoreCase("-keeplogs")) {
                 clearLogsOnStart = false;
@@ -370,9 +401,14 @@ public class NanoOKOptions implements Serializable {
             }
         }
         
-        if (runMode == MODE_SCAN) {
+        if (runMode == MODE_PROCESS) {
             if (processFile == null) {
                 System.out.println("Error: you must specify a process file");
+                System.exit(1);
+            }
+            
+            if (usingBarcodes) {
+                System.out.println("Error: barcodes not yet supported by process mode");
                 System.exit(1);
             }
         }
@@ -898,8 +934,8 @@ public class NanoOKOptions implements Serializable {
         return logFile;
     }
     
-    public boolean processSubdirs() {
-        return processSubdirs;
+    public boolean isBarcoded() {
+        return usingBarcodes;
     }
     
     /**
@@ -1146,63 +1182,66 @@ public class NanoOKOptions implements Serializable {
         
         if (this.isExtractingReads()) {
             checkAndMakeDirectory(this.getReadDir());
-            checkAndMakeDirectory(this.getReadDir() + File.separator + "merged");
-            if (this.isNewStyleDir()) {
-                for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
-                    String pf = NanoOKOptions.getPassFailFromInt(i);
-                    checkAndMakeDirectoryWithChildren(this.getReadDir() + File.separator + pf);
-                    if (this.processSubdirs()) {
-                        File inputDir = new File(this.getFast5Dir());
-                        File[] listOfFiles = inputDir.listFiles();
-                        for (File file : listOfFiles) {
-                            if (file.isDirectory()) {
-                                checkAndMakeDirectoryWithChildren(this.getReadDir() + File.separator + file.getName());
-                            }
-                        }
-                    }
-                }
-            }                
+            
+            if (this.isBlastingRead()) {
+                checkAndMakeDirectory(this.getReadDir() + "_chunks");
+            }
+            //if (this.isNewStyleDir()) {
+            //    for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
+            //        String pf = NanoOKOptions.getPassFailFromInt(i);
+            //        checkAndMakeDirectoryWithChildren(this.getReadDir() + File.separator + pf);
+            //        if (this.processSubdirs()) {
+            //            File inputDir = new File(this.getFast5Dir());
+            //            File[] listOfFiles = inputDir.listFiles();
+            //            for (File file : listOfFiles) {
+            //                if (file.isDirectory()) {
+            //                    checkAndMakeDirectoryWithChildren(this.getReadDir() + File.separator + file.getName());
+            //                }
+            //            }
+            //        }
+            //    }
+            //}                
         }
         
         if (this.isAligningRead()) {
             checkAndMakeDirectory(this.getAlignerDir());
             checkAndMakeDirectory(this.getLogsDir() + File.separator + this.getAligner());
-            if (this.isNewStyleReadDir()) {
-                for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
-                    String pf = NanoOKOptions.getPassFailFromInt(i);
-                    checkAndMakeDirectoryWithChildren(this.getAlignerDir() + File.separator + pf);
-                    checkAndMakeDirectoryWithChildren(this.getLogsDir() + File.separator + this.getAligner() + File.separator + pf);
-                    if (this.processSubdirs()) {
-                        File inputDir = new File(this.getReadDir());
-                        File[] listOfFiles = inputDir.listFiles();
-                        for (File file : listOfFiles) {
-                            if (file.isDirectory()) {
-                                checkAndMakeDirectoryWithChildren(this.getAlignerDir() + File.separator + file.getName());
-                                checkAndMakeDirectoryWithChildren(this.getLogsDir() + File.separator + this.getAligner() + File.separator + file.getName());
-                            }
-                        }
-                    }
-                }
-            }
+            //if (this.isNewStyleReadDir()) {
+            //    for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
+            //        String pf = NanoOKOptions.getPassFailFromInt(i);
+            //        checkAndMakeDirectoryWithChildren(this.getAlignerDir() + File.separator + pf);
+            //        checkAndMakeDirectoryWithChildren(this.getLogsDir() + File.separator + this.getAligner() + File.separator + pf);
+            //        if (this.processSubdirs()) {
+            //            File inputDir = new File(this.getReadDir());
+            //            File[] listOfFiles = inputDir.listFiles();
+            //            for (File file : listOfFiles) {
+            //                if (file.isDirectory()) {
+            //                    checkAndMakeDirectoryWithChildren(this.getAlignerDir() + File.separator + file.getName());
+            //                    checkAndMakeDirectoryWithChildren(this.getLogsDir() + File.separator + this.getAligner() + File.separator + file.getName());
+            //                }
+            //            }
+            //       }
+            //    }
+            //}
         }
      
         if (this.isParsingRead()) {
             checkAndMakeDirectory(this.getParserDir());
-            if (this.isNewStyleReadDir()) {
-                for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
-                    String pf = NanoOKOptions.getPassFailFromInt(i);
-                    checkAndMakeDirectoryWithChildren(this.getParserDir() + File.separator + pf);
-                    if (this.processSubdirs()) {
-                        File inputDir = new File(this.getReadDir());
-                        File[] listOfFiles = inputDir.listFiles();
-                        for (File file : listOfFiles) {
-                            if (file.isDirectory()) {
-                                checkAndMakeDirectoryWithChildren(this.getParserDir() + File.separator + file.getName());
-                            }
-                        }
-                    }
-                }
-            }                        
+            //if (this.isNewStyleReadDir()) {
+            //    for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
+            //        String pf = NanoOKOptions.getPassFailFromInt(i);
+            //        checkAndMakeDirectoryWithChildren(this.getParserDir() + File.separator + pf);
+            //        if (this.processSubdirs()) {
+            //            File inputDir = new File(this.getReadDir());
+            //            File[] listOfFiles = inputDir.listFiles();
+            //            for (File file : listOfFiles) {
+            //                if (file.isDirectory()) {
+            //                    checkAndMakeDirectoryWithChildren(this.getParserDir() + File.separator + file.getName());
+            //                }
+            //            }
+            //        }
+            //    }
+            //}                        
         }
         
         if (this.isBlastingRead()) {
@@ -1261,7 +1300,7 @@ public class NanoOKOptions implements Serializable {
                             System.out.println("  Blast "+tokens[1]);
                         } else if (tokens[0].compareToIgnoreCase("ReadsPerBlast") == 0) {
                             readsPerBlast = Integer.parseInt(tokens[1]);
-                            System.out.println("   ReadsPerBlast "+readsPerBlast);
+                            System.out.println("  ReadsPerBlast "+readsPerBlast);
                         } else if (!tokens[0].startsWith("#")) {
                             System.out.println("Unknown token "+tokens[0]);
                         } 
@@ -1303,5 +1342,9 @@ public class NanoOKOptions implements Serializable {
     
     public ReadFileMerger getReadFileMerger() {
         return readFileMerger;
+    }
+    
+    public boolean usingBatchDirs() {
+        return usingBatchDirs;
     }
 }

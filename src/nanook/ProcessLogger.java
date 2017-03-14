@@ -56,6 +56,13 @@ public class ProcessLogger {
         return outputLines;
     }    
 
+    public void runCommandToLog(String[] command, NanoOKLog log) {
+        ArrayList<String> response = getCommandOutput(command, true, true);
+        for (int i=0; i<response.size(); i++) {
+            log.println(response.get(i));
+        }        
+    }    
+    
     public void runCommand(String[] command) {
         ArrayList<String> response = getCommandOutput(command, true, true);
         for (int i=0; i<response.size(); i++) {

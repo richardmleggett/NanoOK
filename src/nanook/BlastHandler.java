@@ -1,3 +1,10 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
+ * 
+ * Copyright 2015-17 Earlham Institute
+ */
+
 package nanook;
 
 import java.io.BufferedReader;
@@ -21,18 +28,73 @@ public class BlastHandler {
         type = t;
         passfail = pf;
         if (options.getFileCounterOffset() > 0) {
-            if (type == NanoOKOptions.TYPE_TEMPLATE) {
-                if (pf == NanoOKOptions.READTYPE_PASS) {
-                    fileCounter = 98; 
-                } else if (pf == NanoOKOptions.READTYPE_FAIL) {
-                    fileCounter = 138;
-                } else {
-                    System.out.println("Error!");
-                    System.exit(1);
-                }
-            }
+            fileCounter = options.getFileCounterOffset();
             System.out.println("File offset "+fileCounter);
         }        
+    }
+    
+    private void writeMeganFile() {
+        ArrayList<String> blastProcesses = options.getBlastProcesses();
+        String meganDir = options.getSampleDirectory() + File.separator + "megan";
+        File f = new File(meganDir);
+        
+        if (!f.exists()) {
+            f.mkdir();
+        }
+        
+        for (int i=0; i<blastProcesses.size(); i++) {
+            String[] params = blastProcesses.get(i).split(",");
+            if (params.length == 5) {
+                String blastName = params[0];
+                String blastTool = params[1];
+                String blastDb = params[2];
+                String memory = params[3];
+                String queue = params[4];
+                String cmdPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".cmds";
+                String meganPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".megan";
+                String slurmPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".slurm.sh";
+                String slurmLogname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".slurm.log";
+                
+                try {
+                    options.getLog().println("Writing MEGAN command file " + cmdPathname);
+                    PrintWriter pw = new PrintWriter(new FileWriter(cmdPathname));
+                    pw.println("setprop MaxNumberCores=4;");
+                    String blastFileString="";
+                    String fastaFileString="";
+                    
+                    for (int fc=0; fc<=fileCounter; fc++) {
+                        String fileName = "all_" + NanoOKOptions.getTypeFromInt(type) + "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" +  Integer.toString(fc);
+                        String fastaPathname = options.getReadDir() + "_chunks" + File.separator + fileName + (options.getReadFormat() == NanoOKOptions.FASTA ? ".fasta":".fastq");
+                        String blastPathname = options.getSampleDirectory() + File.separator +
+                                                 blastTool + "_" + blastName + File.separator + 
+                                                 fileName + "_" + blastTool + "_" + blastName + ".txt";
+                        if (blastFileString != "") {
+                            blastFileString += ",";
+                            fastaFileString += ",";
+                        }
+                        fastaFileString = fastaFileString + "'" + fastaPathname + "'";
+                        blastFileString = blastFileString + "'" + blastPathname + "'";
+                    }
+                    
+                    pw.print("import blastFile="+blastFileString+" fastaFile="+fastaFileString +" meganFile="+meganPathname);
+                    pw.println(" maxMatches=100 maxExpected=0.001 minSupport=1 minComplexity=0;");
+                    pw.println("quit;");
+                    pw.close();
+                    
+                    pw = new PrintWriter(new FileWriter(slurmPathname));
+                    pw.print("slurmit -p TempProject4 -c 4 -o " + slurmLogname + " -m \"8G\" \"source MEGAN-5.11.3 ; ");
+                    pw.println("xvfb-run -d MEGAN -g -c " + cmdPathname + " -L /tgac/workarea/group-si/BAMBI_Pt1/megan_support/MEGAN5-academic-license.txt\"");
+                    pw.close();
+                } catch (Exception e) {
+                    System.out.println("writeMeganFile exception");
+                    e.printStackTrace();
+                }
+            }
+        }
     }
     
     private void runBlasts(String inputPathname) {
@@ -75,14 +137,14 @@ public class BlastHandler {
                     pw.write(blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue 0.001 -show_gis -out " + outputBlast + " -outfmt "+formatString);
                     pw.close();
 
-                    System.out.println("Submitting blast command file to SLURM "+commandFile);
+                    options.getLog().println("Submitting blast command file to SLURM "+commandFile);
                     ProcessLogger pl = new ProcessLogger();
                     String[] commands = {"slurmit",
                                          "-o", logFile,
                                          "-p", queue,
                                          "-m", memory,
                                          "sh "+commandFile};
-                    pl.runCommand(commands);            
+                    pl.runCommandToLog(commands, options.getLog());            
                 } catch (IOException e) {
                     System.out.println("runBlast exception");
                     e.printStackTrace();
@@ -94,13 +156,13 @@ public class BlastHandler {
     }    
     
     private String mergeInputFiles() {
-        String mergedPathname = options.getReadDir() + File.separator + 
-                                "merged" + File.separator + 
+        String mergedPathname = options.getReadDir() + 
+                                "_chunks" + File.separator + 
                                 "all_" + NanoOKOptions.getTypeFromInt(type) + "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + 
                                 Integer.toString(fileCounter) + 
                                 (options.getReadFormat() == NanoOKOptions.FASTA ? ".fasta":".fastq");
 
-        System.out.println("Writing merged file "+mergedPathname);
+       options.getLog().println("Writing merged file "+mergedPathname);
         
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(mergedPathname));
@@ -125,9 +187,10 @@ public class BlastHandler {
         mergeList.add(readFilename);
         nSeqs++;
         if (nSeqs == options.getReadsPerBlast()) {
-            System.out.println("Merging files (nSeqs = "+nSeqs+")");
+            options.getLog().println("Merging files (nSeqs = "+nSeqs+")");
             String mergedPathname = mergeInputFiles();
             runBlasts(mergedPathname);
+            writeMeganFile();
             
             //options.getThreadExecutor().execute(new FastAQMerger(options, mergedFilename, mergeList, fileCounter));
             mergeList = new ArrayList(); 

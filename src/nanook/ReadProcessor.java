@@ -1,8 +1,8 @@
 /*
  * Program: NanoOK
- * Author:  Richard M. Leggett
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
  * 
- * Copyright 2015 The Genome Analysis Centre (TGAC)
+ * Copyright 2015-17 Earlham Institute
  */
 
 package nanook;
@@ -71,47 +71,30 @@ public class ReadProcessor {
      * @param inputDirName input directory name
      * @param outputDirName output directory name
      */
-    private void processDirectory(String inputDirName, String outputDirName, boolean allowSubdir, boolean processThisDir) {
-        File f = new File(outputDirName);
-        
+    private void processDirectory(String inputDirName, boolean allowSubdir, boolean processThisDir) {        
         options.getLog().println("Processing directory");
         options.getLog().println("Input dir name: "+inputDirName);
-        options.getLog().println("Output dir name: "+outputDirName);
         options.getLog().println("allowSubdir: "+allowSubdir);        
         options.getLog().println("processThisDir: "+processThisDir);
-                
-        // Make directory
-        if (! f.exists()) {
-            f.mkdir();
-        }
-        
-        if (processThisDir) {
-            // Make output Template, Complement and 2D directories
-            for (int t=0; t<3; t++) {
-                if (options.isProcessingReadType(t)) {
-                    f = new File(outputDirName + File.separator + NanoOKOptions.getTypeFromInt(t));
-                    if (! f.exists()) {
-                        f.mkdir();
-                    }
-                }
+                        
+        if (processThisDir) {            
+            if (options.usingBatchDirs()) {
+                fw.addBatchContainer(inputDirName);
+            } else {
+                fw.addWatchDir(inputDirName);
             }
-            
-            fw.addWatchDir(inputDirName);
         } else {
             File inputDir = new File(inputDirName);
             File[] listOfFiles = inputDir.listFiles();
 
             if (listOfFiles == null) {
-                System.out.println("");
-                System.out.println("Directory "+inputDirName+" doesn't exist");
+                options.getLog().println("Directory "+inputDirName+" doesn't exist");
             } else if (listOfFiles.length <= 0) {
-                System.out.println("");
-                System.out.println("Directory "+inputDirName+" empty");
+                options.getLog().println("Directory "+inputDirName+" empty");
             } else {
                 for (File file : listOfFiles) {
                     if (file.isDirectory() && allowSubdir) {
                         processDirectory(inputDirName + File.separator + file.getName(),
-                                         outputDirName + File.separator + file.getName(),
                                          false,
                                          true);
                     }
@@ -119,28 +102,112 @@ public class ReadProcessor {
             }
         }    
     }
-
-    /**
-     * Extract reads
-     */
-    public void process() throws InterruptedException {        
+    
+    private void addDirsForExtract() {
         if (options.isNewStyleDir()) {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "pass",
-                                 options.getReadDir() + File.separator + "pass",
-                                 options.processSubdirs(),
-                                 options.processSubdirs() ? false:true);
+                                 options.isBarcoded(),
+                                 options.isBarcoded() ? false:true);
             }
             
             if (options.isProcessingFailReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "fail",
-                                 options.getReadDir() + File.separator + "fail",
-                                 options.processSubdirs(),
+                                 options.isBarcoded(),
                                  true);
             }
         } else {
-            processDirectory(options.getFast5Dir(), options.getReadDir(), false, true);
+            processDirectory(options.getFast5Dir(), false, true);
+        }        
+    }
+
+    private void addDirsForAlign() {
+        // If using batch dirs, then we go sample/fasta/2D/pass/batch_XXX
+        // If using old style, then we go sample/fasta/pass/2D
+
+        for (int t=0; t<3; t++) {   
+            if (options.isProcessingReadType(t)) {
+                if (options.isNewStyleDir()) {
+                    if (options.isProcessingPassReads()) {
+                        if (options.usingBatchDirs()) {
+                            processDirectory(options.getReadDir() + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + "pass",
+                                             options.isBarcoded(),
+                                             options.isBarcoded() ? false:true);                        
+                        } else {
+                            processDirectory(options.getReadDir() + File.separator + "pass" + File.separator + NanoOKOptions.getTypeFromInt(t),
+                                             options.isBarcoded(),
+                                             options.isBarcoded() ? false:true);
+                        }
+                    }
+
+                    if (options.isProcessingFailReads()) {
+                        if (options.usingBatchDirs()) {
+                            processDirectory(options.getReadDir() + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + "fail",
+                                             options.isBarcoded(),
+                                             true);                            
+                        } else {
+                            processDirectory(options.getReadDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
+                                             options.isBarcoded(),
+                                             true);                            
+                        }
+                    }
+                } else {
+                    processDirectory(options.getReadDir() + File.separator + NanoOKOptions.getTypeFromInt(t), false, true);
+                }        
+            }
         }
+    }
+
+    private void addDirsForParse() {
+        // If using batch dirs, then we go sample/last/2D/pass/batch_XXX
+        // If using old style, then we go sample/last/pass/2D
+        for (int t=0; t<3; t++) {   
+            if (options.isProcessingReadType(t)) {
+                if (options.isNewStyleDir()) {
+                    if (options.isProcessingPassReads()) {
+                        if (options.usingBatchDirs()) {
+                            processDirectory(options.getAlignerDir() + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + "pass",
+                                             options.isBarcoded(),
+                                             options.isBarcoded() ? false:true);
+                        } else {
+                            processDirectory(options.getAlignerDir() + File.separator + "pass" + File.separator + NanoOKOptions.getTypeFromInt(t),
+                                             options.isBarcoded(),
+                                             options.isBarcoded() ? false:true);
+                        }
+                    }
+
+                    if (options.isProcessingFailReads()) {
+                        if (options.usingBatchDirs()) {
+                            processDirectory(options.getAlignerDir() + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + "fail",
+                                             options.isBarcoded(),
+                                             true);                            
+                        } else {
+                            processDirectory(options.getAlignerDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
+                                             options.isBarcoded(),
+                                             true);
+                        }
+                    }
+                } else {
+                    processDirectory(options.getAlignerDir() + File.separator + NanoOKOptions.getTypeFromInt(t), false, true);
+                }        
+            }
+        }
+    }
+    
+    /**
+     * Extract reads
+     */
+    public void process() throws InterruptedException {      
+        String baseDir = "";
+        
+        if (options.isExtractingReads()) {
+            addDirsForExtract();
+        } else if (options.isAligningRead()) {
+            addDirsForAlign();
+        } else if (options.isParsingRead()) {
+            addDirsForParse();
+        }
+        
         
         for (int i=0; i<options.getNumberOfThreads(); i++) {
             executor.execute(new ReadProcessorRunnable(options, fw));

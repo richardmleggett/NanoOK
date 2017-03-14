@@ -35,14 +35,14 @@ public class FastAQBlastMerger implements Runnable {
             pw.write("blastn -db "+options.getBacteriaPath()+" -query " + inputFasta + " -evalue 0.001 -show_gis -out " + outputBlast + " -outfmt "+formatString);
             pw.close();
             
-            System.out.println("Submitting blast command file to SLURM "+commandFile);
+            options.getLog().println("Submitting blast command file to SLURM "+commandFile);
             ProcessLogger pl = new ProcessLogger();
             String[] commands = {"slurmit",
                                  "-o", logFile,
                                  "-p", "Nanopore",
                                  "-m", "8G",
                                  "sh "+commandFile};
-            pl.runCommand(commands);            
+            pl.runCommandToLog(commands, options.getLog());            
         } catch (IOException e) {
             System.out.println("runBlast exception");
             e.printStackTrace();
@@ -63,15 +63,14 @@ public class FastAQBlastMerger implements Runnable {
             pw.write("blastn -db "+options.getntPath()+" -query " + inputFasta + " -evalue 0.001 -show_gis -out " + outputBlast + " -outfmt "+formatString);
             pw.close();
             
-            System.out.println("Submitting blast command file to SLURM "+commandFile);
+            options.getLog().println("Submitting blast command file to SLURM "+commandFile);
             ProcessLogger pl = new ProcessLogger();
             String[] commands = {"slurmit",
                                  "-o", logFile,
                                  "-p", "tgac-medium",
                                  "-m", "16G",
                                  "sh "+commandFile};
-            pl.runCommand(commands);
-            
+            pl.runCommandToLog(commands, options.getLog());
         } catch (IOException e) {
             System.out.println("runBlast exception");
             e.printStackTrace();
@@ -92,14 +91,14 @@ public class FastAQBlastMerger implements Runnable {
             pw.write("blastn -db "+options.getCardPath()+" -query " + inputFasta + " -evalue 0.001 -show_gis -out " + outputBlast + " -outfmt "+formatString);
             pw.close();
             
-            System.out.println("Submitting blast command file to SLURM "+commandFile);
+            options.getLog().println("Submitting blast command file to SLURM "+commandFile);
             ProcessLogger pl = new ProcessLogger();
             String[] commands = {"slurmit",
                                  "-o", logFile,
                                  "-p", "Nanopore",
                                  "-m", "4G",
                                  "sh "+commandFile};
-            pl.runCommand(commands);            
+            pl.runCommandToLog(commands, options.getLog());            
         } catch (IOException e) {
             System.out.println("runBlast exception");
             e.printStackTrace();
@@ -109,7 +108,7 @@ public class FastAQBlastMerger implements Runnable {
     private void mergeFiles() {
         String mergedFile = mergedFilePrefix + "_" + fileCounter + ".fasta";
 
-        System.out.println("Writing merged file "+mergedFile);
+        options.getLog().println("Writing merged file "+mergedFile);
         
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(mergedFile));

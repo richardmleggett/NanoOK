@@ -1,8 +1,8 @@
 /*
  * Program: NanoOK
- * Author:  Richard M. Leggett
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
  * 
- * Copyright 2015 The Genome Analysis Centre (TGAC)
+ * Copyright 2015-17 Earlham Institute
  */
 
 package nanook;
@@ -41,7 +41,7 @@ public class ReadProcessorRunnable implements Runnable {
         fileWatcher = f;
     }   
     
-    private String getFastaqDirFromFast5Name(String fast5Pathname) {
+    private String getFastaqDirFromFast5Name(String fast5Pathname, int type) {
         File f = new File(fast5Pathname);        
         String inDir = f.getParent();
         String outDir = options.getReadDir();
@@ -51,7 +51,13 @@ public class ReadProcessorRunnable implements Runnable {
             System.exit(1);
         }
         
-        outDir = outDir + inDir.substring(options.getFast5Dir().length());
+        // If using batch dirs, then we go sample/fasta/2D/pass/batch_XXX
+        // If using old style, then we go sample/fasta/pass/2D
+        if (options.usingBatchDirs()) {
+            outDir = outDir + File.separator + NanoOKOptions.getTypeFromInt(type) + inDir.substring(options.getFast5Dir().length());
+        } else {       
+            outDir = outDir + inDir.substring(options.getFast5Dir().length()) + File.separator + NanoOKOptions.getTypeFromInt(type);
+        }
         
         //options.getLog().println("     In: "+fast5Pathname);
         //options.getLog().println(" OutDir: "+outDir);
@@ -72,9 +78,13 @@ public class ReadProcessorRunnable implements Runnable {
         }
         
         outPathname = options.getAlignerDir() + inDir.substring(options.getReadDir().length());
+        File outFile = new File(outPathname);
+        File parent = new File(outFile.getParent());
         
-        //options.getLog().println("     In: "+fastaqPathname);
-        //options.getLog().println(" OutDir: "+outPathname);
+        if (!parent.exists()) {
+            options.getLog().println("Making directory " + parent.getPath());
+            parent.mkdirs();
+        }        
         
         return outPathname;
     }      
@@ -92,9 +102,13 @@ public class ReadProcessorRunnable implements Runnable {
         }
         
         outPathname = options.getLogsDir() + File.separator + options.getAligner() + inDir.substring(options.getReadDir().length());
+        File outFile = new File(outPathname);
+        File parent = new File(outFile.getParent());
         
-        //options.getLog().println("     In: "+fastaqPathname);
-        //options.getLog().println(" OutDir: "+outPathname);
+        if (!parent.exists()) {
+            options.getLog().println("Making directory " + parent.getPath());
+            parent.mkdirs();
+        }        
         
         return outPathname;
     }      
@@ -110,9 +124,13 @@ public class ReadProcessorRunnable implements Runnable {
         }
         
         outPathname = options.getParserDir() + inDir.substring(options.getAlignerDir().length());
+        File outFile = new File(outPathname);
+        File parent = new File(outFile.getParent());
         
-        //options.getLog().println("     In: " + alignmentPathname);
-        //options.getLog().println(" OutDir: " + outPathname);
+        if (!parent.exists()) {
+            options.getLog().println("Making directory " + parent.getPath());
+            parent.mkdirs();
+        }        
         
         return outPathname;
     }          
@@ -128,10 +146,7 @@ public class ReadProcessorRunnable implements Runnable {
         }
         
         outPathname = options.getReadDir() + inDir.substring(options.getAlignerDir().length(),inDir.lastIndexOf('.'));
-        
-        //options.getLog().println("     In: " + alignmentPathname);
-        //options.getLog().println(" OutDir: " + outPathname);
-        
+                
         return outPathname;
     }      
     
@@ -187,7 +202,6 @@ public class ReadProcessorRunnable implements Runnable {
         options.getLog().println("           to "+alignmentPathname);        
         options.getLog().println("     with log "+alignmentLogPathname);        
         
-        
         String command = parser.getRunCommand(fastaqPathname, alignmentPathname, reference);                            
         if (options.showAlignerCommand()) {
             System.out.println("Running: " + command);
@@ -208,46 +222,52 @@ public class ReadProcessorRunnable implements Runnable {
         options.getBlastHandler(type, pf).addRead(fastaqPathname);
     }
     
+    private String getFastaqFilename(String fast5Pathname, int t) {
+        String fastaqPathname;
+        String fastaqDir = getFastaqDirFromFast5Name(fast5Pathname, t);                    
+        String filePrefix = getFilePrefixFromPathname(fast5Pathname);
+        String fileExtension = options.getReadFormat() == NanoOKOptions.FASTA ? ".fasta":".fastq";
+        File dir = new File(fastaqDir);
+        
+        if (!dir.exists()) {
+            options.getLog().println("Making directory " + fastaqDir);
+            dir.mkdirs();
+        }        
+        
+        fastaqPathname = fastaqDir + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + fileExtension;            
+
+        return fastaqPathname;
+    }
+    
     public void runExtract(String fast5Pathname) {
         Fast5File inputFile = new Fast5File(options, fast5Pathname);
-        String fastaqDir = getFastaqDirFromFast5Name(fast5Pathname);                    
-        String filePrefix = getFilePrefixFromPathname(fast5Pathname);
-        String fastaqPathname;
-        
+        int pf = 0;
+                
         options.getLog().println("Extracting file "+fast5Pathname);
 
         for (int t=0; t<3; t++) {
             if (options.isProcessingReadType(t)) {
                 FastAQFile ff = inputFile.getFastq(options.getBasecallIndex(), t);
                 if (ff != null) {
+                    String fastaqPathname = getFastaqFilename(fast5Pathname, t);
+                    options.getLog().println("        Writing "+fastaqPathname);
+
+                    if (options.mergeFastaFiles()) {
+                        options.getReadFileMerger().addReadFile(fastaqPathname, t);
+                    }                        
+
                     if (options.getReadFormat() == NanoOKOptions.FASTA) {
-                        fastaqPathname = fastaqDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta";
-                        options.getLog().println("        Writing "+fastaqPathname);
-                        if (options.mergeFastaFiles()) {
-                            options.getReadFileMerger().addReadFile(fastaqPathname, t);
-                        }                        
                         ff.writeFasta(fastaqPathname, options.outputFast5Path() ? fast5Pathname:null);
-                        if (options.isBlastingRead()) {
-                            addToBlast(fastaqPathname, t);
-                        }
-                        
-                        if (options.isAligningRead()) {
-                            runAlign(fastaqPathname);
-                        }
-                    } else if (options.getReadFormat() == NanoOKOptions.FASTQ) {
-                        fastaqPathname = fastaqDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq";
-                        options.getLog().println("        Writing "+fastaqPathname);
-                        if (options.mergeFastaFiles()) {
-                            options.getReadFileMerger().addReadFile(fastaqPathname, t);
-                        }
+                    } else {
                         ff.writeFastq(fastaqPathname);
-                        if (options.isBlastingRead()) {
-                            addToBlast(fastaqPathname, t);
-                        }
-                        
-                        if (options.isAligningRead()) {
-                            runAlign(fastaqPathname);
-                        }
+                    }
+
+                    if (options.isBlastingRead()) {
+                        addToBlast(fastaqPathname, t);
+                    }
+
+                    if (options.isAligningRead()) {
+                        runAlign(fastaqPathname);
                     }
                 }
             }

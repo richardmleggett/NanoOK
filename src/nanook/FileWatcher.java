@@ -1,3 +1,10 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett (richard.leggett@earlham.ac.uk)
+ * 
+ * Copyright 2015-17 Earlham Institute
+ */
+
 package nanook;
 
 import java.io.File;
@@ -13,7 +20,9 @@ public class FileWatcher {
     private int lastCompleted = -1;
     private long lastFileTime = System.nanoTime();
     private long secsSinceLast = 0;
-    private ArrayList<String> dirsToWatch = new ArrayList();
+    private ArrayList<String> batchContainersToWatch = new ArrayList();
+    private ArrayList<String> fileDirsToWatch = new ArrayList();
+    private Hashtable<String, Integer> batchDirs = new Hashtable();
     private Hashtable<String, Integer> allFiles = new Hashtable();
     private LinkedList<String> pendingFiles = new LinkedList<String>();
     
@@ -23,12 +32,17 @@ public class FileWatcher {
     
     public FileWatcher(NanoOKOptions o, String d) {
         options = o;
-        dirsToWatch.add(d);
+        fileDirsToWatch.add(d);
+    }
+    
+    public void addBatchContainer(String d) {
+        options.getLog().println("Added batch dir: "+d);
+        batchContainersToWatch.add(d);
     }
     
     public void addWatchDir(String d) {
         options.getLog().println("Added watch dir: "+d);
-        dirsToWatch.add(d);
+        fileDirsToWatch.add(d);
     }
     
     public synchronized void addPendingFile(String s) {
@@ -63,23 +77,56 @@ public class FileWatcher {
         }
         System.out.print("] " + filesProcessed +"/" +  filesToProcess);
         lastCompleted = filesProcessed;
-    }    
+    }
+    
+    private void checkForNewBatchDirs() {
+        int count = 0;
+        for (int i=0; i<batchContainersToWatch.size(); i++) {
+            String dirName = batchContainersToWatch.get(i);
+            File d = new File(dirName);
+            File[] listOfFiles = d.listFiles();
+
+            options.getLog().println("Scanning for new batch dirs "+dirName);
+
+            if (listOfFiles == null) {
+                options.getLog().println("Directory "+dirName+" doesn't exist");
+            } else if (listOfFiles.length <= 0) {
+                options.getLog().println("Directory "+dirName+" empty");
+            } else {
+                for (File file : listOfFiles) {
+                    if (file.isDirectory()) {
+                        if (!file.getName().startsWith(("."))) {
+                            if (!batchDirs.containsKey(file.getPath())) {
+                                count++;
+                                options.getLog().println("Got batch dir "+file.getPath());
+                                batchDirs.put(file.getPath(), 1);
+                                fileDirsToWatch.add(file.getPath());
+                            }
+                        }
+                    }
+                }            
+            }    
+        }
+    }
     
     public void scan() {
         int count = 0;
-        for (int i=0; i<dirsToWatch.size(); i++) {
-            String dirName = dirsToWatch.get(i);
+                
+        if (options.usingBatchDirs()) {
+            checkForNewBatchDirs();
+        }
+        
+        for (int i=0; i<fileDirsToWatch.size(); i++) {
+            String dirName = fileDirsToWatch.get(i);
             File d = new File(dirName);
             File[] listOfFiles = d.listFiles();
 
             options.getLog().println("Scanning "+dirName);
 
             if (listOfFiles == null) {
-                System.out.println("");
-                System.out.println("Directory "+dirName+" doesn't exist");
+                options.getLog().println("Directory "+dirName+" doesn't exist");
             } else if (listOfFiles.length <= 0) {
-                System.out.println("");
-                System.out.println("Directory "+dirName+" empty");
+                options.getLog().println("Directory "+dirName+" empty");
             } else {
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
