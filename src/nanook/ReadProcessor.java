@@ -71,13 +71,13 @@ public class ReadProcessor {
      * @param inputDirName input directory name
      * @param outputDirName output directory name
      */
-    private void processDirectory(String inputDirName, boolean allowSubdir, boolean processThisDir) {        
+    private void processDirectory(String inputDirName, boolean allowSubdir, boolean isBarcoded) {        
         options.getLog().println("Processing directory");
         options.getLog().println("Input dir name: "+inputDirName);
         options.getLog().println("allowSubdir: "+allowSubdir);        
-        options.getLog().println("processThisDir: "+processThisDir);
+        options.getLog().println("processThisDir: "+isBarcoded);
                         
-        if (processThisDir) {            
+        if (isBarcoded) {            
             if (options.usingBatchDirs()) {
                 fw.addBatchContainer(inputDirName);
             } else {

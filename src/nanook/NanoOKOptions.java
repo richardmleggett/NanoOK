@@ -79,6 +79,7 @@ public class NanoOKOptions implements Serializable {
     private boolean parsingReads = false;
     private boolean blastingReads = false;
     private boolean mergeFastaFiles = false;
+    private boolean force = false;
     private int runMode = 0;
     private int readFormat = FASTA;
     private int numThreads = 1;
@@ -201,6 +202,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("Other options:");
             System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
             System.out.println("    -log <filename> enables debug logging to file");
+            System.out.println("    -force to force NanoOK to ignore warnings");
             System.out.println("");
             System.out.println("Comments/bugs to: richard.leggett@earlham.ac.uk");
             System.out.println("Follow NanoOK on twitter: @NanoOK_Software");
@@ -277,6 +279,9 @@ public class NanoOKOptions implements Serializable {
             } else if (args[i].equalsIgnoreCase("-card")) {
                 cardPath = args[i+1];
                 i+=2;
+            } else if (args[i].equalsIgnoreCase("-force")) {
+                force = true;
+                i++;
             } else if (args[i].equalsIgnoreCase("-sample") |  args[i].equalsIgnoreCase("-s")) {
                 sampleDirectory = args[i+1];
                 i+=2;
@@ -1346,5 +1351,9 @@ public class NanoOKOptions implements Serializable {
     
     public boolean usingBatchDirs() {
         return usingBatchDirs;
+    }
+    
+    public boolean doForce() {
+        return force;
     }
 }
