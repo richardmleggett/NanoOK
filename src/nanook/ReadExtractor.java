@@ -146,7 +146,7 @@ public class ReadExtractor {
      * Extract reads
      */
     public void extract() throws InterruptedException {
-        if (options.isNewStyleDir()) {
+        if (options.usingPassFailDirs()) {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "pass",
                                  options.getReadDir() + File.separator + "pass",

@@ -71,13 +71,13 @@ public class ReadProcessor {
      * @param inputDirName input directory name
      * @param outputDirName output directory name
      */
-    private void processDirectory(String inputDirName, boolean allowSubdir, boolean isBarcoded) {        
+    private void processDirectory(String inputDirName, boolean allowSubdir, boolean processThisDir) {        
         options.getLog().println("Processing directory");
         options.getLog().println("Input dir name: "+inputDirName);
         options.getLog().println("allowSubdir: "+allowSubdir);        
-        options.getLog().println("processThisDir: "+isBarcoded);
+        options.getLog().println("processThisDir: "+processThisDir);
                         
-        if (isBarcoded) {            
+        if (processThisDir) {            
             if (options.usingBatchDirs()) {
                 fw.addBatchContainer(inputDirName);
             } else {
@@ -104,7 +104,7 @@ public class ReadProcessor {
     }
     
     private void addDirsForExtract() {
-        if (options.isNewStyleDir()) {
+        if (options.usingPassFailDirs()) {
             if (options.isProcessingPassReads()) {
                 processDirectory(options.getFast5Dir() + File.separator + "pass",
                                  options.isBarcoded(),
@@ -123,33 +123,35 @@ public class ReadProcessor {
 
     private void addDirsForAlign() {
         // If using batch dirs, then we go sample/fasta/2D/pass/batch_XXX
+        //                              or sample/fasta/2D/pass/barcodeXXX/batch_XXX
         // If using old style, then we go sample/fasta/pass/2D
+        //                             or sample/fasta/pass/2D/barcodeXXX/barcodeXXX
 
         for (int t=0; t<3; t++) {   
             if (options.isProcessingReadType(t)) {
-                if (options.isNewStyleDir()) {
+                if (options.usingPassFailDirs()) {
                     if (options.isProcessingPassReads()) {
-                        if (options.usingBatchDirs()) {
+                        //if (options.usingBatchDirs()) {
                             processDirectory(options.getReadDir() + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + "pass",
                                              options.isBarcoded(),
                                              options.isBarcoded() ? false:true);                        
-                        } else {
-                            processDirectory(options.getReadDir() + File.separator + "pass" + File.separator + NanoOKOptions.getTypeFromInt(t),
-                                             options.isBarcoded(),
-                                             options.isBarcoded() ? false:true);
-                        }
+                        //} else {
+                        //    processDirectory(options.getReadDir() + File.separator + "pass" + File.separator + NanoOKOptions.getTypeFromInt(t),
+                        //                     options.isBarcoded(),
+                        //                     options.isBarcoded() ? false:true);
+                        //}
                     }
 
                     if (options.isProcessingFailReads()) {
-                        if (options.usingBatchDirs()) {
+                        //if (options.usingBatchDirs()) {
                             processDirectory(options.getReadDir() + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + "fail",
                                              options.isBarcoded(),
                                              true);                            
-                        } else {
-                            processDirectory(options.getReadDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
-                                             options.isBarcoded(),
-                                             true);                            
-                        }
+                        //} else {
+                        //    processDirectory(options.getReadDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
+                        //                     options.isBarcoded(),
+                        //                     true);                            
+                        //}
                     }
                 } else {
                     processDirectory(options.getReadDir() + File.separator + NanoOKOptions.getTypeFromInt(t), false, true);
@@ -163,29 +165,29 @@ public class ReadProcessor {
         // If using old style, then we go sample/last/pass/2D
         for (int t=0; t<3; t++) {   
             if (options.isProcessingReadType(t)) {
-                if (options.isNewStyleDir()) {
+                if (options.usingPassFailDirs()) {
                     if (options.isProcessingPassReads()) {
-                        if (options.usingBatchDirs()) {
+                        //if (options.usingBatchDirs()) {
                             processDirectory(options.getAlignerDir() + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + "pass",
                                              options.isBarcoded(),
                                              options.isBarcoded() ? false:true);
-                        } else {
-                            processDirectory(options.getAlignerDir() + File.separator + "pass" + File.separator + NanoOKOptions.getTypeFromInt(t),
-                                             options.isBarcoded(),
-                                             options.isBarcoded() ? false:true);
-                        }
+                        //} else {
+                        //    processDirectory(options.getAlignerDir() + File.separator + "pass" + File.separator + NanoOKOptions.getTypeFromInt(t),
+                        //                     options.isBarcoded(),
+                        //                     options.isBarcoded() ? false:true);
+                        //}
                     }
 
                     if (options.isProcessingFailReads()) {
-                        if (options.usingBatchDirs()) {
+                        //if (options.usingBatchDirs()) {
                             processDirectory(options.getAlignerDir() + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + "fail",
                                              options.isBarcoded(),
                                              true);                            
-                        } else {
-                            processDirectory(options.getAlignerDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
-                                             options.isBarcoded(),
-                                             true);
-                        }
+                        //} else {
+                        //    processDirectory(options.getAlignerDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
+                        //                     options.isBarcoded(),
+                        //                     true);
+                        //}
                     }
                 } else {
                     processDirectory(options.getAlignerDir() + File.separator + NanoOKOptions.getTypeFromInt(t), false, true);
@@ -201,10 +203,13 @@ public class ReadProcessor {
         String baseDir = "";
         
         if (options.isExtractingReads()) {
+            options.getSampleChecker().checkFast5Directory();
             addDirsForExtract();
         } else if (options.isAligningRead()) {
+            options.getSampleChecker().checkReadDirectory();
             addDirsForAlign();
         } else if (options.isParsingRead()) {
+            options.getSampleChecker().checkReadDirectory();
             addDirsForParse();
         }
         

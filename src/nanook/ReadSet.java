@@ -109,7 +109,7 @@ public class ReadSet {
 
         stats.openLengthsFile();
         
-        if (options.isNewStyleReadDir()) {
+        if (options.usingPassFailDirs()) {
             for (int pf=NanoOKOptions.READTYPE_PASS; pf<=NanoOKOptions.READTYPE_FAIL; pf++) {
                 String passOrFail="";
 
@@ -121,7 +121,7 @@ public class ReadSet {
 
                 if (passOrFail != "") {
                     if (options.isBarcoded()) {
-                            File inputDir = new File(options.getReadDir() + File.separator + passOrFail);
+                            File inputDir = new File(options.getReadDir() + File.separator + options.getTypeFromInt(type) + File.separator + passOrFail);
                             File[] listOfFiles = inputDir.listFiles();
                             for (File file : listOfFiles) {
                                 if (file.isDirectory()) {
@@ -129,14 +129,14 @@ public class ReadSet {
                                         System.out.println("Error: too many directories.\n");
                                         System.exit(1);
                                     }
-                                    readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail + File.separator + file.getName();
-                                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail + File.separator + file.getName();
+                                    readDirs[nDirs] = inputDir.getPath() + File.separator + file.getName();
+                                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + options.getTypeFromInt(type) + File.separator + passOrFail + File.separator + file.getName();
                                     readTypes[nDirs++] = pf;
                                 }
                             }
                     } else {                
-                        readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail;
-                        alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail;
+                        readDirs[nDirs] = options.getReadDir() + File.separator + options.getTypeFromInt(type) + File.separator + passOrFail;
+                        alignerDirs[nDirs] = options.getAlignerDir() + File.separator + options.getTypeFromInt(type) + File.separator + passOrFail;
                         readTypes[nDirs++] = pf;
                     }
                     
@@ -150,11 +150,11 @@ public class ReadSet {
         }
                 
         for (int dirIndex=0; dirIndex<nDirs; dirIndex++) {        
-            String inputDir = readDirs[dirIndex] + File.separator + options.getTypeFromInt(type);
-            String alignDir = alignerDirs[dirIndex] + File.separator + options.getTypeFromInt(type);
+            String inputDir = readDirs[dirIndex];
+            String alignDir = alignerDirs[dirIndex];
             File folder = new File(inputDir);
             File[] listOfFiles = folder.listFiles();
-            
+                        
             if (listOfFiles == null) {
                 System.out.println("");
                 System.out.println("Directory "+inputDir+" doesn't exist");

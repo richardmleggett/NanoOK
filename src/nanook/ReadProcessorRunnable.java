@@ -53,11 +53,11 @@ public class ReadProcessorRunnable implements Runnable {
         
         // If using batch dirs, then we go sample/fasta/2D/pass/batch_XXX
         // If using old style, then we go sample/fasta/pass/2D
-        if (options.usingBatchDirs()) {
+        //if (options.usingBatchDirs()) {
             outDir = outDir + File.separator + NanoOKOptions.getTypeFromInt(type) + inDir.substring(options.getFast5Dir().length());
-        } else {       
-            outDir = outDir + inDir.substring(options.getFast5Dir().length()) + File.separator + NanoOKOptions.getTypeFromInt(type);
-        }
+        //} else {       
+        //    outDir = outDir + inDir.substring(options.getFast5Dir().length()) + File.separator + NanoOKOptions.getTypeFromInt(type);
+        //}
         
         //options.getLog().println("     In: "+fast5Pathname);
         //options.getLog().println(" OutDir: "+outDir);

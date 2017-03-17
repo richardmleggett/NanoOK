@@ -92,8 +92,6 @@ public class NanoOKOptions implements Serializable {
     private int returnValue = 0;
     private int basecallIndex = -1;
     private boolean outputFast5Path = true;
-    private boolean usingBarcodes = false;
-    private boolean usingBatchDirs = false;
     private int readsPerBlast = 500;
     private boolean clearLogsOnStart = true;
     private transient WatcherLog watcherReadLog = new WatcherLog(this);
@@ -114,6 +112,7 @@ public class NanoOKOptions implements Serializable {
     private transient ArrayList<String> blastProcesses = new ArrayList<String>();
     private int fileCounterOffset = 0;
     private transient ReadFileMerger readFileMerger = new ReadFileMerger(this);
+    private transient SampleChecker sampleChecker = new SampleChecker(this);
         
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -188,10 +187,10 @@ public class NanoOKOptions implements Serializable {
             System.out.println("process options:");
             System.out.println("    -process <file> specifies a process file");
             System.out.println("");
-            System.out.println("Sample type options:");
-            System.out.println("    -barcoding if reads are barcoded and sorted into subdirs");
-            System.out.println("    -batchdirs if using MinKNOW 1.4.2 or above with separate batch_ directories");
-            System.out.println("");
+            //System.out.println("Sample type options:");
+            //System.out.println("    -barcoding if reads are barcoded and sorted into subdirs");
+            //System.out.println("    -batchdirs if using MinKNOW 1.4.2 or above with separate batch_ directories");
+            //System.out.println("");
             System.out.println("Read type options:");
             System.out.println("    -passonly to analyse only pass reads");
             System.out.println("    -failonly to analyse only fail reads");            
@@ -255,7 +254,7 @@ public class NanoOKOptions implements Serializable {
                 coverageBinSize = Integer.parseInt(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-batchdirs")) {
-                usingBatchDirs = true;
+                System.out.println("-batchdirs option ignore - now detected automatically.");
                 i++;
             } else if (args[i].equalsIgnoreCase("-timeout")) {
                 fileWatcherTimeout = Integer.parseInt(args[i+1]);
@@ -381,7 +380,7 @@ public class NanoOKOptions implements Serializable {
                 numThreads = Integer.parseInt(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-subdirs") || args[i].equalsIgnoreCase("-barcoding")) {
-                usingBarcodes = true;
+                System.out.println("-barcoding option ignore - now detected automatically.");
                 i++;
             } else if (args[i].equalsIgnoreCase("-keeplogs")) {
                 clearLogsOnStart = false;
@@ -409,11 +408,6 @@ public class NanoOKOptions implements Serializable {
         if (runMode == MODE_PROCESS) {
             if (processFile == null) {
                 System.out.println("Error: you must specify a process file");
-                System.exit(1);
-            }
-            
-            if (usingBarcodes) {
-                System.out.println("Error: barcodes not yet supported by process mode");
                 System.exit(1);
             }
         }
@@ -452,8 +446,8 @@ public class NanoOKOptions implements Serializable {
         System.out.println("Number of cores: "+Runtime.getRuntime().availableProcessors());
         
         executor = new ThreadPoolExecutor(numThreads, numThreads, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-    }
-        
+    }    
+    
     public String getAligner() {
         return aligner;
     }
@@ -752,29 +746,33 @@ public class NanoOKOptions implements Serializable {
         }
     } 
     
-    public boolean isNewStyleDir() {
-        File passDir = new File(getFast5Dir() + File.separator + "pass");
-        File failDir = new File(getFast5Dir() + File.separator + "fail");
-        boolean rc = false;
+    //public boolean isPassFailFast5Dir() {
+    //    File passDir = new File(getFast5Dir() + File.separator + "pass");
+    //    File failDir = new File(getFast5Dir() + File.separator + "fail");
+    //    boolean rc = false;
         
-        if (((passDir.exists() && passDir.isDirectory()) || (failDir.exists() && failDir.isDirectory()))) {
-            rc = true;
-        }
+    //    if (((passDir.exists() && passDir.isDirectory()) || (failDir.exists() && failDir.isDirectory()))) {
+    //        rc = true;
+    //    }
         
-        return rc;
-    }
+    //    return rc;
+    //}
+    
 
-    public boolean isNewStyleReadDir() {
-        File passDir = new File(getReadDir() + File.separator + "pass");
-        File failDir = new File(getReadDir() + File.separator + "pass");
-        boolean rc = false;
-        
-        if (((passDir.exists() && passDir.isDirectory()) || failDir.exists() && failDir.isDirectory())) {
-            rc = true;
-        }
-        
-        return rc;
-    }
+
+    //public boolean isPassFailReadDir() {
+    //    File passDir = new File(getReadDir() + File.separator + "pass");
+    //    File failDir = new File(getReadDir() + File.separator + "pass");
+    //    boolean rc = false;
+    //    
+    //    if (((passDir.exists() && passDir.isDirectory()) || failDir.exists() && failDir.isDirectory())) {
+    //        rc = true;
+    //    }
+    //    
+    //    
+    //    
+    //    return rc;
+    //}
     
     public String getAnalysisSuffix() {
         String s = new String("_"+aligner);
@@ -940,7 +938,7 @@ public class NanoOKOptions implements Serializable {
     }
     
     public boolean isBarcoded() {
-        return usingBarcodes;
+        return sampleChecker.usingBarcodes();
     }
     
     /**
@@ -1350,10 +1348,18 @@ public class NanoOKOptions implements Serializable {
     }
     
     public boolean usingBatchDirs() {
-        return usingBatchDirs;
+        return sampleChecker.usingBatchDirs();
     }
     
     public boolean doForce() {
         return force;
+    }
+    
+    public SampleChecker getSampleChecker() {
+        return sampleChecker;
+    }
+    
+    public boolean usingPassFailDirs() {
+        return sampleChecker.usingPassFailDirs();
     }
 }

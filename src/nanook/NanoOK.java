@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v1.14";
+    public final static String VERSION_STRING = "v1.15";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -173,6 +173,8 @@ public class NanoOK {
         OverallStats overallStats = new OverallStats(options);
         options.getReferences().setOverallStats(overallStats);
 
+        options.getSampleChecker().checkReadDirectory();
+        
         // Load reference data
         options.getReferences().loadReferences();
         options.setReadFormat(options.getParser().getReadFormat());

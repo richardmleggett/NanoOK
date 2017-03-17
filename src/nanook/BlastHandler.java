@@ -53,7 +53,7 @@ public class BlastHandler {
                 String cmdPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
                                     "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".cmds";
                 String meganPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
-                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".megan";
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".rma";
                 String slurmPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
                                     "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".slurm.sh";
                 String slurmLogname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
