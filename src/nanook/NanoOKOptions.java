@@ -317,14 +317,14 @@ public class NanoOKOptions implements Serializable {
                 processFailReads = true;
                 i++;
             } else if (args[i].equalsIgnoreCase("-fasta") || args[i].equalsIgnoreCase("-a")) {
-                if (runMode == MODE_EXTRACT) { 
+                //if (runMode == MODE_EXTRACT) { 
                     readFormat = FASTA;
-                }
+                //}
                 i++;
             } else if (args[i].equalsIgnoreCase("-fastq") || args[i].equalsIgnoreCase("-q")) {
-                if (runMode == MODE_EXTRACT) { 
+                //if (runMode == MODE_EXTRACT) { 
                     readFormat = FASTQ;
-                }
+                //}
                 i++;
             } else if (args[i].equalsIgnoreCase("-2donly")) {
                 process2DReads = true;
@@ -458,6 +458,7 @@ public class NanoOKOptions implements Serializable {
     
     public void setReadFormat(int f) {
         readFormat = f;
+        System.out.println("Read format "+f);
     }
         
     /**
@@ -690,7 +691,7 @@ public class NanoOKOptions implements Serializable {
         } else {
             dir = getFastaDir(); 
         }
-        
+                
         return dir;
     } 
     

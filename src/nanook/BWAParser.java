@@ -15,9 +15,11 @@ import java.io.File;
  */
 public class BWAParser extends SAMParser implements AlignmentFileParser {
     private String alignmentParams = "-x ont2d";
+    private NanoOKOptions options;
     
     public BWAParser(NanoOKOptions o, References r) {
         super(o, r);
+        options = o;
     }
     
     public String getProgramID() {
@@ -25,7 +27,10 @@ public class BWAParser extends SAMParser implements AlignmentFileParser {
     }
 
     public int getReadFormat() {
-        return NanoOKOptions.FASTA;
+        int or = options.getReadFormat();    
+        return or;
+        
+        //return NanoOKOptions.FASTA;
     }
     
     public void setAlignmentParams(String p) {
