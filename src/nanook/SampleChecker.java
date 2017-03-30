@@ -74,8 +74,15 @@ public class SampleChecker {
             usingPassFailDirs = true;
             checkForBarcodeAndBatch(failDir);
         } else {
+            File[] listOfFiles = f.listFiles();
             usingPassFailDirs = false;
             usingBatchDirs = false;
+            for (File file : listOfFiles) {
+                if (file.isDirectory()) {
+                    usingBatchDirs = true;
+                    break;                    
+                }
+            }
         }
         
         showDirectoryType();
