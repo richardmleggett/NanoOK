@@ -80,6 +80,7 @@ public class NanoOKOptions implements Serializable {
     private boolean blastingReads = false;
     private boolean mergeFastaFiles = false;
     private boolean force = false;
+    private double minQForPass = -1;
     private int runMode = 0;
     private int readFormat = FASTA;
     private int numThreads = 1;
@@ -111,7 +112,7 @@ public class NanoOKOptions implements Serializable {
     private transient BlastHandler[][] blastHandlers = new BlastHandler[3][2];
     private transient ArrayList<String> blastProcesses = new ArrayList<String>();
     private int fileCounterOffset = 0;
-    private transient ReadFileMerger readFileMerger = new ReadFileMerger(this);
+    private transient ReadFileMerger readFileMerger;
     private transient SampleChecker sampleChecker = new SampleChecker(this);
         
     public NanoOKOptions() {
@@ -164,6 +165,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -basecallindex specifies the index of the analysis (default: latest)");
             //System.out.println("    -printpath to output FAST5 path in FASTA read header");
             System.out.println("    -mergereads to generate merged FASTA files in addition to single read files");
+            System.out.println("    -minquality <value> to set the minimum quality for a 'pass' read");
             System.out.println("");
             System.out.println("align options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
@@ -202,9 +204,6 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
             System.out.println("    -log <filename> enables debug logging to file");
             System.out.println("    -force to force NanoOK to ignore warnings");
-            System.out.println("");
-            System.out.println("Comments/bugs to: richard.leggett@earlham.ac.uk");
-            System.out.println("Follow NanoOK on twitter: @NanoOK_Software");
             System.out.println("");
             System.exit(0);
         }
@@ -388,6 +387,9 @@ public class NanoOKOptions implements Serializable {
             } else if (args[i].equalsIgnoreCase("-mergereads")) {
                 mergeFastaFiles = true;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-minquality")) {
+                minQForPass = Double.parseDouble(args[i+1]);
+                i+=2;
             } else {                
                 System.out.println("Unknown parameter: " + args[i]);
                 System.exit(0);
@@ -440,7 +442,7 @@ public class NanoOKOptions implements Serializable {
                 sampleName = s.getName();
             }
         }
-        
+                
         initialiseBlastHandlers();
         
         System.out.println("Number of cores: "+Runtime.getRuntime().availableProcessors());
@@ -458,7 +460,7 @@ public class NanoOKOptions implements Serializable {
     
     public void setReadFormat(int f) {
         readFormat = f;
-        System.out.println("Read format "+f);
+        //System.out.println("Read format "+f);
     }
         
     /**
@@ -1362,5 +1364,13 @@ public class NanoOKOptions implements Serializable {
     
     public boolean usingPassFailDirs() {
         return sampleChecker.usingPassFailDirs();
+    }
+    
+    public double getMinQ() {
+        return minQForPass;
+    }
+    
+    public void initialiseReadMerger() {
+        readFileMerger = new ReadFileMerger(this);
     }
 }

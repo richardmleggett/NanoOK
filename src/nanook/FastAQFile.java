@@ -92,4 +92,12 @@ public class FastAQFile {
             e.printStackTrace();
         }
     }
+    
+    public int getLength() {
+        return sequence.length();
+    }
+    
+    public String getID() {
+        return id;
+    }
 }

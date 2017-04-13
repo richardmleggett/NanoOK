@@ -140,6 +140,11 @@ public class ParserRunnable implements Runnable
                 System.exit(1);
             }
             
+            if (id.length() > 100) {
+                System.out.println("Problem id " + id);
+                System.out.println("Read path: " + readPath);
+                System.exit(1);
+            }
             stats.addLength(readPath, id, sr.getLength(i), sr.getGC(i));
         }
     }

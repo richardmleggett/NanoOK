@@ -41,20 +41,20 @@ public class ReadProcessorRunnable implements Runnable {
         fileWatcher = f;
     }   
     
-    private String getFastaqDirFromFast5Name(String fast5Pathname, int type) {
-        File f = new File(fast5Pathname);        
-        String inDir = f.getParent();
-        String outDir = options.getReadDir();
+    //rivate String getFastaqDirFromFast5Name(String fast5Pathname, int type) {
+    //    File f = new File(fast5Pathname);        
+    //    String inDir = f.getParent();
+    //    String outDir = options.getReadDir();
         
-        if (!inDir.startsWith(options.getFast5Dir())) {
-            System.out.println("Something wrong with fast5 filename - shouldn't get to this code. Please contact richard.leggett@earlham.ac.uk");
-            System.exit(1);
-        }
+    //    if (!inDir.startsWith(options.getFast5Dir())) {
+    //        System.out.println("Something wrong with fast5 filename - shouldn't get to this code. Please contact richard.leggett@earlham.ac.uk");
+    //        System.exit(1);
+    //    }
         
         // If using batch dirs, then we go sample/fasta/2D/pass/batch_XXX
         // If using old style, then we go sample/fasta/pass/2D
         //if (options.usingBatchDirs()) {
-            outDir = outDir + File.separator + NanoOKOptions.getTypeFromInt(type) + inDir.substring(options.getFast5Dir().length());
+    //        outDir = outDir + File.separator + NanoOKOptions.getTypeFromInt(type) + inDir.substring(options.getFast5Dir().length());
         //} else {       
         //    outDir = outDir + inDir.substring(options.getFast5Dir().length()) + File.separator + NanoOKOptions.getTypeFromInt(type);
         //}
@@ -62,8 +62,8 @@ public class ReadProcessorRunnable implements Runnable {
         //options.getLog().println("     In: "+fast5Pathname);
         //options.getLog().println(" OutDir: "+outDir);
         
-        return outDir;
-    }    
+    //    return outDir;
+    //}/    
 
     private String getAlignmentPathnameFromFastaqName(String fastaqPathname) {
         File f = new File(fastaqPathname);        
@@ -222,39 +222,84 @@ public class ReadProcessorRunnable implements Runnable {
         options.getBlastHandler(type, pf).addRead(fastaqPathname);
     }
     
-    private String getFastaqFilename(String fast5Pathname, int t) {
-        String fastaqPathname;
-        String fastaqDir = getFastaqDirFromFast5Name(fast5Pathname, t);                    
-        String filePrefix = getFilePrefixFromPathname(fast5Pathname);
-        String fileExtension = options.getReadFormat() == NanoOKOptions.FASTA ? ".fasta":".fastq";
+    private String getFastaqFilename(String fast5Pathname, int t, int inputPF, int outputPF) {
+        File f = new File(fast5Pathname);        
+        String inDir = f.getParent();
+        String suffixDirs;
+        
+        if (!inDir.startsWith(options.getFast5Dir())) {
+            System.out.println("Something wrong with fast5 filename - shouldn't get to this code. Please contact richard.leggett@earlham.ac.uk");
+            System.exit(1);
+        }
+          
+        if (inputPF == NanoOKOptions.READTYPE_COMBINED) {
+            suffixDirs = inDir.substring(options.getFast5Dir().length());
+        } else {
+            // +5 for /pass or /fail
+            suffixDirs = inDir.substring(options.getFast5Dir().length() + 5);            
+        }
+        
+        String fastaqDir = options.getReadDir() + File.separator;
+        if (outputPF == NanoOKOptions.READTYPE_FAIL) {
+            fastaqDir += "fail";
+        } else {
+            fastaqDir += "pass";
+        }
+
+        fastaqDir += File.separator + NanoOKOptions.getTypeFromInt(t) + suffixDirs;
         File dir = new File(fastaqDir);
+        
+        String filePrefix = getFilePrefixFromPathname(fast5Pathname);
+        String fileExtension = options.getReadFormat() == NanoOKOptions.FASTA ? ".fasta":".fastq";       
         
         if (!dir.exists()) {
             options.getLog().println("Making directory " + fastaqDir);
             dir.mkdirs();
         }        
         
-        fastaqPathname = fastaqDir + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + fileExtension;            
-
+        String fastaqPathname = fastaqDir + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + fileExtension;            
+        
         return fastaqPathname;
     }
     
-    public void runExtract(String fast5Pathname) {
+    public void runExtract(String fast5Pathname, int inputPF) {
         Fast5File inputFile = new Fast5File(options, fast5Pathname);
-        int pf = 0;
+        int outputPF;
                 
         options.getLog().println("Extracting file "+fast5Pathname);
 
         for (int t=0; t<3; t++) {
             if (options.isProcessingReadType(t)) {
                 FastAQFile ff = inputFile.getFastq(options.getBasecallIndex(), t);
+                double meanQ = 0;
+                                
                 if (ff != null) {
-                    String fastaqPathname = getFastaqFilename(fast5Pathname, t);
-                    options.getLog().println("        Writing "+fastaqPathname);
+                    // If pass/fail not assigned, default to pass directory output
+                    if (inputPF == NanoOKOptions.READTYPE_COMBINED) {
+                        outputPF = NanoOKOptions.READTYPE_PASS;
+                    } else {
+                        outputPF = inputPF;
+                    }
 
-                    if (options.mergeFastaFiles()) {
-                        options.getReadFileMerger().addReadFile(fastaqPathname, t);
-                    }                        
+                    // Have we set a min quality threshold? In which case, test...
+                    meanQ = inputFile.getMeanQ(options.getBasecallIndex(), t);
+                    if (options.getMinQ() >= 0) {
+                        if (meanQ == 0) {
+                            options.getLog().println("    Couldn't get mean quality value");
+                        } else {
+                            if (meanQ >= options.getMinQ()) {
+                                outputPF = NanoOKOptions.READTYPE_PASS;
+                            } else {
+                                outputPF = NanoOKOptions.READTYPE_FAIL;
+                            }
+                        }
+                        options.getLog().println("    Mean quality " + meanQ + " output class " + (outputPF == NanoOKOptions.READTYPE_PASS ? "pass":"fail"));
+                    }
+                                        
+                    String fastaqPathname = getFastaqFilename(fast5Pathname, t, inputPF, outputPF);
+                    options.getLog().println("    Writing "+fastaqPathname);
+
+                    options.getReadFileMerger().addReadFile(fastaqPathname, t, outputPF, ff.getID(), ff.getLength(), meanQ);
 
                     if (options.getReadFormat() == NanoOKOptions.FASTA) {
                         ff.writeFasta(fastaqPathname, options.outputFast5Path() ? fast5Pathname:null);
@@ -276,16 +321,16 @@ public class ReadProcessorRunnable implements Runnable {
 
     public void run() {
         while (!fileWatcher.timedOut()) {
-            String nextPathname = null;
+            FileWatcherItem fwi = null; 
             String fastaqPathname = null;
             String alignmentPathname = null;
             String parsedPathname = null;
             String alignmentLogPathname = null;
             
             // Get next file to process
-            while ((nextPathname == null) && !fileWatcher.timedOut()) {
-                nextPathname = fileWatcher.getPendingFile();
-                if (nextPathname == null) {
+            while ((fwi == null) && !fileWatcher.timedOut()) {
+                fwi = fileWatcher.getPendingFile();
+                if (fwi == null) {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ex) {
@@ -294,11 +339,14 @@ public class ReadProcessorRunnable implements Runnable {
                 }
             }
             
-            if (nextPathname != null) {
+            if (fwi != null) {
+                String nextPathname = fwi.getPathname();
+                int pf = fwi.getPassOrFail();
+
                 // Check valid filename
                 if (options.isExtractingReads()) {
                     if (nextPathname.toLowerCase().endsWith(".fast5")) {
-                        runExtract(nextPathname);
+                        runExtract(nextPathname, pf);
                     } else {
                         options.getLog().println("Invalid "+nextPathname);
                     }

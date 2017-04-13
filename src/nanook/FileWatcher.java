@@ -20,37 +20,37 @@ public class FileWatcher {
     private int lastCompleted = -1;
     private long lastFileTime = System.nanoTime();
     private long secsSinceLast = 0;
-    private ArrayList<String> batchContainersToWatch = new ArrayList();
-    private ArrayList<String> fileDirsToWatch = new ArrayList();
+    private ArrayList<FileWatcherItem> batchContainersToWatch = new ArrayList();
+    private ArrayList<FileWatcherItem> fileDirsToWatch = new ArrayList();
     private Hashtable<String, Integer> batchDirs = new Hashtable();
     private Hashtable<String, Integer> allFiles = new Hashtable();
-    private LinkedList<String> pendingFiles = new LinkedList<String>();
+    private LinkedList<FileWatcherItem> pendingFiles = new LinkedList<FileWatcherItem>();
     
     public FileWatcher(NanoOKOptions o) {
         options = o;
     }
     
-    public FileWatcher(NanoOKOptions o, String d) {
-        options = o;
-        fileDirsToWatch.add(d);
-    }
+    //public FileWatcher(NanoOKOptions o, String d) {
+    //    options = o;
+    //    fileDirsToWatch.add(new FileWatcherDir(d, pf));
+    //}
     
-    public void addBatchContainer(String d) {
+    public void addBatchContainer(String d, int pf) {
         options.getLog().println("Added batch dir: "+d);
-        batchContainersToWatch.add(d);
+        batchContainersToWatch.add(new FileWatcherItem(d, pf));
     }
     
-    public void addWatchDir(String d) {
+    public void addWatchDir(String d, int pf) {
         options.getLog().println("Added watch dir: "+d);
-        fileDirsToWatch.add(d);
+        fileDirsToWatch.add(new FileWatcherItem(d, pf));
     }
     
-    public synchronized void addPendingFile(String s) {
-        pendingFiles.add(s);
+    public synchronized void addPendingFile(String s, int pf) {
+        pendingFiles.add(new FileWatcherItem(s, pf));
         filesToProcess++;
     }
     
-    public synchronized String getPendingFile() {
+    public synchronized FileWatcherItem getPendingFile() {
         if (pendingFiles.size() > 0) {
             filesProcessed++;
             return pendingFiles.removeFirst();
@@ -82,7 +82,9 @@ public class FileWatcher {
     private void checkForNewBatchDirs() {
         int count = 0;
         for (int i=0; i<batchContainersToWatch.size(); i++) {
-            String dirName = batchContainersToWatch.get(i);
+            FileWatcherItem dir = batchContainersToWatch.get(i);
+            int pf = dir.getPassOrFail();
+            String dirName = dir.getPathname();
             File d = new File(dirName);
             File[] listOfFiles = d.listFiles();
 
@@ -100,7 +102,7 @@ public class FileWatcher {
                                 count++;
                                 options.getLog().println("Got batch dir "+file.getPath());
                                 batchDirs.put(file.getPath(), 1);
-                                fileDirsToWatch.add(file.getPath());
+                                fileDirsToWatch.add(new FileWatcherItem(file.getPath(), pf));
                             }
                         }
                     }
@@ -117,7 +119,8 @@ public class FileWatcher {
         }
         
         for (int i=0; i<fileDirsToWatch.size(); i++) {
-            String dirName = fileDirsToWatch.get(i);
+            FileWatcherItem dir = fileDirsToWatch.get(i);
+            String dirName = dir.getPathname();
             File d = new File(dirName);
             File[] listOfFiles = d.listFiles();
 
@@ -135,7 +138,7 @@ public class FileWatcher {
                                 count++;
                                 options.getLog().println("Got file "+file.getPath());
                                 allFiles.put(file.getPath(), 1);
-                                this.addPendingFile(file.getPath());
+                                this.addPendingFile(file.getPath(), dir.getPassOrFail());
                             }
                         }
                     }

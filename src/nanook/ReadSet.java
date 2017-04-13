@@ -121,7 +121,7 @@ public class ReadSet {
 
                 if (passOrFail != "") {
                     if (options.isBarcoded()) {
-                            File inputDir = new File(options.getReadDir() + File.separator + options.getTypeFromInt(type) + File.separator + passOrFail);
+                            File inputDir = new File(options.getReadDir() + File.separator + passOrFail + File.separator + options.getTypeFromInt(type));
                             File[] listOfFiles = inputDir.listFiles();
                             for (File file : listOfFiles) {
                                 if (file.isDirectory()) {
@@ -130,13 +130,13 @@ public class ReadSet {
                                         System.exit(1);
                                     }
                                     readDirs[nDirs] = inputDir.getPath() + File.separator + file.getName();
-                                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + options.getTypeFromInt(type) + File.separator + passOrFail + File.separator + file.getName();
+                                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail + File.separator + options.getTypeFromInt(type) + File.separator + file.getName();
                                     readTypes[nDirs++] = pf;
                                 }
                             }
                     } else {                
-                        readDirs[nDirs] = options.getReadDir() + File.separator + options.getTypeFromInt(type) + File.separator + passOrFail;
-                        alignerDirs[nDirs] = options.getAlignerDir() + File.separator + options.getTypeFromInt(type) + File.separator + passOrFail;
+                        readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail + File.separator + options.getTypeFromInt(type);
+                        alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail + File.separator + options.getTypeFromInt(type);
                         readTypes[nDirs++] = pf;
                     }
                     
@@ -235,7 +235,7 @@ public class ReadSet {
 
             if (passOrFail != "") {
                 if (options.isBarcoded()) {
-                        File inputDir = new File(options.getReadDir() + File.separator + passOrFail);
+                        File inputDir = new File(options.getReadDir() + File.separator + passOrFail + File.separator + typeString);
                         File[] listOfFiles = inputDir.listFiles();
                         for (File file : listOfFiles) {
                             if (file.isDirectory()) {
@@ -243,14 +243,14 @@ public class ReadSet {
                                     System.out.println("Error: too many directories.\n");
                                     System.exit(1);
                                 }
-                                readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail + File.separator + file.getName();
-                                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail + File.separator + file.getName();
+                                readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail + File.separator + typeString + File.separator + file.getName();
+                                alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail + File.separator + typeString + File.separator + file.getName();
                                 readTypes[nDirs++] = pf;
                             }
                         }
                 } else {                
-                    readDirs[nDirs] = options.getReadDir() + File.separator + typeString + File.separator + passOrFail;
-                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + typeString + File.separator + passOrFail;
+                    readDirs[nDirs] = options.getReadDir() + File.separator + passOrFail + File.separator + typeString;
+                    alignerDirs[nDirs] = options.getAlignerDir() + File.separator + passOrFail + File.separator + typeString;
                     readTypes[nDirs++] = pf;
                 }
 

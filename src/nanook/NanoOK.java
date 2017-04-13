@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Richard Leggett
  */
 public class NanoOK {
-    public final static String VERSION_STRING = "v1.17";
+    public final static String VERSION_STRING = "v1.20";
     public final static long SERIAL_VERSION = 3L;
     
     /**
@@ -347,7 +347,8 @@ public class NanoOK {
     
     private static void process(NanoOKOptions options) throws InterruptedException {
         ReadProcessor rp = new ReadProcessor(options);
-        options.makeDirectories();        
+        options.makeDirectories();      
+        options.initialiseReadMerger();
         rp.process();
     }    
     
@@ -369,6 +370,9 @@ public class NanoOK {
     public static void main(String[] args) throws InterruptedException {
         System.out.println("");
         System.out.println("NanoOK " + VERSION_STRING);
+        System.out.println("");
+        System.out.println("Comments/bugs to: richard.leggett@earlham.ac.uk");
+        System.out.println("Follow NanoOK on twitter: @NanoOK_Software");
         System.out.println("");
 
         NanoOKOptions options = new NanoOKOptions();

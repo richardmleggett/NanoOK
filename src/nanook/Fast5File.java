@@ -28,6 +28,7 @@ public class Fast5File {
     private boolean isCorrupt = false;
     private int highestBasecall1D = -1;
     private int highestBasecall2D = -1;
+    private double meanQScore = 0;
     
     /**
      * Constructor
@@ -99,6 +100,24 @@ public class Fast5File {
         log.println("    Highest1D: "+highestBasecall1D+" Highest2D: "+highestBasecall2D);
     }
     
+    public double getMeanQAttribute(String attribute) {
+        ProcessLogger pl = new ProcessLogger();
+        ArrayList<String> response = pl.getCommandOutput("h5dump -a "+attribute+" "+filename, true, true);
+        double meanq = 0;
+
+        // Look for value beginning (0): 
+        int l;
+        for (l=0; l<response.size(); l++) {
+            String line = response.get(l);
+            if (line.contains("(0):")) {
+                meanq = Double.parseDouble(line.substring(line.indexOf("(0):") + 5));
+            }
+        }
+
+        return meanq;
+    }
+    
+    
     /**
      * Get the FASTQ data out of the dataset
      * 
@@ -169,18 +188,12 @@ public class Fast5File {
         return ff;
     }
     
-    /**
-     * Get a FastQ/A file for given (Basecall_) index and type (2D/Template/Complement)
-     * @param index
-     * @param type
-     * @return 
-     */
-    public FastAQFile getFastq(int index, int type) {
-        String datasetPath = null;
+    public double getMeanQ(int index, int type) {
+        String meanQAttributePath = null;
         String indexString;
-        FastAQFile ff = null;
+        double meanQ = 0;
         
-        log.println("    Trying to get type "+type+" from "+filename+" with index "+index);
+        log.println("    Trying to get mean Q type "+type+" from "+filename+" with index "+index);
         
         if (!isCorrupt) {
             if (index == -1) {
@@ -209,15 +222,15 @@ public class Fast5File {
 
             // Build path to dataset
             if (type == NanoOKOptions.TYPE_2D) {
-                datasetPath = "/Analyses/Basecall_2D_"+indexString+"/BaseCalled_2D/Fastq";
+                meanQAttributePath = "/Analyses/Basecall_2D_"+indexString+"/Summary/basecall_2d/mean_qscore";
             } else { 
                 // Now look if we are new format (with Basecall_1D_XXX)
                 if (oldFormat) {
                     // Old format
                     if (type == NanoOKOptions.TYPE_TEMPLATE) {
-                        datasetPath = "/Analyses/Basecall_2D_"+indexString+"/BaseCalled_template/Fastq";
+                        meanQAttributePath = "/Analyses/Basecall_2D_"+indexString+"/Summary/basecall_1d_template/mean_qscore";
                     } else if (type == NanoOKOptions.TYPE_COMPLEMENT) {
-                        datasetPath = "/Analyses/Basecall_2D_"+indexString+"/BaseCalled_complement/Fastq";
+                        meanQAttributePath = "/Analyses/Basecall_2D_"+indexString+"/Summary/basecall_1d_complement/mean_qscore";
                     } else {
                         System.out.println("Error: bad type in getFastq");
                         System.exit(1);
@@ -225,9 +238,9 @@ public class Fast5File {
                 } else {
                     // New format
                     if (type == NanoOKOptions.TYPE_TEMPLATE) {
-                        datasetPath = "/Analyses/Basecall_1D_"+indexString+"/BaseCalled_template/Fastq";
+                        meanQAttributePath = "/Analyses/Basecall_1D_"+indexString+"/Summary/basecall_1d_template/mean_qscore";
                     } else if (type == NanoOKOptions.TYPE_COMPLEMENT) {
-                        datasetPath = "/Analyses/Basecall_1D_"+indexString+"/BaseCalled_complement/Fastq";
+                        meanQAttributePath = "/Analyses/Basecall_1D_"+indexString+"/Summary/basecall_1d_complement/mean_qscore";
                     } else {
                         System.out.println("Error: bad type in getFastq");
                         System.exit(1);
@@ -236,13 +249,89 @@ public class Fast5File {
             }
         }
         
-        if (datasetPath != null) {
-            log.println("    Path: "+datasetPath);
-            if (datasets.contains(datasetPath)) {
-                log.println("    Found data: "+datasetPath);
-                ff = getFastqFromDataset(datasetPath);
+        if (meanQAttributePath != null) {
+            log.println("    Path: "+meanQAttributePath);
+            meanQ = getMeanQAttribute(meanQAttributePath);
+            log.println("    MeanQ: "+meanQ);
+        }
+        
+        return meanQ;        
+    }
+    
+    /**
+     * Get a FastQ/A file for given (Basecall_) index and type (2D/Template/Complement)
+     * @param index
+     * @param type
+     * @return 
+     */
+    public FastAQFile getFastq(int index, int type) {
+        String fastqDatasetPath = null;
+        String indexString;
+        FastAQFile ff = null;
+        
+        log.println("    Trying to get FASTQ type "+type+" from "+filename+" with index "+index);
+        
+        if (!isCorrupt) {
+            if (index == -1) {
+                if (type == NanoOKOptions.TYPE_2D) {
+                    index = highestBasecall2D;
+                } else {
+                    index = highestBasecall1D;
+                }
             } else {
-                log.println("    Not there: "+datasetPath);
+                int highestIndex = highestBasecall2D;
+                
+                if (type != NanoOKOptions.TYPE_2D) {
+                    highestIndex = highestBasecall1D;
+                } 
+                
+                if (index > highestIndex) {
+                    log.println("Error: index higher than highest Basecall available");
+                    isCorrupt = true;
+                }            
+            }
+        }
+        
+        if (!isCorrupt) {
+            // Make string for group
+            indexString = String.format("%03d", index);              
+
+            // Build path to dataset
+            if (type == NanoOKOptions.TYPE_2D) {
+                fastqDatasetPath = "/Analyses/Basecall_2D_"+indexString+"/BaseCalled_2D/Fastq";
+            } else { 
+                // Now look if we are new format (with Basecall_1D_XXX)
+                if (oldFormat) {
+                    // Old format
+                    if (type == NanoOKOptions.TYPE_TEMPLATE) {
+                        fastqDatasetPath = "/Analyses/Basecall_2D_"+indexString+"/BaseCalled_template/Fastq";
+                    } else if (type == NanoOKOptions.TYPE_COMPLEMENT) {
+                        fastqDatasetPath = "/Analyses/Basecall_2D_"+indexString+"/BaseCalled_complement/Fastq";
+                    } else {
+                        System.out.println("Error: bad type in getFastq");
+                        System.exit(1);
+                    }
+                } else {
+                    // New format
+                    if (type == NanoOKOptions.TYPE_TEMPLATE) {
+                        fastqDatasetPath = "/Analyses/Basecall_1D_"+indexString+"/BaseCalled_template/Fastq";
+                    } else if (type == NanoOKOptions.TYPE_COMPLEMENT) {
+                        fastqDatasetPath = "/Analyses/Basecall_1D_"+indexString+"/BaseCalled_complement/Fastq";
+                    } else {
+                        System.out.println("Error: bad type in getFastq");
+                        System.exit(1);
+                    }
+                }
+            }
+        }
+        
+        if (fastqDatasetPath != null) {
+            log.println("    Path: "+fastqDatasetPath);
+            if (datasets.contains(fastqDatasetPath)) {
+                log.println("    Found data: "+fastqDatasetPath);
+                ff = getFastqFromDataset(fastqDatasetPath);
+            } else {
+                log.println("    Not there: "+fastqDatasetPath);
             }
         }
         

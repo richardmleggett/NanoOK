@@ -18,25 +18,38 @@ import java.util.ArrayList;
 public class ReadFileMerger {
     private NanoOKOptions options;
     private ArrayList<String>[][] readFiles = new ArrayList[2][3];
+    private PrintWriter[][] summaryFiles = new PrintWriter[2][3];
     
     public ReadFileMerger(NanoOKOptions o) {    
         options = o;
 
-        for (int pf = 0; pf<2; pf++) {
-            for (int type=0; type<3; type++) {
-                readFiles[pf][type] = new ArrayList<String>();
+        try {
+            for (int pf = 0; pf<2; pf++) {
+                for (int type=0; type<3; type++) {
+                    readFiles[pf][type] = new ArrayList<String>();
+
+                    String pathname = options.getReadDir() + File.separator +
+                                      options.getSample() + "_all_" +
+                                      NanoOKOptions.getTypeFromInt(type) + "_" +
+                                      NanoOKOptions.getPassFailFromInt(pf + 1) +
+                                      ".stats";
+            
+                    options.getLog().println("Opening stats file "+pathname);
+                    summaryFiles[pf][type] = new PrintWriter(new FileWriter(pathname));
+                }
             }
+        } catch (Exception e) {
+            System.out.println("ReadFileMerger exception");
+            e.printStackTrace();
         }
     }
     
-    public synchronized void addReadFile(String pathname, int type) {
-        int pf = NanoOKOptions.READTYPE_PASS;
-        
-        if (pathname.contains("/fail/")) {
-            pf = NanoOKOptions.READTYPE_FAIL;
+    public synchronized void addReadFile(String pathname, int type, int pf, String readID, int readLength, double meanQ) {
+        if (options.mergeFastaFiles()) {
+            readFiles[pf-1][type].add(pathname);
         }
-                
-        readFiles[pf-1][type].add(pathname);
+        
+        summaryFiles[pf-1][type].println(pathname+"\t"+readID+"\t"+readLength+"\t"+meanQ);
     }
     
     public void writeMergedFiles() {
@@ -69,5 +82,14 @@ public class ReadFileMerger {
                 }
             }
         }
+    }
+    
+    public void closeFiles() {
+        options.getLog().println("Closing stats files");
+        for (int pf = 0; pf<2; pf++) {
+            for (int type=0; type<3; type++) {
+                summaryFiles[pf][type].close();
+            }
+        }       
     }
 }

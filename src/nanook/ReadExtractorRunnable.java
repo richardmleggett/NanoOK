@@ -40,6 +40,9 @@ public class ReadExtractorRunnable implements Runnable {
         inDir = in;
         filename = file;
         outDir = out;
+        
+        System.out.println("Error: Entered deprecated ReadExtractorRunnable!");
+        System.exit(1);
     }   
     
     /**
@@ -63,14 +66,14 @@ public class ReadExtractorRunnable implements Runnable {
                         String fastaqPathname = outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fasta";
                         ff.writeFasta(fastaqPathname, options.outputFast5Path() ? inputPathname:null);
                         if (options.mergeFastaFiles()) {
-                            options.getReadFileMerger().addReadFile(fastaqPathname, t);
+                            options.getReadFileMerger().addReadFile(fastaqPathname, t, 0, "", 0, 0);
                         }
                     } else if (options.getReadFormat() == NanoOKOptions.FASTQ) {
                         //String fastaqPathname = outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + outName + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq";
                         String fastaqPathname = outDir + File.separator + NanoOKOptions.getTypeFromInt(t) + File.separator + filePrefix + "_BaseCalled_" + NanoOKOptions.getTypeFromInt(t) + ".fastq";
                         ff.writeFastq(fastaqPathname);
                         if (options.mergeFastaFiles()) {
-                            options.getReadFileMerger().addReadFile(fastaqPathname, t);
+                            options.getReadFileMerger().addReadFile(fastaqPathname, t, 0, "", 0, 0);
                         }
                     }
                 }

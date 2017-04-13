@@ -175,6 +175,7 @@ public class ReadExtractor {
 
         System.out.println("");
 
+        options.getReadFileMerger().closeFiles();
         if (options.mergeFastaFiles()) {        
             System.out.println("");
             options.getReadFileMerger().writeMergedFiles();
