@@ -63,9 +63,14 @@ public class SequenceCoverage implements Serializable {
     public synchronized void addCoverage(int start, int size) {
         for (int i=start; i<(start+size); i++) {
             if (binEarly) {
-                coverage[i/binSize]++;
+                int b = i/binSize;
+                if (b < numBins) {
+                    coverage[b]++;
+                }
             } else {
-                coverage[i]++;
+                if (i < genomeSize) {
+                    coverage[i]++;
+                }
             }
         }
     }
