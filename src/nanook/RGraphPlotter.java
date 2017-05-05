@@ -74,13 +74,19 @@ public class RGraphPlotter {
         
         args.add("Rscript");
         args.add(options.getScriptsDir() + File.separator + scriptName);
+
+        if (fComparison) {
+            File f = new File(options.getAnalysisDir());
+            args.add(f.getName());
+        } else {
+            args.add(options.getAnalysisDir());
+        }
+        
+        args.add(options.getGraphsDir());
         
         if (fComparison) {
             args.add(options.getSampleList());
             args.add(options.getComparisonDir());
-        } else {
-            args.add(options.getAnalysisDir());
-            args.add(options.getGraphsDir());
         }
         
         if (refName != null) {
@@ -89,6 +95,8 @@ public class RGraphPlotter {
         }
 
         args.add(options.getImageFormat());
+        
+        //System.out.println(args);
                 
         executor.execute(new RGraphRunnable("Rscript", args, logFilename + ".txt"));
         writeProgress();

@@ -6,9 +6,11 @@ library(reshape2)
 
 # Filenames
 args <- commandArgs(TRUE)
-samplelist <- args[1];
-outdir <- args[2];
-format <- args[3];
+analysisdir <- args[1];
+graphsdir <- args[2];
+samplelist <- args[3];
+outdir <- args[4];
+format <- args[5];
 
 types = c("2D", "Template", "Complement");
 colours = c("#68B5B9", "#CF746D", "#91A851");
@@ -44,7 +46,7 @@ for (t in 1:3) {
     for (i in 1:nrow(data_samples)) {
         type = types[t];
         sampledir <- data_samples[i, "SampleDir"];
-        filename_lengths <- paste(sampledir, "/analysis/", "all_",type,"_lengths.txt", sep="");
+        filename_lengths <- paste(sampledir, "/", analysisdir, "/", "all_",type,"_lengths.txt", sep="");
         data_lengths = read.table(filename_lengths, col.name=c("name", "length"));
         #df$size <- data_lengths$length;
         thisid <- data_samples[i, "SampleName"];
@@ -57,7 +59,7 @@ for (t in 1:3) {
     # Read lengths
     imagewidth <- 1 + (nrow(data_samples) * 0.5);
     df <- do.call("rbind", listOfDataFrames);
-    output_file <- paste(outdir, "/graphs/", type, "_lengths.pdf", sep="");
+    output_file <- paste(graphsdir, "/", type, "_lengths.pdf", sep="");
     message(output_file);
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x=Sample, y=Length, fill=Sample)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + guides(fill=FALSE) + theme(text = element_text(size=textsize)) + ggtitle(types[t]));
@@ -66,10 +68,11 @@ for (t in 1:3) {
     # Bar stacked plot of mapping
     imagewidth <- 1 + (nrow(data_samples) * 0.5) + 1.5;
     filename_maps <- paste(outdir, "/", type,"_map_summary.txt", sep="");
+    message(filename_maps)
     #filename_maps <- c("~/temp/2D_map_summary.txt");
     data_maps = read.table(filename_maps, header=TRUE);
     df <- melt(data_maps, id.var="Sample")
-    output_file <- paste(outdir, "/graphs/", type, "_maps.pdf", sep="");
+    output_file <- paste(graphsdir, "/", type, "_maps.pdf", sep="");
     message(output_file);
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(df, aes(x = Sample, y = value, fill = variable)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(text = element_text(size=textsize)) + ggtitle(types[t]) + ylab("%"));
@@ -80,7 +83,7 @@ for (t in 1:3) {
     # Number of reads
     filename_comparison <- paste(outdir, "/", type,"_comparison.txt", sep="");
     data_comparison = read.table(filename_comparison, header=TRUE);
-    output_file <- paste(outdir, "/graphs/", type, "_number_of_reads.pdf", sep="");
+    output_file <- paste(graphsdir, "/", type, "_number_of_reads.pdf", sep="");
     message(output_file);
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(data_comparison, aes(x=data_comparison$Name, y=data_comparison$NumReads)) + geom_bar(stat="identity", fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Sample") + ylab("Number of reads") + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) + theme(axis.text.x = element_text(angle = 45, hjust = 1)))
@@ -88,7 +91,7 @@ for (t in 1:3) {
 
     # Total bases
     data_comparison = read.table(filename_comparison, header=TRUE);
-    output_file <- paste(outdir, "/graphs/", type, "_total_bases.pdf", sep="");
+    output_file <- paste(graphsdir, "/", type, "_total_bases.pdf", sep="");
     message(output_file);
     pdf(output_file, width=imagewidth, height = 4);
     print(ggplot(data_comparison, aes(x=data_comparison$Name, y=data_comparison$TotalBases)) + geom_bar(stat="identity", fill=colourcode) + ggtitle(type) + theme(text = element_text(size=textsize)) + xlab("Sample") + ylab("Total bases") + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.y=element_text(vjust=0.2)) + theme(axis.title.x=element_text(vjust=-0.2)) + theme(plot.margin = unit(c(0.02,0.02,0.04,0.02), "npc")) + theme(axis.title.x=element_text(vjust=-xvjust)) + theme(axis.title.y=element_text(vjust=yvjust)) + theme(axis.text.x = element_text(angle = 45, hjust = 1)))

@@ -169,6 +169,7 @@ public class CIGARString {
                         break;
                     case 'I':
                         if (n > 100) {
+                            // DEBUG MODE TURNS OFF THIS
                             System.out.println("");
                             System.out.println("Error: large I ("+n+") - read "+queryID+" ignored");
                             processed = false;

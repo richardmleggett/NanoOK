@@ -172,7 +172,10 @@ public class ComparisonReportWriter {
         ArrayList<ReferenceSequence> sortedRefs = options.getReferences().getSortedReferences();
         for (int i=0; i<sortedRefs.size(); i++) {
             ReferenceSequence rs = sortedRefs.get(i);
-            writeReferenceSection(rs);
+            
+            if ((options.debugMode() && (!rs.getName().equalsIgnoreCase("DNA_CS")))) {
+                writeReferenceSection(rs);
+            }
         }
     }   
     

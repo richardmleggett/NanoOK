@@ -204,6 +204,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -t|-numthreads <number> specifies the number of threads to use (default 1)");
             System.out.println("    -log <filename> enables debug logging to file");
             System.out.println("    -force to force NanoOK to ignore warnings");
+            System.out.println("    -timeout to set the number of seconds before giving up waiting for new reads (default 2)");
             System.out.println("");
             System.exit(0);
         }
@@ -572,22 +573,22 @@ public class NanoOKOptions implements Serializable {
             f.mkdir();
         }
         
-        f = new File(comparisonDir+File.separator+"graphs");
+        f = new File(this.getGraphsDir());
         if (!f.exists()) {
             f.mkdir();
         }
 
-        f = new File(comparisonDir+File.separator+"latex");
+        f = new File(this.getLatexDir());
         if (!f.exists()) {
             f.mkdir();
         }
         
-        f = new File(comparisonDir+File.separator+"logs");
+        f = new File(this.getLogsDir());
         if (!f.exists()) {
             f.mkdir();
         }        
 
-        f = new File(comparisonDir+File.separator+"logs"+File.separator+"R");
+        f = new File(this.getLogsDir()+File.separator+"R");
         if (!f.exists()) {
             f.mkdir();
         }            
@@ -1372,5 +1373,9 @@ public class NanoOKOptions implements Serializable {
     
     public void initialiseReadMerger() {
         readFileMerger = new ReadFileMerger(this);
+    }
+    
+    public boolean debugMode() {
+        return false;
     }
 }
