@@ -37,6 +37,7 @@ public class RGraphPlotter {
         File f = new File(logDirectory);
         if (!f.exists()) {
             f.mkdir();
+            options.getLog().println("Made directory " + logDirectory);
         }
     }
         
@@ -98,6 +99,8 @@ public class RGraphPlotter {
         
         //System.out.println(args);
                 
+        options.getLog().println("Running Rscript "+scriptName);
+        options.getLog().println("Log file is "+logFilename);
         executor.execute(new RGraphRunnable("Rscript", args, logFilename + ".txt"));
         writeProgress();
     }

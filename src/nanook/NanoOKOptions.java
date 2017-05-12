@@ -292,6 +292,9 @@ public class NanoOKOptions implements Serializable {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-reads") |  args[i].equalsIgnoreCase("-f")) {
                 readsDir = args[i+1];
+                if (readsDir.endsWith("/")) {
+                    readsDir = readsDir.substring(0, readsDir.length()-1);
+                }
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-maxreads")) {
                 maxReads = Integer.parseInt(args[i+1]);
