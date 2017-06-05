@@ -25,6 +25,27 @@ public class SampleChecker {
         return d.exists();
     }
     
+    private boolean checkIfDirHasSubdirs(String dir) {
+        File d = new File(dir);
+        File[] listOfFiles = d.listFiles();
+        boolean contains = false;
+
+        if (listOfFiles == null) {
+            contains = false;
+        } else if (listOfFiles.length <= 0) {
+            contains = false;
+        } else {
+            for (File file : listOfFiles) {
+                if (file.isDirectory()) {
+                    contains = true;
+                    break;
+                }
+            }
+        }
+        
+        return contains;
+    }
+    
     private void checkForBarcodeAndBatch(String dir) {
         File d = new File(dir);
         File[] listOfFiles = d.listFiles();
@@ -39,7 +60,12 @@ public class SampleChecker {
                 if (file.isDirectory()) {
                     if (file.getName().startsWith("BC") || file.getName().startsWith("barcode")) {
                         usingBarcodes = true;
-                        checkForBarcodeAndBatch(file.getPath());
+                        if (usingBatchDirs == false) {
+                            if (checkIfDirHasSubdirs(file.getPath())) {
+                                usingBatchDirs = true;
+                            }
+                        }
+                        //checkForBarcodeAndBatch(file.getPath());
                     } else if (file.getName().startsWith("batch_")) {
                         usingBatchDirs = true;
                         break;
@@ -51,7 +77,7 @@ public class SampleChecker {
             }
             
             if ((usingBarcodes == false) && (usingBatchDirs == false) && (foundSubDir == true)) {
-                System.out.println("Found subdirectory, assuming Albacore output");
+                System.out.println("Found subdirectory, assuming batched output");
                 usingBatchDirs = true;
             }
         }        
@@ -83,15 +109,16 @@ public class SampleChecker {
             usingPassFailDirs = true;
             checkForBarcodeAndBatch(failDir);
         } else {
-            File[] listOfFiles = f.listFiles();
-            usingPassFailDirs = false;
-            usingBatchDirs = false;
-            for (File file : listOfFiles) {
-                if (file.isDirectory()) {
-                    usingBatchDirs = true;
-                    break;                    
-                }
-            }
+            checkForBarcodeAndBatch(options.getFast5Dir());
+            //File[] listOfFiles = f.listFiles();
+            //usingPassFailDirs = false;
+            //usingBatchDirs = false;
+            //for (File file : listOfFiles) {
+            //    if (file.isDirectory()) {
+            //        usingBatchDirs = true;
+            //        break;                    
+            //    }
+            //}
         }
         
         showDirectoryType();

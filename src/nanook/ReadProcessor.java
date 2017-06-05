@@ -121,8 +121,8 @@ public class ReadProcessor {
             }
         } else {
             processDirectory(options.getFast5Dir(),
-                             false,
-                             true,
+                             options.isBarcoded(),
+                             options.isBarcoded() ? false:true,
                              NanoOKOptions.READTYPE_COMBINED);
         }        
     }
@@ -153,7 +153,7 @@ public class ReadProcessor {
                         //if (options.usingBatchDirs()) {
                             processDirectory(options.getReadDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
                                              options.isBarcoded(),
-                                             true,
+                                             options.isBarcoded() ? false:true,
                                              NanoOKOptions.READTYPE_FAIL);                            
                         //} else {
                         //    processDirectory(options.getReadDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
@@ -163,8 +163,8 @@ public class ReadProcessor {
                     }
                 } else {
                     processDirectory(options.getReadDir() + File.separator + NanoOKOptions.getTypeFromInt(t),
-                                     false,
-                                     true,
+                                     options.isBarcoded(),
+                                     options.isBarcoded() ? false:true,
                                      NanoOKOptions.READTYPE_COMBINED);
                 }        
             }
@@ -194,7 +194,7 @@ public class ReadProcessor {
                         //if (options.usingBatchDirs()) {
                             processDirectory(options.getAlignerDir() + File.separator + "pass" + File.separator + NanoOKOptions.getTypeFromInt(t),
                                              options.isBarcoded(),
-                                             true,
+                                             options.isBarcoded() ? false:true,
                                              NanoOKOptions.READTYPE_FAIL);                            
                         //} else {
                         //    processDirectory(options.getAlignerDir() + File.separator + "fail" + File.separator + NanoOKOptions.getTypeFromInt(t),
@@ -204,8 +204,8 @@ public class ReadProcessor {
                     }
                 } else {
                     processDirectory(options.getAlignerDir() + File.separator + NanoOKOptions.getTypeFromInt(t),
-                                     false,
-                                     true,
+                                     options.isBarcoded(),
+                                     options.isBarcoded() ? false:true,
                                      NanoOKOptions.READTYPE_COMBINED);
                 }        
             }
