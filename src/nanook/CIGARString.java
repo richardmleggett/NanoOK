@@ -133,6 +133,7 @@ public class CIGARString {
         int matchCount = 0;
         boolean processed = true;
         
+        //System.out.println("Query filename: "+queryFilename);
         //System.out.println("CIGAR: "+cigarString);
         //System.out.println("  Hit: "+hitSeq.length()+" "+hitSeq);
         //System.out.println("Query: "+querySeq.length()+" "+querySeq);
@@ -146,6 +147,7 @@ public class CIGARString {
             //System.out.println("Query: " + queryString.toString());
             //System.out.println("  Hit: " + hitString.toString());
             char c = cigarString.charAt(i);
+            
             if (Character.isDigit(c)) {
                 value = value + c;
             } else {

@@ -104,6 +104,9 @@ public abstract class SAMParser {
         int queryStart;
         Alignment al = null;
         
+        //System.out.println("Alignment file "+alignmentFile);
+        //System.out.println("CIGAR string "+cigar);
+        
         if (options.getAligner().equals("blasr")) {
             queryName = cols[0].substring(0, cols[0].lastIndexOf("/"));
         }

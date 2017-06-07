@@ -969,6 +969,9 @@ public class NanoOKOptions implements Serializable {
             case "marginalign":
                 parser = new MarginAlignParser(this, references);                                    
                 break;
+            case "graphmap":
+                parser = new GraphMapParser(this, references);
+                break;
             default:
                 System.out.println("Aligner unknown!");
                 System.out.println("");
