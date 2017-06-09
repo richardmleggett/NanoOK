@@ -206,6 +206,8 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -force to force NanoOK to ignore warnings");
             System.out.println("    -timeout to set the number of seconds before giving up waiting for new reads (default 2)");
             System.out.println("");
+            System.out.println("Valid aligners: last, bwa, blasr, marginalign, graphmap");
+            System.out.println("");
             System.exit(0);
         }
         
