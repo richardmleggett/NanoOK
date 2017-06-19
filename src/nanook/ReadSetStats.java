@@ -29,7 +29,7 @@ public class ReadSetStats implements Serializable {
     private String typeString = "";
     private int longest = 0;
     private int shortest = NanoOKOptions.MAX_READ_LENGTH;
-    private int basesSum = 0;
+    private long basesSum = 0;
     private double meanLength = 0;
     private int n50 = 0;
     private int n50Count = 0;
@@ -247,7 +247,7 @@ public class ReadSetStats implements Serializable {
      * Get total bases represented by read set.
      * @return number of bases
      */
-    public synchronized int getTotalBases() {
+    public synchronized long getTotalBases() {
         return basesSum;
     }    
     
