@@ -31,15 +31,15 @@ public class ReferenceSequenceStats implements Serializable {
     private int[] readCumulativeBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
     private int longestPerfectKmer = 0;
     private int nReadsWithAlignments = 0;
-    private int totalReadBases = 0;
-    private int totalAlignedBases = 0;
-    private int totalAlignedBasesWithoutIndels = 0;
-    private int totalIdentical = 0;
+    private long totalReadBases = 0;
+    private long totalAlignedBases = 0;
+    private long totalAlignedBasesWithoutIndels = 0;
+    private long totalIdentical = 0;
     private int nDeletionErrors = 0;
     private int nInsertionErrors = 0;
     private int nSubstitutionErrors = 0;
-    private int nInsertedBases = 0;
-    private int nDeletedBases = 0;
+    private long nInsertedBases = 0;
+    private long nDeletedBases = 0;
     private int largestInsertion = 0;
     private int largestDeletion = 0;
     private int insertionSizes[] = new int[MAX_INDEL];
@@ -459,7 +459,7 @@ public class ReferenceSequenceStats implements Serializable {
      * Get the number of aligned bases
      * @return number of bases
      */
-    public synchronized int getTotalAlignedBases() {
+    public synchronized long getTotalAlignedBases() {
         return totalAlignedBases;
     }
     
