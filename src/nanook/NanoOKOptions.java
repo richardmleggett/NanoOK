@@ -173,6 +173,8 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -aligner <name> specifies the aligner (default last)"); 
             System.out.println("    -alignerparams <params> specifies paramters to the aligner");
             System.out.println("    -showaligns echoes aligner commands to screen");
+            System.out.println("    -a|-fasta specifies FASTA file input (default)");
+            System.out.println("    -q|-fastq specifies FASTQ file input");
             System.out.println("");
             System.out.println("analyse options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
