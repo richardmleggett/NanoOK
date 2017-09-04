@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public class CIGARString {
     private StringBuilder queryString = new StringBuilder("");
     private StringBuilder hitString = new StringBuilder("");
+    private String alignmentFilename;
     private String hitFilename;
     private String cigarString;
     private String querySeq;
@@ -39,7 +40,7 @@ public class CIGARString {
      * @param hf
      * @param hr 
      */
-    public CIGARString(String cs, String qseq, String qf, String qi, int hs, String hf, ReferenceSequence hr) {
+    public CIGARString(String cs, String qseq, String qf, String qi, int hs, String hf, ReferenceSequence hr, String af) {
         cigarString = cs;
         querySeq = qseq;
         queryFilename = qf;
@@ -48,6 +49,7 @@ public class CIGARString {
         hitFilename = hf;
         hitReference = hr;
         queryStart = 0;
+        alignmentFilename = af;
         
         //trimCIGAR(cs, qseq);
     }
@@ -138,120 +140,131 @@ public class CIGARString {
         //System.out.println("  Hit: "+hitSeq.length()+" "+hitSeq);
         //System.out.println("Query: "+querySeq.length()+" "+querySeq);
 
-        hitAlnSize = 0;
-        queryAlnSize = 0;
-        hitAlnSize = 0;
-        while ((i<cigarString.length()) && (continueParsing)) {
-        //for (int i=0; i<cigarString.length(); i++) {
-            //System.out.println("hitPtr="+hitPtr+" queryPtr="+queryPtr);
-            //System.out.println("Query: " + queryString.toString());
-            //System.out.println("  Hit: " + hitString.toString());
-            char c = cigarString.charAt(i);
-            
-            if (Character.isDigit(c)) {
-                value = value + c;
-            } else {
-                int n = Integer.parseInt(value);
-                totalCount += n;
-                //System.out.println(n + " " + c);
-                switch(c) {
-                    case 'M':
-                    case '=':
-                    case 'X':
-                        //System.out.println(hitString.length() + " " + hitPtr);
-                        //System.out.println("Hit up: " + hitSeq.substring(hitPtr));
-                        queryString.append(querySeq.substring(queryPtr, queryPtr + n));
-                        hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
-                        queryPtr += n;
-                        hitPtr += n;
-                        queryAlnSize += n;
-                        hitAlnSize += n;
-                        donePreClipping = true;
-                        matchCount+=n;
-                        break;
-                    case 'I':
-                        if (n > 100) {
-                            // DEBUG MODE TURNS OFF THIS
-                            System.out.println("");
-                            System.out.println("Error: large I ("+n+") - read "+queryID+" ignored");
-                            processed = false;
-                            continueParsing = false;
-                        } else {
+        try {
+            hitAlnSize = 0;
+            queryAlnSize = 0;
+            hitAlnSize = 0;
+            while ((i<cigarString.length()) && (continueParsing)) {
+            //for (int i=0; i<cigarString.length(); i++) {
+                //System.out.println("hitPtr="+hitPtr+" queryPtr="+queryPtr);
+                //System.out.println("Query: " + queryString.toString());
+                //System.out.println("  Hit: " + hitString.toString());
+                char c = cigarString.charAt(i);
+
+                if (Character.isDigit(c)) {
+                    value = value + c;
+                } else {
+                    int n = Integer.parseInt(value);
+                    totalCount += n;
+                    //System.out.println(n + " " + c);
+                    switch(c) {
+                        case 'M':
+                        case '=':
+                        case 'X':
+                            //System.out.println(hitString.length() + " " + hitPtr);
+                            //System.out.println("Hit up: " + hitSeq.substring(hitPtr));
                             queryString.append(querySeq.substring(queryPtr, queryPtr + n));
-                            for (int j=0; j<n; j++) {
-                                hitString.append('-'); 
-                            }
+                            hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
                             queryPtr += n;
+                            hitPtr += n;
                             queryAlnSize += n;
-                        }
-                        donePreClipping = true;
-                        insCount+=n;
-                        break;
-                    case 'D':
-                        if (n > 100) {
-                            System.out.println("Error: large D ("+n+") - read "+queryID+" ignored");
-                            processed = false;
-                            continueParsing = false;
-                        } else {
+                            hitAlnSize += n;
+                            donePreClipping = true;
+                            matchCount+=n;
+                            break;
+                        case 'I':
+                            if (n > 100) {
+                                // DEBUG MODE TURNS OFF THIS
+                                System.out.println("");
+                                System.out.println("Error: large I ("+n+") - read "+queryID+" ignored");
+                                processed = false;
+                                continueParsing = false;
+                            } else {
+                                queryString.append(querySeq.substring(queryPtr, queryPtr + n));
+                                for (int j=0; j<n; j++) {
+                                    hitString.append('-'); 
+                                }
+                                queryPtr += n;
+                                queryAlnSize += n;
+                            }
+                            donePreClipping = true;
+                            insCount+=n;
+                            break;
+                        case 'D':
+                            if (n > 100) {
+                                System.out.println("Error: large D ("+n+") - read "+queryID+" ignored");
+                                processed = false;
+                                continueParsing = false;
+                            } else {
+                                hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
+                                for (int j=0; j<n; j++) {
+                                    queryString.append('-'); 
+                                }
+                                hitPtr += n;
+                                hitAlnSize += n;
+                            }
+                            donePreClipping = true;
+                            delCount+=n;
+                            break;
+                        case 'N':
+                            System.out.println("Warning: encountered N in CIGAR format!");
+                            System.out.println("");
+                            displayResult = true;
                             hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
                             for (int j=0; j<n; j++) {
                                 queryString.append('-'); 
                             }
+                            queryPtr += n;
                             hitPtr += n;
-                            hitAlnSize += n;
-                        }
-                        donePreClipping = true;
-                        delCount+=n;
-                        break;
-                    case 'N':
-                        System.out.println("Warning: encountered N in CIGAR format!");
-                        System.out.println("");
-                        displayResult = true;
-                        hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
-                        for (int j=0; j<n; j++) {
-                            queryString.append('-'); 
-                        }
-                        queryPtr += n;
-                        hitPtr += n;
-                        donePreClipping = true;
-                        break;
-                    case 'S':
-                        //System.out.println("Warnning: encountered S in CIGAR format!");
-                        queryPtr += n;
-                        if (!donePreClipping) {
-                            queryStart += n;
-                        }
-                        displayResult = true;                        
-                        break;
-                    case 'H':
-                        //System.out.println("Warning: encountered H in CIGAR format!");
-                        if (!donePreClipping) {
-                            queryStart += n;
-                        } else {
-                            //System.out.println("Warning: hard clipping at end");
-                        }
-                        displayResult = true;
-                        break;
-                    case 'P':
-                        System.out.println("Warning: encountered P in CIGAR format!");
-                        System.out.println("");
-                        displayResult = true;
-                        donePreClipping = true;
-                        break;
-                    default:
-                        System.out.println("Unrecognised character in CIGAR string: "+c);
-                        processed = false;
-                        break;
+                            donePreClipping = true;
+                            break;
+                        case 'S':
+                            //System.out.println("Warnning: encountered S in CIGAR format!");
+                            queryPtr += n;
+                            if (!donePreClipping) {
+                                queryStart += n;
+                            }
+                            displayResult = true;                        
+                            break;
+                        case 'H':
+                            //System.out.println("Warning: encountered H in CIGAR format!");
+                            if (!donePreClipping) {
+                                queryStart += n;
+                            } else {
+                                //System.out.println("Warning: hard clipping at end");
+                            }
+                            displayResult = true;
+                            break;
+                        case 'P':
+                            System.out.println("Warning: encountered P in CIGAR format!");
+                            System.out.println("");
+                            displayResult = true;
+                            donePreClipping = true;
+                            break;
+                        default:
+                            System.out.println("Unrecognised character in CIGAR string: "+c);
+                            processed = false;
+                            break;
+                    }
+                    value="";
+                    tagCtr++;
+                    //System.out.println("qseq="+querySeq.length()+" matchCount="+matchCount+" insCount="+insCount+" delCount="+delCount+" totalCount="+totalCount);
+                    //System.out.println("Query: "+queryString.toString());
+                    //System.out.println("  Hit: "+hitString.toString());
                 }
-                value="";
-                tagCtr++;
-                //System.out.println("qseq="+querySeq.length()+" matchCount="+matchCount+" insCount="+insCount+" delCount="+delCount+" totalCount="+totalCount);
-                //System.out.println("Query: "+queryString.toString());
-                //System.out.println("  Hit: "+hitString.toString());
+
+                i++;
+                //System.out.println("i="+i+" and length="+cigarString.length());
             }
-            
-            i++;
-            //System.out.println("i="+i+" and length="+cigarString.length());
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("");
+            System.out.println("Additional error information");
+            System.out.println("Alignment file: " + alignmentFilename);
+            System.out.println("    Query file: " + queryFilename);
+            System.out.println("      Hit file: " + hitFilename);
+            System.out.println("  CIGAR string: " + cigarString);
+            System.exit(1);
         }
         
         //if (displayResult) {

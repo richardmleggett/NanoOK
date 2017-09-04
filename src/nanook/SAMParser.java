@@ -116,7 +116,7 @@ public abstract class SAMParser {
             if (readReference != null) {        
                 int readLength = overallStats.getReadLength(alignmentFile, queryName);
                 if (readLength != -1) {
-                    CIGARString cs = new CIGARString(cigar, seq, leafName, queryName, hitStart, options.getReferenceFile(), readReference);
+                    CIGARString cs = new CIGARString(cigar, seq, leafName, queryName, hitStart, options.getReferenceFile(), readReference, alignmentFile);
                     if (cs.processString()) {
                     //System.out.println("hitName "+hitName);
                         al = new Alignment(mapQuality,

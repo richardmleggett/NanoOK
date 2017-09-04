@@ -3,6 +3,5 @@ build.xml
 manifest.mf
 nbproject
 dist/README.TXT
-
-
+docs
 install-packages.R

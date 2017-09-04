@@ -62,6 +62,7 @@ public class NanoOKOptions implements Serializable {
     private int coverageBinSize = 100;
     private boolean processPassReads = true;
     private boolean processFailReads = true;
+    private boolean processSkipReads = true;
     private boolean parseAlignments = true;
     private boolean plotGraphs = true;
     private boolean makeReport = true;
@@ -153,7 +154,7 @@ public class NanoOKOptions implements Serializable {
         
         if (args.length <= 1) {
             System.out.println("");
-            System.out.println("Syntax nanook <extract|align|analyse|compare|process> [options]");
+            System.out.println("Syntax nanook <extract|align|analyse|compare|rt> [options]");
             System.out.println("");
             System.out.println("extract options:");
             System.out.println("    -s|-sample <dir> specifies sample directory");
@@ -188,7 +189,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -o|-outputdir <directory> specifies an output directory");
             System.out.println("    -type <2d|template|complement> specifies an output directory");
             System.out.println("");
-            System.out.println("process options:");
+            System.out.println("rt options:");
             System.out.println("    -process <file> specifies a process file");
             System.out.println("");
             //System.out.println("Sample type options:");
@@ -245,7 +246,7 @@ public class NanoOKOptions implements Serializable {
             runMode = MODE_COMPARE;
         } else if (args[i].equals("watch")) {
             runMode = MODE_WATCH;
-        } else if ((args[i].equals("process")) || (args[i].equals("scan"))) {
+        } else if ((args[i].equals("process")) || (args[i].equals("scan")) || (args[i].equals("rt"))) {
             runMode = MODE_PROCESS;
         } else {
             System.out.println("Unknonwn mode " + args[i] + " - must be extract, align or analyse");
@@ -453,7 +454,7 @@ public class NanoOKOptions implements Serializable {
                 
         initialiseBlastHandlers();
         
-        System.out.println("Number of cores: "+Runtime.getRuntime().availableProcessors());
+        //System.out.println("Number of cores: "+Runtime.getRuntime().availableProcessors());
         
         executor = new ThreadPoolExecutor(numThreads, numThreads, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }    
@@ -833,6 +834,14 @@ public class NanoOKOptions implements Serializable {
      */
     public boolean isProcessingFailReads() {
         return processFailReads;
+    }
+
+    /**
+     * Check if processing "skip" reads.
+     * @return true to process
+     */
+    public boolean isProcessingSkipReads() {
+        return processSkipReads;
     }
     
     public boolean isProcessingComplementReads() {
