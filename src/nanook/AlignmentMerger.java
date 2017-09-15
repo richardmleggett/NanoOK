@@ -111,8 +111,8 @@ public class AlignmentMerger {
      * @param a a Alignment
      */
     public void addAlignment(Alignment a) {
-        String hitSeq = a.getHitString();
-        String querySeq = a.getQueryString();
+        String hitSeq = a.getHitString().toUpperCase();
+        String querySeq = a.getQueryString().toUpperCase();
         int hitSize = hitSeq.length();
         int querySize = querySeq.length();
         int loopFrom = 0;
