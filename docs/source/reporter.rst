@@ -26,7 +26,7 @@ Loading the BAMBI data
 
 -  Untar the BAMBI dataset::
 
-     tar -xvzf BAMBI\_P8\_2D\_Local\_070317.tar.gz
+     tar -xvzf BAMBI_P8_2D_Local_070317.tar.gz
 
 -  This is a NanoOK sample directory containing just the BLAST
    subdirectories - it is these that NanoOK Reporter uses.

@@ -1,3 +1,5 @@
+.. _nanookrt:
+
 NanoOK RT
 =========
 

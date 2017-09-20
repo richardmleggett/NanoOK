@@ -10,6 +10,8 @@ NanoOK
    :hidden:
    
    installation
+   docker
+   virtualbox
    running
    report
    howitworks
@@ -27,9 +29,9 @@ NanoOK has a number of dependencies - Perl, LaTeX, R and an alignment tool - whi
 
 Further information:
 
-* To find out how to install NanoOK, see the Download and installation page.
-* For further information on NanoOK RT, see these comments.
-* To find out how to run NanoOK, see the Running NanoOK page or the NanoOK tutorial page.
+* To find out how to install NanoOK, see the :ref:`Download and installation page <installation>`.
+* For further information on NanoOK RT, see :ref:`these comments <nanookrt>`.
+* To find out how to run NanoOK, see the :ref:`Running NanoOK page <running>` or the :ref:`NanoOK tutorial page <tutorial>`.
 * Source code is on `GitHub <https://github.com/TGAC/NanoOK>`_.
 * Here's some information `about the other Nanook <http://en.wikipedia.org/wiki/Nanook>`_.
 
@@ -50,10 +52,3 @@ You can follow NanoOK updates on twitter `@NanoOK_Software <https://twitter.com/
 
 Or if you would like to be on a NanoOK mailing list to receive information about updates, please email richard.leggett@tgac.ac.uk.
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
