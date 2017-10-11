@@ -3,7 +3,7 @@
 Running NanoOK
 ==============
 
-**Note about Albacore FASTQ output:** We are currently working on support for the Albacore FASTQ output structure, but this is not yet ready. In the meantime, the easiest approach is to use Albacore fast5 output, followed by nanook extract. This also lets you filter your reads according to a minimum quality threshold.
+**Note about Albacore FASTQ output:** We are currently working on support for the Albacore FASTQ output structure, but this is not yet ready. In the meantime, the easiest approach is to use Albacore fast5 output, followed by nanook extract. This also lets you filter your reads according to a minimum quality threshold. Alternatively, you can run nanook_split_reads (see below) in order to split to separate FASTQ/FASTA files before running nanook align.
 
 Overview
 --------
@@ -289,23 +289,20 @@ supported aligners:
 | GraphMap                             | ""                                   |
 +--------------------------------------+--------------------------------------+
 
-Using poretools for FASTA extraction
-------------------------------------
+nanoon_split_reads
+------------------
 
-If you already use poretools for FASTA extraction, then you don't need
-to run ``nanook extract`` if you don't wish to. However the one issue is
-that poretools outputs reads in a combined FASTA file, whereas NanoOK
-expects each read to be in a separate FASTA file. A script called
-``nanook_split_fasta`` will split reads out into separate files, for
-example::
+If you don’t have individual read files, but they are merged into a single
+FASTA/Q, NanoOK currently cannot process them. However, you can use
+``nanook_split_reads`` to split them into separate files, for example::
 
-  nanook_split_fasta -i input.fasta -o outputdir
+  nanook_split_reads -i input.fasta -o outputdir
 
 Additionally, you will need to place your files within the directory
 structure expected by NanoOK, e.g.::
 
-  mkdir -p fasta/pass/2D poretools fasta --type 2D fast5/ > all\_2D.fasta
-  nanook_split_fasta -i all_2D.fasta -o fasta/pass/2D
+  mkdir -p fasta/pass/2D
+  nanook_split_reads -i all_2D.fasta -o fasta/pass/2D
 
 **If at all possible, use NanoOK to do the extraction as well - you are
 far less likely to run into problems with the align and analyse
