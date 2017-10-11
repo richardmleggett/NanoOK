@@ -3,7 +3,7 @@
 Running NanoOK
 ==============
 
-**Note about Albacore FASTQ output:** We are currently working on support for the Albacore FASTQ output structure, but this is not yet ready. In the meantime, the easiest approach is to use Albacore fast5 output, followed by nanook extract. This also lets you filter your reads according to a minimum quality threshold. Alternatively, you can run nanook_split_reads (see below) in order to split to separate FASTQ/FASTA files before running nanook align.
+**Note about Albacore FASTQ output:** We are currently working on support for the Albacore FASTQ output structure, but this is not yet ready. In the meantime, the easiest approach is to use Albacore fast5 output, followed by nanook extract. This also lets you filter your reads according to a minimum quality threshold. Alternatively, you can run nanook_split_reads (see `nanook_split_reads`_) in order to split to separate FASTQ/FASTA files before running nanook align.
 
 Overview
 --------
@@ -289,7 +289,7 @@ supported aligners:
 | GraphMap                             | ""                                   |
 +--------------------------------------+--------------------------------------+
 
-nanoon_split_reads
+nanook_split_reads
 ------------------
 
 If you don’t have individual read files, but they are merged into a single
