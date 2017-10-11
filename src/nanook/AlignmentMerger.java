@@ -30,6 +30,8 @@ public class AlignmentMerger {
     private int overallQueryEnd = -1;
     private int overallHitStart = -1;
     private int overallHitEnd = -1;
+    private String overallHitStrand = "+";
+    private String overallQueryStrand = "+";
     private int hitSeqSize = 0;
     private int querySeqSize = 0;
     private String queryName = null;
@@ -37,6 +39,7 @@ public class AlignmentMerger {
     private int identicalBases = 0;
     private int alignmentSize = 0;
     private int alignmentSizeWithoutIndels = 0;
+    private int alignmentsMerged = 0;
 
     // Bodge for speed - need to change way AlignmentInfo works
     int kSizes[] = {15, 17, 19, 21, 23, 25};
@@ -181,7 +184,13 @@ public class AlignmentMerger {
             }
         }
         
-        if (mergeAlignment) {
+        if (mergeAlignment) {            
+            if (alignmentsMerged == 0) {
+                overallHitStrand = a.getHitStrand();
+                overallQueryStrand = a.getQueryStrand();
+            }
+            alignmentsMerged++;
+            
             // Store alignment size
             if ((overallQueryStart == -1) || (queryPos < overallQueryStart)) {
                 overallQueryStart = queryPos;
@@ -408,4 +417,13 @@ public class AlignmentMerger {
     public int getAlignmentSize() {
         return alignmentSizeWithoutIndels;
     }
+    
+    public String getOverallQueryStrand() {
+       return overallQueryStrand;
+    }
+
+    public String getOverallHitStrand() {
+       return overallHitStrand;
+    }
 }
+
