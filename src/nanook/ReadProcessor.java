@@ -133,6 +133,11 @@ public class ReadProcessor {
         // If using old style, then we go sample/fasta/pass/2D
         //                             or sample/fasta/pass/2D/barcodeXXX/barcodeXXX
 
+        options.getLog().println("Adding directories");
+        options.getLog().println("usingPassFailDirs: " + options.usingPassFailDirs());
+        options.getLog().println("isProcessingPassReads: " + options.isProcessingPassReads());
+        options.getLog().println("isProcessingFailReads: " + options.isProcessingFailReads());
+        
         for (int t=0; t<3; t++) {   
             if (options.isProcessingReadType(t)) {
                 if (options.usingPassFailDirs()) {
@@ -218,6 +223,11 @@ public class ReadProcessor {
     public void process() throws InterruptedException {      
         String baseDir = "";
         
+        options.getLog().println("extractingReads: "+options.isExtractingReads());
+        options.getLog().println("aligningReads: "+options.isAligningRead());
+        options.getLog().println("parsingReads: "+options.isParsingRead());
+        options.getLog().println("blastingReads: "+options.isBlastingRead());
+        
         if (options.isExtractingReads()) {
             options.getSampleChecker().checkFast5Directory();
             addDirsForExtract();
@@ -227,6 +237,9 @@ public class ReadProcessor {
         } else if (options.isParsingRead()) {
             options.getSampleChecker().checkReadDirectory();
             addDirsForParse();
+        } else if (options.isBlastingRead()) {
+            options.getSampleChecker().checkReadDirectory();
+            addDirsForAlign();
         }
         
         

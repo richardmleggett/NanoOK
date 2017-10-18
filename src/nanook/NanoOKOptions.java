@@ -1209,9 +1209,6 @@ public class NanoOKOptions implements Serializable {
         if (this.isExtractingReads()) {
             checkAndMakeDirectory(this.getReadDir());
             
-            if (this.isBlastingRead()) {
-                checkAndMakeDirectory(this.getReadDir() + "_chunks");
-            }
             //if (this.isNewStyleDir()) {
             //    for (int i=READTYPE_PASS; i<=READTYPE_FAIL; i++) {
             //        String pf = NanoOKOptions.getPassFailFromInt(i);
@@ -1227,6 +1224,10 @@ public class NanoOKOptions implements Serializable {
             //        }
             //    }
             //}                
+        }
+
+        if (this.isBlastingRead()) {
+            checkAndMakeDirectory(this.getReadDir() + "_chunks");
         }
         
         if (this.isAligningRead()) {

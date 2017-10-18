@@ -319,6 +319,14 @@ public class ReadProcessorRunnable implements Runnable {
         }
     }
 
+    private void runBlast(String fastaqPathname) {
+        for (int t=0; t<3; t++) {
+            if (options.isProcessingReadType(t)) {
+                addToBlast(fastaqPathname, t);
+            }
+        }
+    }
+    
     public void run() {
         while (!fileWatcher.timedOut()) {
             FileWatcherItem fwi = null; 
@@ -360,7 +368,12 @@ public class ReadProcessorRunnable implements Runnable {
                         alignmentPathname = nextPathname;
                         runParse(nextPathname);
                     }
-                }                
+                } else if (options.isBlastingRead()) {               
+                    if (nextPathname.toLowerCase().endsWith(".fasta") || 
+                        nextPathname.toLowerCase().endsWith(".fastq")) {
+                        runBlast(nextPathname);
+                    }                
+                }
             }
         }
         
