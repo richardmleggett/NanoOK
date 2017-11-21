@@ -135,7 +135,7 @@ public class BlastHandler {
                     options.getLog().println("Writing blast command file "+commandFile);
                     PrintWriter pw = new PrintWriter(new FileWriter(commandFile));
                     // TODO: -task option shouldn't be hardcoded
-                    pw.write(blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue 0.001 -show_gis -task blastn -out " + outputBlast + " -outfmt "+formatString);
+                    pw.write(blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue 0.001 -show_gis -task megablast -out " + outputBlast + " -outfmt "+formatString);
                     pw.close();
 
                     options.getLog().println("Submitting blast command file to SLURM "+commandFile);

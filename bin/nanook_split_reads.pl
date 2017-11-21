@@ -127,8 +127,12 @@ while(<INPUTFILE>) {
         $read_id = $newid;
     }
 
-    if ($output_format eq "FASTQ") {
-        my $out_filename = $output_dir."/".$chunk."/".$read_id.".fasta";
+    if ($output_format eq "FASTQ") {    
+        if ($input_format eq "FASTA") {
+            $header_line =~ s/^>/@/;
+        }
+
+        my $out_filename = $output_dir."/".$chunk."/".$read_id.".fastq";
         open(OUTFILE, ">".$out_filename) or die "Can't open output ".$out_filename."\n";
         print OUTFILE $header_line;
         print OUTFILE $sequence;
@@ -136,7 +140,11 @@ while(<INPUTFILE>) {
         print OUTFILE $qualities;
         close(OUTFILE);
     } else {
-        my $out_filename = $output_dir."/".$chunk."/".$read_id.".fastq";
+        if ($input_format eq "FASTQ") {
+            $header_line =~ s/^@/>/;
+        }
+
+        my $out_filename = $output_dir."/".$chunk."/".$read_id.".fasta";
         open(OUTFILE, ">".$out_filename) or die "Can't open output ".$out_filename."\n";
         print OUTFILE $header_line;
         print OUTFILE $sequence;
