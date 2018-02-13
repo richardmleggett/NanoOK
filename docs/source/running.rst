@@ -294,15 +294,15 @@ nanook_split_reads
 
 If you don’t have individual read files, but they are merged into a single
 FASTA/Q, NanoOK currently cannot process them. However, you can use
-``nanook_split_reads`` to split them into separate files, for example::
+``nanook_split_reads.pl`` to split them into separate files, for example::
 
-  nanook_split_reads -i input.fasta -o outputdir
+  nanook_split_reads.pl -i input.fasta -o outputdir
 
 Additionally, you will need to place your files within the directory
 structure expected by NanoOK, e.g.::
 
   mkdir -p fasta/pass/2D
-  nanook_split_reads -i all_2D.fasta -o fasta/pass/2D
+  nanook_split_reads.pl -i all_2D.fasta -o fasta/pass/2D
 
 **If at all possible, use NanoOK to do the extraction as well - you are
 far less likely to run into problems with the align and analyse

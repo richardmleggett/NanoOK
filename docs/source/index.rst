@@ -50,5 +50,5 @@ Follow us
 =========
 You can follow NanoOK updates on twitter `@NanoOK_Software <https://twitter.com/nanook_software>`_.
 
-Or if you would like to be on a NanoOK mailing list to receive information about updates, please email richard.leggett@tgac.ac.uk.
+Or if you would like to be on a NanoOK mailing list to receive information about updates, please email richard.leggett@earlham.ac.uk.
 

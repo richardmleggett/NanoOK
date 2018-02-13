@@ -29,7 +29,7 @@ my $reads_per_chunk = 4000;
 if (defined $help_requested) {
     print "\nnanook_split_reads\n\n";
     print "Split a multi-read FASTA into separate files.\n\n";
-    print "Usage: nanotools_split_reads.pl <-i input> [-o output_dir]\n\n";
+    print "Usage: nanook_split_reads.pl <-i input> [-o output_dir]\n\n";
     print "Options:\n";
     print "    -i | -input      Input FASTA/Q file\n";
     print "    -o | -outputdir  Output directory\n";
