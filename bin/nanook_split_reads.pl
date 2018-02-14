@@ -162,3 +162,5 @@ while(<INPUTFILE>) {
 }
 
 close(INPUTFILE);
+
+print "\nDone\n";
