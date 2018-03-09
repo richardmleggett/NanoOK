@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use Getopt::Long;
 
+my $version="v0.02";
 my $input_file;
 my $output_dir;
 my $help_requested;
@@ -26,8 +27,9 @@ my $reads_per_chunk = 4000;
 'h|help'        => \$help_requested
 );
 
+print "\nnanook_split_reads $version\n\n";
+
 if (defined $help_requested) {
-    print "\nnanook_split_reads\n\n";
     print "Split a multi-read FASTA into separate files.\n\n";
     print "Usage: nanook_split_reads.pl <-i input> [-o output_dir]\n\n";
     print "Options:\n";
@@ -110,7 +112,8 @@ while(<INPUTFILE>) {
         $qual_id = <INPUTFILE>;
         $qualities = <INPUTFILE>;
     }
-    
+
+#print $header_line."\n";    
     
     if (not defined $ids{$read_id}) {
         $ids{$read_id} = 1;
