@@ -22,6 +22,7 @@ public abstract class MAFParser {
     private SampleReportWriter report;
     ArrayList<Alignment> alignments;
     String leafName;
+    static boolean hasDisplayedLASTMismatchWarning = false;
     
     /**
      * Constructor.
@@ -64,7 +65,20 @@ public abstract class MAFParser {
                     if (line.startsWith("a score=")) {
                         String[] fields = line.substring(8).split(" ");
                         int score = Integer.parseInt(fields[0]);
-                        MAFAlignmentLine hitLine = new MAFAlignmentLine(br.readLine());
+                        String hitLineString = br.readLine();
+                        if(hitLineString.split("\\s+").length < 7)
+                        {
+                            String remainingHitLine = br.readLine();
+                            assert(remainingHitLine.charAt(0) != 's'); // otherwise the hit line wasn't split!
+                            hitLineString += remainingHitLine;
+                            if(!hasDisplayedLASTMismatchWarning)
+                            {
+                                System.out.println("");
+                                System.out.println("Warning: Detected different versions of LAST for indexing and aligning, continuing anyway.");
+                                hasDisplayedLASTMismatchWarning= true;
+                            }
+                        }
+                        MAFAlignmentLine hitLine = new MAFAlignmentLine(hitLineString);
                         MAFAlignmentLine queryLine = new MAFAlignmentLine(br.readLine());
                         Alignment al = new Alignment(score,
                                                      queryLine.getName(), 
