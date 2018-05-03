@@ -23,8 +23,14 @@ public class MAFAlignmentLine {
     /**
      * Constructor.
      * @param s - alignment line string
+     * @throws NullPointerException if the string passed is null, Exception if not MAF file format.
      */
-    public MAFAlignmentLine(String s) {
+    public MAFAlignmentLine(String s) throws Exception {
+        if(s == null) {
+            System.out.println("");
+            System.out.println("Error: MAF file not formatted correctly.");
+            throw new NullPointerException();        
+        }
         String[] parts = s.split("\\s+");
 
         if (parts.length == 7) {
@@ -36,7 +42,7 @@ public class MAFAlignmentLine {
             alignment = parts[6];
         } else {                
             System.out.println("Error: can't understand alignment file format.");
-            System.exit(1);
+            throw new Exception();
         }
     }
     
