@@ -1,3 +1,10 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
+ */
+
 package nanook;
 
 import java.io.*;
@@ -26,10 +33,12 @@ public class ReadLengthsSummaryFile {
     public void open(String sample) {
         try {
             pw = new PrintWriter(new FileWriter(filename)); 
-            pw.println("Nanotools report - "+sample+"\n");
+            pw.println("Nanotools report - "+sample);
+            pw.println("");            
             pw.println("Length summary");
             pw.println("");
-            pw.printf("%-10s %-8s %-10s %-10s %-8s %-8s %-8s %-8s %-8s %-8s\n", "Type", "NumReads", "TotalBases", "Mean", "Long", "Short", "N50", "N50Count", "N90", "N90Count"); 
+            pw.printf("%-10s %-8s %-10s %-10s %-8s %-8s %-8s %-8s %-8s %-8s", "Type", "NumReads", "TotalBases", "Mean", "Long", "Short", "N50", "N50Count", "N90", "N90Count"); 
+            pw.println("");
         } catch (IOException e) {
             System.out.println("ReadLengthsSummaryFile exception:");
             e.printStackTrace();
@@ -42,7 +51,8 @@ public class ReadLengthsSummaryFile {
      * @param r ReadSetStats object for the type
      */
     public void addReadSetStats(ReadSetStats r) {
-        pw.printf("%-10s %-8d %-10d %-10.2f %-8d %-8d %-8d %-8d %-8d %-8d\n", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
+        pw.printf("%-10s %-8d %-10d %-10.2f %-8d %-8d %-8d %-8d %-8d %-8d", r.getTypeString(), r.getNumReads(), r.getTotalBases(), r.getMeanLength(), r.getLongest(), r.getShortest(), r.getN50(), r.getN50Count(), r.getN90(), r.getN90Count());
+        pw.println("");
     }
     
     /**

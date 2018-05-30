@@ -1,0 +1,30 @@
+<div>A docker image of NanoOK is provided on <a href="https://registry.hub.docker.com/u/richardmleggett/nanook/">Docker Hub</a> which includes all the dependencies needed to run. <span style="line-height: 1.4285715;">First, you need to have installed the Docker Engine. </span>
+  <span style="line-height: 1.4285715;">Then you can pull the NanoOK image:</span>
+</div>
+<div>
+  <p> </p>
+  <ac:structured-macro ac:macro-id="6efed1fc-7f05-4b27-a543-ab81c2a08c2f" ac:name="code" ac:schema-version="1">
+    <ac:plain-text-body><![CDATA[docker pull richardmleggett/nanook]]></ac:plain-text-body>
+  </ac:structured-macro>
+  <p>
+    <span style="line-height: 1.4285715;">To run NanoOK, the easiest way is to run a shell in the NanoOK image using:</span>
+  </p>
+  <ac:structured-macro ac:macro-id="4187711a-13fc-4b7d-a6d6-b4ac97d9069f" ac:name="code" ac:schema-version="1">
+    <ac:plain-text-body><![CDATA[docker run -i -t -v /path/to/your/data:/usr/nanopore richardmleggett/nanook bash]]></ac:plain-text-body>
+  </ac:structured-macro>
+  <p>
+    <span style="line-height: 1.4285715;">From here you will get a prompt from which you can run your NanoOK commands, for example:</span>
+  </p>
+  <ac:structured-macro ac:macro-id="0fdc8356-3222-486b-9856-196cf90c70d9" ac:name="code" ac:schema-version="1">
+    <ac:plain-text-body><![CDATA[root@e21d794315d9:/# nanook extract -s /usr/nanopore/YourSample]]></ac:plain-text-body>
+  </ac:structured-macro>
+  <p>When you have finished, type <code>exit</code> to end Docker.</p>
+  <p>Notes:</p>
+  <ul>
+    <li>In the docker run command, you need to map your data directory to the Docker image. This is done with the <code>-v</code> option. In the above example, the data on our local machine is in <code>/path/to/your/data</code> and this appears in the Docker image as <code>/usr/nanopore</code>, which is why we specify <code>/usr/nanopore/YourSample</code> as the sample directory to the nanook command.</li>
+    <li>If you get an error from the docker command, it may be because you haven't sudo'd it, or added your user to the docker group - see <a href="http://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo">How can I use docker without sudo?</a>
+    </li>
+  </ul>
+</div>
+
+

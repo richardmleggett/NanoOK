@@ -1,33 +1,45 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
+ */
+
 package nanook;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Stores stats for each reference sequence, one object per read type (Template, Complement, 2D).
  * 
  * @author Richard Leggett
  */
-public class ReferenceSequenceStats {
+public class ReferenceSequenceStats implements Serializable {
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private static final int MAX_INDEL = 100;
     private int size;
     private String name;
-    private int[] coverage;
+    private SequenceCoverage cov;
+    //int[] coverage;
     private int[] perfectKmerCounts = new int[NanoOKOptions.MAX_KMER];
     private int[] readBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
     private int[] readCumulativeBestPerfectKmer = new int[NanoOKOptions.MAX_KMER];
     private int longestPerfectKmer = 0;
     private int nReadsWithAlignments = 0;
-    private int totalReadBases = 0;
-    private int totalAlignedBases = 0;
-    private int totalAlignedBasesWithoutIndels = 0;
-    private int totalIdentical = 0;
+    private long totalReadBases = 0;
+    private long totalAlignedBases = 0;
+    private long totalAlignedBasesWithoutIndels = 0;
+    private long totalIdentical = 0;
     private int nDeletionErrors = 0;
     private int nInsertionErrors = 0;
     private int nSubstitutionErrors = 0;
-    private int nInsertedBases = 0;
-    private int nDeletedBases = 0;
+    private long nInsertedBases = 0;
+    private long nDeletedBases = 0;
     private int largestInsertion = 0;
     private int largestDeletion = 0;
     private int insertionSizes[] = new int[MAX_INDEL];
@@ -36,7 +48,9 @@ public class ReferenceSequenceStats {
     private int alignedNegativeStrand = 0;
     private long totalBases = 0;
     private long totalReads = 0;
+    private KmerTable readKmerTable = new KmerTable(5);
     private AlignmentsTableFile atf;
+    private ArrayList<KmerAbundance> kmerAbundance = new ArrayList();
 
     /** 
      * Constructor.
@@ -46,7 +60,8 @@ public class ReferenceSequenceStats {
     public ReferenceSequenceStats(int s, String n) {
         size = s;
         name = n;
-        coverage = new int[size];
+        cov = new SequenceCoverage(size);
+        //coverage = new int[size];
     }
     
     /**
@@ -56,14 +71,7 @@ public class ReferenceSequenceStats {
     public void openAlignmentsTableFile(String filename) {
         atf = new AlignmentsTableFile(filename);
     }
-    
-    /**
-     * Close the alignments table file.
-     */
-    public void closeAlignmentsTableFile() {
-        atf.closeFile();
-    }
-    
+        
     /**
      * Get the associated AlignmentsTableFile object
      * @return an AlignmentsTableFile
@@ -76,7 +84,7 @@ public class ReferenceSequenceStats {
      * Get number of reads with alignments.
      * @return number of reads
      */
-    public int getNumberOfReadsWithAlignments() {
+    public synchronized int getNumberOfReadsWithAlignments() {
         return nReadsWithAlignments;
     }
     
@@ -84,35 +92,17 @@ public class ReferenceSequenceStats {
      * Get longest perfect kmer length.
      * @return length longest perfect kmer, in bases
      */
-    public int getLongestPerfectKmer() {
+    public synchronized int getLongestPerfectKmer() {
         return longestPerfectKmer;
     }
-
-    /**
-     * Clear all stats.
-     */
-    public void clearStats() {
-        for (int i=0; i<NanoOKOptions.MAX_KMER; i++) {
-            perfectKmerCounts[i] = 0;
-            readBestPerfectKmer[i] = 0;
-            readCumulativeBestPerfectKmer[i] = 0;
-        }
-        
-        for (int i=0; i<size; i++) {
-            coverage[i] = 0;
-        }
-        
-        longestPerfectKmer = 0;
-        nReadsWithAlignments = 0;
-    }    
     
     /**
      * Store all perfect kmer sizes for later analysis.
      * @param size size of kmer
      */
-    public void addPerfectKmer(int size) {
+    public synchronized void addPerfectKmer(int size) {
         if (size >= NanoOKOptions.MAX_KMER) {
-            System.out.println("Error: very unlikely situation with perfect kmer of size " + size);
+            System.out.println("Error: very unlikely situation with perfect kmer of size " + size + " (Max " + NanoOKOptions.MAX_KMER + ")");
             System.exit(1);
         }
         
@@ -128,17 +118,18 @@ public class ReferenceSequenceStats {
      * @param start start position
      * @param size size
      */
-    public void addCoverage(int start, int size) {
-        for (int i=start; i<(start+size); i++) {
-            coverage[i]++;
-        }
+    public synchronized void addCoverage(int start, int size) {
+        cov.addCoverage(start, size);
+        //for (int i=start; i<(start+size); i++) {
+        //    coverage[i]++;
+        //}
     }
     
     /**
      * Store best perfect kmer length for each read.
      * @param bestKmer length of best perfect kmer
      */
-    public void addReadBestKmer(int bestKmer) {
+    public synchronized void addReadBestKmer(int bestKmer) {
         readBestPerfectKmer[bestKmer]++;
         
         for (int i=1; i<=bestKmer; i++) {
@@ -154,21 +145,23 @@ public class ReferenceSequenceStats {
      * @param binSize bin size
      */
     public void writeCoverageData(String filename, int binSize) {
-        try {
-            PrintWriter pw = new PrintWriter(new FileWriter(filename));            
-            for (int i=0; i<(size-binSize); i+=binSize) {
-                int count = 0;
-                for (int j=0; j<binSize; j++) {
-                    count += coverage[i+j];
-                }
-                pw.printf("%d\t%.2f\n", i, ((double)count / (double)binSize));
-            }            
-            pw.close();
-        } catch (IOException e) {
-            System.out.println("writeCoverageData exception:");
-            e.printStackTrace();
-            System.exit(1);
-        }
+        cov.writeCoverageData(filename, binSize);
+//        try {
+//            PrintWriter pw = new PrintWriter(new FileWriter(filename));            
+//            for (int i=0; i<(size-binSize); i+=binSize) {
+//                int count = 0;
+//                for (int j=0; j<binSize; j++) {
+//                    count += coverage[i+j];
+//                }
+//                pw.printf("%d\t%.2f", i, ((double)count / (double)binSize));
+//                pw.println("");
+//            }            
+//            pw.close();
+//        } catch (IOException e) {
+//            System.out.println("writeCoverageData exception:");
+//            e.printStackTrace();
+//            System.exit(1);
+//        }
     }
 
     /**
@@ -179,7 +172,8 @@ public class ReferenceSequenceStats {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=longestPerfectKmer; i++) {
-                pw.printf("%d\t%d\n", i, perfectKmerCounts[i]);
+                pw.printf("%d\t%d", i, perfectKmerCounts[i]);
+                pw.println("");
             }            
             pw.close();
         } catch (IOException e) {
@@ -203,7 +197,8 @@ public class ReferenceSequenceStats {
                     pc = ((double)100.0 * readBestPerfectKmer[i]) / (double)nReadsWithAlignments;
                 } 
 
-                pw.printf("%d\t%d\t%.2f\n", i, readBestPerfectKmer[i], pc);
+                pw.printf("%d\t%d\t%.2f", i, readBestPerfectKmer[i], pc);
+                pw.println("");
             }            
             pw.close();
         } catch (IOException e) {
@@ -237,7 +232,8 @@ public class ReferenceSequenceStats {
                     pc = ((double)100.0 * readCumulativeBestPerfectKmer[i]) / (double)nr; //(double)nReadsWithAlignments;
                 }
                 
-                pw.printf("%d\t%d\t%.2f\n", i, readCumulativeBestPerfectKmer[i], pc);
+                pw.printf("%d\t%d\t%.2f", i, readCumulativeBestPerfectKmer[i], pc);
+                pw.println("");
             }            
             pw.close();
         } catch (IOException e) {
@@ -253,13 +249,14 @@ public class ReferenceSequenceStats {
      */
     public void writeSummary(PrintWriter pw, String format) {
         pw.printf(format, name, size, nReadsWithAlignments, longestPerfectKmer);
+        pw.println("");
     }
         
     /**
      * Get mean read length
      * @return mean read length
      */
-    public double getMeanReadLength() {
+    public synchronized double getMeanReadLength() {
         if (nReadsWithAlignments > 0) {
             return (double)totalReadBases / (double)nReadsWithAlignments;
         } else {
@@ -273,8 +270,9 @@ public class ReferenceSequenceStats {
      * @param alignedSize number of aligned bases
      * @param identicalBases number of identical bases
      */
-    public void addAlignmentStats(int querySize, int alignedSize, int alignedSizeMinusIndels, int identicalBases, String hitStrand, String queryStrand) {
+    public synchronized void addAlignmentStats(int querySize, int alignedSize, int alignedSizeMinusIndels, int identicalBases, String hitStrand, String queryStrand) {
         totalAlignedBases += alignedSize;
+        //System.out.println("\nAlignedBases " + alignedSize);
         totalAlignedBasesWithoutIndels += alignedSizeMinusIndels;
         totalReadBases += querySize;
         totalIdentical += identicalBases;
@@ -294,14 +292,20 @@ public class ReferenceSequenceStats {
      * @param kmer - kmer before error
      * @param stats - ReadSetStats associated with the error
      */
-    public void addDeletionError(int size, String kmer, ReadSetStats stats) {
-        nDeletionErrors++;
-        nDeletedBases += size;
-        deletionSizes[size]++;
-        if (size > largestDeletion) {
-            largestDeletion = size;
+    public synchronized void addDeletionError(int size, String kmer, ReadSetStats stats) {
+        //System.out.println("Delete " + size);
+        if (size >= MAX_INDEL) {
+            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error");
+            System.out.println("");
+        } else {
+            nDeletionErrors++;
+            nDeletedBases += size;
+            deletionSizes[size]++;
+            if (size > largestDeletion) {
+                largestDeletion = size;
+            }
+            stats.addDeletionError(size, kmer);
         }
-        stats.addDeletionError(size, kmer);
     }
     
     /** 
@@ -310,15 +314,37 @@ public class ReferenceSequenceStats {
      * @param kmer - kmer before error
      * @param stats - ReadSetStats associated with the error
      */
-    public void addInsertionError(int size, String kmer, ReadSetStats stats) {
-        nInsertionErrors++;
-        nInsertedBases += size;
-        insertionSizes[size]++;
-        if (size > largestInsertion) {
-            largestInsertion = size;
+    public synchronized void addInsertionError(int size, String kmer, ReadSetStats stats) {
+        //System.out.println("Insert " + size);
+        if (size >= MAX_INDEL) {
+            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error");
+            System.out.println("");
+        } else {
+            nInsertionErrors++;
+            nInsertedBases += size;
+            insertionSizes[size]++;
+            if (size > largestInsertion) {
+                largestInsertion = size;
+            }
+            stats.addInsertionError(size, kmer);
         }
-        stats.addInsertionError(size, kmer);
     }
+
+    /**
+     * Get the mean deletion size
+     * @return size, as double
+     */
+    public synchronized double getMeanDeletionSize() {
+        return (double)nDeletedBases / (double)nDeletionErrors;
+    }
+
+    /**
+     * Get the mean insertion size
+     * @return size, as double
+     */
+    public synchronized double getMeanInsertionSize() {
+        return (double)nInsertedBases / (double)nInsertionErrors;
+    } 
     
     /** 
      * Store a substitution error.
@@ -327,7 +353,7 @@ public class ReferenceSequenceStats {
      * @param subChar - substituted base
      * @param stats - ReadSetStats associated with the error
      */
-    public void addSubstitutionError(String kmer, char refChar, char subChar, ReadSetStats stats) {
+    public synchronized void addSubstitutionError(String kmer, char refChar, char subChar, ReadSetStats stats) {
         nSubstitutionErrors++;
         //System.out.println("Kmer before substitution "+kmer);
         stats.addSubstitutionError(kmer, refChar, subChar);
@@ -337,7 +363,7 @@ public class ReferenceSequenceStats {
      * Get percent identity of aligned bases.
      * @return identity
      */
-    public double getAlignedPercentIdentical() {
+    public synchronized double getAlignedPercentIdentical() {
         if ((totalIdentical == 0) || (totalAlignedBases == 0)) {
             return 0;
         } else {           
@@ -349,7 +375,7 @@ public class ReferenceSequenceStats {
      * Get percent identity of aligned bases.
      * @return identity
      */
-    public double getAlignedPercentIdenticalWithoutIndels() {
+    public synchronized double getAlignedPercentIdenticalWithoutIndels() {
         if ((totalIdentical == 0) || (totalAlignedBasesWithoutIndels == 0)) {
             return 0;
         } else {           
@@ -361,7 +387,7 @@ public class ReferenceSequenceStats {
      * Get percent identity of read.
      * @return identity
      */
-    public double getReadPercentIdentical() {
+    public synchronized double getReadPercentIdentical() {
         if ((totalIdentical == 0) || (totalReadBases == 0)) {
             return 0;
         } else {
@@ -373,7 +399,7 @@ public class ReferenceSequenceStats {
      * Getnumber of insertion errors.
      * @return number
      */
-    public int getNumberOfInsertionErrors() {
+    public synchronized int getNumberOfInsertionErrors() {
         return nInsertionErrors;
     }
 
@@ -381,7 +407,7 @@ public class ReferenceSequenceStats {
      * Get number of deletion errors.
      * @return number
      */
-    public int getNumberOfDeletionErrors() {
+    public synchronized int getNumberOfDeletionErrors() {
         return nDeletionErrors;
     }
     
@@ -389,7 +415,7 @@ public class ReferenceSequenceStats {
      * Get number of substitution errors.
      * @return number
      */
-    public int getNumberOfSubstitutionErrors() {
+    public synchronized int getNumberOfSubstitutionErrors() {
         return nSubstitutionErrors;
     }
     
@@ -397,7 +423,7 @@ public class ReferenceSequenceStats {
      * Get percentage of insertion errors
      * @return percentage
      */
-    public double getPercentInsertionErrors() {
+    public synchronized double getPercentInsertionErrors() {
         if ((nInsertedBases == 0) || (totalAlignedBases == 0)) {
             return 0;
         } else {
@@ -409,7 +435,7 @@ public class ReferenceSequenceStats {
      * Get percentage of deletion errors
      * @return percentage
      */
-    public double getPercentDeletionErrors() {
+    public synchronized double getPercentDeletionErrors() {
         if ((nDeletedBases == 0) || (totalAlignedBases == 0)) {
             return 0;
         } else {
@@ -421,7 +447,7 @@ public class ReferenceSequenceStats {
      * Get percentage of substitution errors
      * @return percentage
      */
-    public double getPercentSubstitutionErrors() {
+    public synchronized double getPercentSubstitutionErrors() {
         if ((nSubstitutionErrors == 0) || (totalAlignedBases == 0)) {
             return 0;
         } else {
@@ -433,7 +459,7 @@ public class ReferenceSequenceStats {
      * Get the number of aligned bases
      * @return number of bases
      */
-    public int getTotalAlignedBases() {
+    public synchronized long getTotalAlignedBases() {
         return totalAlignedBases;
     }
     
@@ -446,8 +472,9 @@ public class ReferenceSequenceStats {
             PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
             for (int i=1; i<=largestInsertion; i++) {
                 //pw.println(i + "\t" + insertionSizes[i]);
-                pw.printf("%d\t%.4f\n", i, (100.0 * (double)insertionSizes[i]/(double)nInsertionErrors));
-            }
+                pw.printf("%d\t%.4f", i, (100.0 * (double)insertionSizes[i]/(double)nInsertionErrors));
+                pw.println("");
+           }
             pw.close();
         } catch (IOException e) {
             System.out.println("writeInsertionStats exception:");
@@ -465,10 +492,12 @@ public class ReferenceSequenceStats {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             for (int i=1; i<=largestDeletion; i++) {
                 //pw.println(i + "\t" + deletionSizes[i]);
-                pw.printf("%d\t%.4f\n", i, (100.0 * (double)deletionSizes[i]/(double)nDeletionErrors));            }
-            pw.close();
+                pw.printf("%d\t%.4f", i, (100.0 * (double)deletionSizes[i]/(double)nDeletionErrors));            
+                pw.println("");
+                }
+                pw.close();
         } catch (IOException e) {
-            System.out.println("writeInsertionStats exception:");
+            System.out.println("writeDeletionStats exception:");
             e.printStackTrace();
             System.exit(1);
         }                
@@ -478,7 +507,7 @@ public class ReferenceSequenceStats {
      * Get percent of reads aligned on +ve strand
      * @return count
      */
-    public double getAlignedPositiveStrandPercent() {
+    public synchronized double getAlignedPositiveStrandPercent() {
         if (alignedPositiveStrand > 0) {
             return (100.0 * (double)alignedPositiveStrand)/(double)(alignedPositiveStrand + alignedNegativeStrand);
         } else {
@@ -490,11 +519,30 @@ public class ReferenceSequenceStats {
      * Get percent of reads aligned on -ve strand
      * @return count
      */
-    public double getAlignedNegativeStrandPercent() {
+    public synchronized double getAlignedNegativeStrandPercent() {
         if (alignedNegativeStrand > 0) {
             return (100.0 * (double)alignedNegativeStrand)/(double)(alignedPositiveStrand + alignedNegativeStrand);
         } else {
             return 0;
         }
+    }
+    
+    public KmerTable getReadKmerTable() {
+        return readKmerTable;
+    }
+
+    public void addKmerAbundance(String kmer, double refAbundance, double readAbundance) {
+        kmerAbundance.add(new KmerAbundance(kmer, refAbundance, readAbundance));
+    }
+    
+    public void sortKmerAbundance() {
+        Collections.sort(kmerAbundance);
+        for (int i=0; i<10; i++) {
+            KmerAbundance k = kmerAbundance.get(i);
+        }
+    }
+    
+    public ArrayList getKmerAbundance() {
+        return kmerAbundance;
     }
 }

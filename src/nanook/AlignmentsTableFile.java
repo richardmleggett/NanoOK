@@ -1,3 +1,10 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
+ */
+
 package nanook;
 
 import java.io.*;
@@ -7,9 +14,10 @@ import java.io.*;
  * 
  * @author Richard Leggett
  */
-public class AlignmentsTableFile {
+public class AlignmentsTableFile implements Serializable {
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
     private String filename;
-    private PrintWriter pw;
+    private transient PrintWriter pw = null;
     private int count = 0;
 
     /**
@@ -17,11 +25,13 @@ public class AlignmentsTableFile {
      * @param f filename of output file
      */
     public AlignmentsTableFile(String f) {
-        filename = f;
-        
+        filename = f;        
+        writeHeader();
+    }
+    
+    private synchronized void openFile(boolean append) {
         try {
-            pw = new PrintWriter(new FileWriter(filename));
-            writeHeader();
+            pw = new PrintWriter(new FileWriter(filename, append));
         } catch (IOException e) {
             System.out.println("AlignmentsTableFile exception");
             e.printStackTrace();
@@ -31,9 +41,11 @@ public class AlignmentsTableFile {
     /**
      * Write header row to file.
      */
-    private void writeHeader() {
+    private synchronized void writeHeader() {
+        openFile(false);
         pw.print("Filename\t");
         pw.print("QueryName\t");
+        pw.print("QueryGC\t");
         pw.print("QueryStart\t");
         pw.print("QueryBasesCovered\t");
         pw.print("QueryStrand\t");
@@ -52,6 +64,7 @@ public class AlignmentsTableFile {
         pw.print("PercentQueryAligned\t");
         pw.print("nk15\tnk17\tnk19\tnk21\tnk23\tnk25");
         pw.println("");
+        pw.close();
     }
     
     /**
@@ -59,12 +72,13 @@ public class AlignmentsTableFile {
      * @param alignmentFilename filename of alignment
      * @param hitLine hit object
      * @param queryLine query object
-     * @param stat AlignmentInfo statistics
+     * @param ais AlignmentInfo statistics
      */
-    public void writeAlignment(String alignmentFilename, LastAlignmentLine hitLine, LastAlignmentLine queryLine, AlignmentInfo stat) {
-        String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
+    public synchronized void writeAlignment(ReadSetStats stats, String alignmentFilename, MAFAlignmentLine hitLine, MAFAlignmentLine queryLine, AlignmentInfo ais) {
+        String outputLine = String.format("%s\t%s\t%.2f\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
                 queryLine.getName(),
+                stats.getGC(alignmentFilename, ais.getQueryName()),
                 queryLine.getStart(),
                 queryLine.getAlnSize(),
                 queryLine.getStrand(),
@@ -74,45 +88,48 @@ public class AlignmentsTableFile {
                 hitLine.getAlnSize(),
                 hitLine.getStrand(),
                 hitLine.getSeqSize(),
-                stat.getAlignmentSize(),
-                stat.getIdenticalBases(),
-                stat.getAlignmentId(),
-                stat.getQueryId(),
-                stat.getLongestPerfectKmer(),
-                stat.getMeanPerfectKmer(),
-                stat.getPercentQueryAligned(),
-                stat.getkCounts());
+                ais.getAlignmentSize(),
+                ais.getIdenticalBases(),
+                ais.getAlignmentId(),
+                ais.getQueryId(),
+                ais.getLongestPerfectKmer(),
+                ais.getMeanPerfectKmer(),
+                ais.getPercentQueryAligned(),
+                ais.getkCounts());
         
+        openFile(true);
         pw.println(outputLine);
-        pw.flush();
+        pw.close();
         
         count++;
     }
     
-    public void writeMergedAlignment(String alignmentFilename, LastAlignmentMerger merger, AlignmentInfo stat) {
-        String outputLine = String.format("%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
+    public synchronized void writeMergedAlignment(ReadSetStats stats, String alignmentFilename, AlignmentMerger merger, AlignmentInfo ais) {
+        String outputLine = String.format("%s\t%s\t%.2f\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%s",
                 alignmentFilename,
-                stat.getQueryName(),
+                ais.getQueryName(),
+                stats.getGC(alignmentFilename, ais.getQueryName()),
                 merger.getOverallQueryStart(),
                 merger.getOverallQuerySize(),
-                "+",
-                stat.getQuerySize(),
-                stat.getHitName(),
+                merger.getOverallQueryStrand(),
+                ais.getQuerySize(),
+                ais.getHitName(),
                 merger.getOverallHitStart(),
                 merger.getOverallHitSize(),
-                "+",
-                stat.getHitSize(),
-                stat.getAlignmentSize(),
-                stat.getIdenticalBases(),
-                stat.getAlignmentId(),
-                stat.getQueryId(),
-                stat.getLongestPerfectKmer(),
-                stat.getMeanPerfectKmer(),
-                stat.getPercentQueryAligned(),
-                stat.getkCounts());
+                merger.getOverallHitStrand(),
+                ais.getHitSize(),
+                ais.getAlignmentSize(),
+                ais.getIdenticalBases(),
+                ais.getAlignmentId(),
+                ais.getQueryId(),
+                ais.getLongestPerfectKmer(),
+                ais.getMeanPerfectKmer(),
+                ais.getPercentQueryAligned(),
+                ais.getkCounts());
         
+        openFile(true);
         pw.println(outputLine);
-        pw.flush();
+        pw.close();
         
         count++;
     }    
@@ -121,16 +138,9 @@ public class AlignmentsTableFile {
      * Used when no alignment found for this query.
      * @param alignmentFilename - alignment filename
      */
-    public void writeNoAlignmentMessage(String alignmentFilename) {
+    public synchronized void writeNoAlignmentMessage(String alignmentFilename) {
+        openFile(true);
         pw.println(alignmentFilename+"\tNO ALIGNMENTS");
-    }
-
-    /**
-     * Close file.
-     */
-    public void closeFile() {
-        pw.flush();
         pw.close();
-        //System.out.println("File closed");
     }
 }

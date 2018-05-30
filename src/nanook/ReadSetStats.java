@@ -1,30 +1,43 @@
+/*
+ * Program: NanoOK
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2015 The Genome Analysis Centre (TGAC)
+ */
+
 package nanook;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Represent statistics about a read set (for example Template read set).
  * 
  * @author Richard Leggett
  */
-public class ReadSetStats {
-    NanoOKOptions options;
-    private PrintWriter pwLengths;
-    private PrintWriter pwKmers;
+public class ReadSetStats implements Serializable {
+    private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
+    private NanoOKOptions options;
+    private transient PrintWriter pwLengths = null;
+    private transient PrintWriter pwKmers = null;
     private String typeString = "";
     private int longest = 0;
     private int shortest = NanoOKOptions.MAX_READ_LENGTH;
-    private int basesSum = 0;
+    private long basesSum = 0;
     private double meanLength = 0;
     private int n50 = 0;
     private int n50Count = 0;
     private int n90 = 0;
     private int n90Count = 0;
     private int[] lengths = new int[NanoOKOptions.MAX_READ_LENGTH];
+    private Hashtable<String,Integer> readLengths = new Hashtable();
+    private Hashtable<String,Double> readGC = new Hashtable();
     private int nReads = 0;
     private int nReadFiles = 0;
     private int nPassFiles = 0;
@@ -38,6 +51,8 @@ public class ReadSetStats {
     private int nSubstitutions = 0;
     private int nInsertions = 0;
     private int nDeletions = 0;
+    private int ignoredDuplicates = 0;
+    private int type;
    
     /**
      * Constructor
@@ -46,7 +61,8 @@ public class ReadSetStats {
      */
     public ReadSetStats(NanoOKOptions o, int t) {
         options=o;
-        typeString = NanoOKOptions.getTypeFromInt(t);
+        type = t;
+        typeString = NanoOKOptions.getTypeFromInt(type);
         for (int i=0; i<NanoOKOptions.MAX_KMER; i++) {
             readBestPerfectKmer[i] = 0;
             readCumulativeBestPerfectKmer[i] = 0;
@@ -60,10 +76,14 @@ public class ReadSetStats {
         String lengthsFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_lengths.txt";
         String kmersFilename = options.getAnalysisDir() + File.separator + "all_" + typeString + "_kmers.txt";
         
+        options.getLog().println("Opening "+lengthsFilename);
+        options.getLog().println("Opening "+kmersFilename);
+        
         try {
             pwLengths = new PrintWriter(new FileWriter(lengthsFilename)); 
             pwKmers = new PrintWriter(new FileWriter(kmersFilename));
-            pwKmers.write("Id\tLength\tnk15\tnk17\tnk19\tnk21\tnk23\tnk25\n");
+            pwKmers.write("Id\tLength\tnk15\tnk17\tnk19\tnk21\tnk23\tnk25");
+            pwKmers.println("");
         } catch (IOException e) {
             System.out.println("openLengthsFile exception:");
             e.printStackTrace();
@@ -78,6 +98,9 @@ public class ReadSetStats {
         pwLengths.close();
     }
     
+    /**
+     * Close the kmers file
+     */
     public void closeKmersFile() {
         pwKmers.close();
     }
@@ -112,9 +135,9 @@ public class ReadSetStats {
     
     /**
      * Update count of read files.
-     * @param i subdirectory index (0=pass, 1=fail)
+     * @param type 
      */
-    public void addReadFile(int i, int type) {
+    public synchronized void addReadFile(int type) {
        nReadFiles++;
        
        if (type == NanoOKOptions.READTYPE_PASS) {
@@ -128,7 +151,7 @@ public class ReadSetStats {
      * Get number of read files in pass directory
      * @return Number of files in pass directory
      */
-    public int getNumberOfPassFiles() {
+    public synchronized int getNumberOfPassFiles() {
         return nPassFiles;        
     }
 
@@ -136,9 +159,17 @@ public class ReadSetStats {
      * Get number of read files in fail directory
      * @return Number of files in fail directory
      */
-    public int getNumberOfFailFiles() {
+    public synchronized int getNumberOfFailFiles() {
         return nFailFiles;        
     }    
+    
+    /**
+     * Get type
+     * @return type
+     */
+    public int getType() {
+        return type;
+    }
     
     /**
      * Get type as a string.
@@ -152,7 +183,7 @@ public class ReadSetStats {
      * Get mean length of reads in this read set.
      * @return length
      */
-    public double getMeanLength() {
+    public synchronized double getMeanLength() {
         return meanLength;
     }
     
@@ -160,7 +191,7 @@ public class ReadSetStats {
      * Get longest read in this read set.
      * @return length
      */
-    public int getLongest() {
+    public synchronized int getLongest() {
         return longest;
     }
     
@@ -168,7 +199,7 @@ public class ReadSetStats {
      * Get shortest read in this read set.
      * @return length
      */
-    public int getShortest() {
+    public synchronized int getShortest() {
         return shortest;
     }
     
@@ -176,7 +207,7 @@ public class ReadSetStats {
      * Get N50 for this read set.
      * @return N50 length
      */
-    public int getN50() {
+    public synchronized int getN50() {
         return n50;
     }
     
@@ -184,7 +215,7 @@ public class ReadSetStats {
      * Get N50 count - number of reads of length N50 or greater.
      * @return count
      */
-    public int getN50Count() {
+    public synchronized int getN50Count() {
         return n50Count;
     }
     
@@ -192,7 +223,7 @@ public class ReadSetStats {
      * Get N90 for this read set.
      * @return N90 length
      */
-    public int getN90() {
+    public synchronized int getN90() {
         return n90;
     }
     
@@ -200,7 +231,7 @@ public class ReadSetStats {
      * Get N90 count - number of reads of length N90 or greater.
      * @return count
      */
-    public int getN90Count() {
+    public synchronized int getN90Count() {
         return n90Count;
     }
     
@@ -208,7 +239,7 @@ public class ReadSetStats {
      * Get number of reads.
      * @return number of reads
      */
-    public int getNumReads() {
+    public synchronized int getNumReads() {
         return nReads;
     }
         
@@ -216,7 +247,7 @@ public class ReadSetStats {
      * Get total bases represented by read set.
      * @return number of bases
      */
-    public int getTotalBases() {
+    public synchronized long getTotalBases() {
         return basesSum;
     }    
     
@@ -224,43 +255,105 @@ public class ReadSetStats {
      * Get number of read files.
      * @return number of files
      */
-    public int getNumReadFiles() {
+    public synchronized int getNumReadFiles() {
         return nReadFiles;
     }    
+    
+    private String getPrefix(String path) {
+        String leafname = new File(path).getName();
+        leafname.replaceAll(":", "_");
+        return leafname.substring(0, leafname.indexOf(".fa"));
+    }
     
     /**
      * Store a read length in the array of read lengths.
      * @param id ID of read
      * @param l length
      */
-    public void addLength(String id, int l) {
-        lengths[l]++;
-        
+    public synchronized void addLength(String readPath, String id, int l, double gc) {
         pwLengths.println(id + "\t" + l);
+        id = getPrefix(readPath) + ":"+id;
+
+        if (readLengths.containsKey(id)) {
+            System.out.println("Error: Read ID "+id+" already seen. This occurrance ignored.");
+            ignoredDuplicates++;
+        } else {
+            readLengths.put(id, l);
+            readGC.put(id, gc);
+        }                
         
-        if (l > longest) {
-            longest = l;
-        }
-        
-        if (l < shortest) {
-            shortest = l;
-        }
-        
+        if (l < NanoOKOptions.MAX_READ_LENGTH) {
+            lengths[l]++;
+            if (l > longest) {
+                longest = l;
+            }
+
+            if (l < shortest) {
+                shortest = l;
+            }
+        } else {
+            System.out.println("Error: unexpectedly long ("+l+") read ignored - "+readPath);
+        }                
+
         basesSum += l;
         nReads++;
     }    
         
     /**
+     * Get length of read
+     * @param id of read
+     * @return length, in bases
+     */
+    public synchronized int getReadLength(String alignmentFile, String id) {
+        int length = -1;
+
+        id = getPrefix(alignmentFile) + ":"+id;
+
+        Integer l = readLengths.get(id);
+        
+        if (l != null) {
+            length = l.intValue();
+        }
+        
+        return length;
+    }
+
+    /**
+     * Get GC of read
+     * @param id of read
+     * @return GC percent
+     */
+    public synchronized double getGC(String alignmentFile, String id) {
+        double gc = -1;
+
+        id = getPrefix(alignmentFile) + ":"+id;
+        
+        Double g = readGC.get(id);
+        
+        if (g == null) {
+            g = 50.0;
+            System.out.println("Warning: couldn't get GC from " + alignmentFile + " - assumed 50%");
+        }
+        
+        //if (g != null) {
+        //    gc = g.intValue();
+        //}
+        
+        //return gc;
+        return g;
+    }    
+    
+    /**
      * Store a read with an alignment.
      */
-    public void addReadWithAlignment() {
+    public synchronized void addReadWithAlignment() {
         nReadsWithAlignments++;
     }
 
     /**
      * Store a read without an alignment.
      */
-    public void addReadWithoutAlignment() {
+    public synchronized void addReadWithoutAlignment() {
         nReadsWithoutAlignments++;
     }
         
@@ -268,9 +361,9 @@ public class ReadSetStats {
      * Store best perfect kmers for each read.
      * @param bestKmer length of best perfect kmer
      */
-    public void addReadBestKmer(int bestKmer) {
+    public synchronized void addReadBestKmer(int bestKmer) {
         if (bestKmer >= NanoOKOptions.MAX_KMER) {
-            System.out.println("Error: the unlikely event of a best kmer size of "+bestKmer+" has happened!");
+            System.out.println("Error: the unlikely event of a best kmer size of "+bestKmer+" has happened! (Max "+NanoOKOptions.MAX_KMER+")");
             System.exit(1);
         }
         
@@ -285,7 +378,7 @@ public class ReadSetStats {
      * Get number of reads in this read set.
      * @return number of reads.
      */
-    public int getNumberOfReads() {
+    public synchronized int getNumberOfReads() {
         return nReads;
     }
     
@@ -293,7 +386,7 @@ public class ReadSetStats {
      * Get number of reads with alignments in this read set.
      * @return number of reads
      */
-    public int getNumberOfReadsWithAlignments() {
+    public synchronized int getNumberOfReadsWithAlignments() {
         return nReadsWithAlignments;
     }
     
@@ -301,7 +394,7 @@ public class ReadSetStats {
      * Get number of reads without alignments in this read set.
      * @return number of reads
      */
-    public int getNumberOfReadsWithoutAlignments() {
+    public synchronized int getNumberOfReadsWithoutAlignments() {
         return nReadsWithoutAlignments;
     }
     
@@ -309,7 +402,7 @@ public class ReadSetStats {
      * Get percentage of reads with alignments
      * @return percentage of reads
      */
-    public double getPercentOfReadsWithAlignments() {
+    public synchronized double getPercentOfReadsWithAlignments() {
         return (100.0 * (double)nReadsWithAlignments) / (double)nReads;
     }
     
@@ -317,14 +410,14 @@ public class ReadSetStats {
      * Get percentage of reads without alignments
      * @return percentage of reads
      */
-    public double getPercentOfReadsWithoutAlignments() {
+    public synchronized double getPercentOfReadsWithoutAlignments() {
         return (100.0 * (double)nReadsWithoutAlignments) / (double)nReads;
     }    
     
     /**
      * Print statistics to screen.
      */
-    public void printStats() {
+    public synchronized void printStats() {
         System.out.println("Parse " + typeString + " alignments");
         System.out.println(typeString + " reads: " + nReads);
         System.out.println(typeString + " reads with alignments: " + nReadsWithAlignments);
@@ -335,14 +428,20 @@ public class ReadSetStats {
      * Write a short summary file for this read set.
      * @param filename output filename
      */
-    public void writeSummaryFile(String filename) {
+    public void writeSummaryFile() {
+        String filename = options.getAlignmentSummaryFilename();
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(filename, true));
             pw.println("");
-            pw.printf("%s alignments\n\n", typeString);
-            pw.printf("Num reads: %d\n", nReads);
-            pw.printf("Num reads with alignments: %d\n", nReadsWithAlignments);
-            pw.printf("Num reads without alignments: %d\n", nReadsWithoutAlignments);
+            pw.printf("%s alignments", typeString);
+            pw.println("");
+            pw.println("");
+            pw.printf("Num reads: %d", nReads);
+            pw.println("");
+            pw.printf("Num reads with alignments: %d", nReadsWithAlignments);
+            pw.println("");
+            pw.printf("Num reads without alignments: %d", nReadsWithoutAlignments);
+            pw.println("");
             pw.close();
         } catch (IOException e) {
             System.out.println("writeSummaryFile exception:");
@@ -356,7 +455,7 @@ public class ReadSetStats {
      * @param size size of deletion
      * @param kmer kmer prior to error
      */
-    public void addDeletionError(int size, String kmer) {
+    public synchronized void addDeletionError(int size, String kmer) {
         motifStats.addDeletionMotifs(kmer);
         nDeletions++;
     }
@@ -366,10 +465,10 @@ public class ReadSetStats {
      * @param size size of insertion
      * @param kmer kmer prior to error
      */
-    public void addInsertionError(int size, String kmer) {
+    public synchronized void addInsertionError(int size, String kmer) {
         motifStats.addInsertionMotifs(kmer);
         nInsertions++;
-    }
+    } 
     
     /** 
      * Store a substitution error.
@@ -377,7 +476,7 @@ public class ReadSetStats {
      * @param refChar reference base
      * @param subChar substituted base
      */
-    public void addSubstitutionError(String kmer, char refChar, char subChar) {
+    public synchronized void addSubstitutionError(String kmer, char refChar, char subChar) {
         int r = -1;
         int s = -1;
         
@@ -409,7 +508,7 @@ public class ReadSetStats {
      * Get substitution error matrix (A, C, G, T vs A, C, G, T).
      * @return Substitution error matrix
      */
-    public int[][] getSubstitutionErrors() {
+    public synchronized int[][] getSubstitutionErrors() {
         return substitutionErrors;
     }
     
@@ -417,14 +516,14 @@ public class ReadSetStats {
      * Get number of substitutions.
      * @return number
      */
-    public int getNumberOfSubstitutions() {
+    public synchronized int getNumberOfSubstitutions() {
         return nSubstitutions;
     }
     
     /**
      * Write motif stats to screen.
      */
-    public void outputMotifStats() {
+    public synchronized void outputMotifStats() {
         motifStats.outputAllMotifCounts();
     }
     
@@ -432,15 +531,95 @@ public class ReadSetStats {
      * Get motif statistics.
      * @return MotifStatistics object
      */
-    public MotifStatistics getMotifStatistics() {
+    public synchronized MotifStatistics getMotifStatistics() {
         return motifStats;
     }
     
-    public void writekCounts(String id, int length, int nk, int[] s, int[] kCounts) {            
+    public synchronized void writekCounts(String id, int length, int nk, int[] s, int[] kCounts) {            
         pwKmers.print(id+"\t"+Integer.toString(length));
         for (int i=0; i<nk; i++) {
             pwKmers.print("\t"+Integer.toString(kCounts[i]));
         }
-        pwKmers.print("\n");
+        pwKmers.println("");
+    }
+    
+    /**
+     * Get options
+     */
+    public NanoOKOptions getOptions() {
+        return options;
+    }
+    
+    /**
+     * Write substitution stats to a file
+     */
+    public void writeSubstitutionStats() {
+        String filenamePc = options.getAnalysisDir() + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) + "_substitutions_percent.txt";
+        String bases[] = {"A","C","G","T"};
+        try {
+            PrintWriter pwPc = new PrintWriter(new FileWriter(filenamePc)); 
+            pwPc.println("\tSubA\tSubC\tSubG\tSubT");            
+            for (int r=0; r<4; r++) {
+                pwPc.print("Ref"+bases[r]);
+                for (int s=0; s<4; s++) {
+                    double pc = 0;
+
+                    if (substitutionErrors[r][s] > 0) {
+                        pc = (100.0 * (double)substitutionErrors[r][s]) / nSubstitutions;
+                    }                    
+                    pwPc.printf("\t%.2f", pc);
+                }
+                pwPc.println("");
+            }
+            pwPc.close();
+        } catch (IOException e) {
+            System.out.println("writeSubstitutionStats exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }                
+    }
+    
+    /**
+     * Write error motif stats to a file
+     */
+    public void writeErrorMotifStats() {
+        try {
+            for (int t=0; t<3; t++) {
+                for (int n=3; n<=5; n++) {
+                    ArrayList<Map.Entry<String, Double>> motifs = null;
+                    String typeString = "";
+                    String filename = "";
+                    
+                    if (t == 0) {
+                        typeString = "insertion";
+                        motifs = motifStats.getSortedInsertionMotifPercentages(n);
+                    } else if (t == 1) {
+                        typeString = "deletion";
+                        motifs = motifStats.getSortedDeletionMotifPercentages(n);
+                    } else {
+                        typeString = "substitution";
+                        motifs = motifStats.getSortedSubstitutionMotifPercentages(n);
+                    }
+                    
+                    filename = options.getAnalysisDir() + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) + "_"+typeString+"_"+n+"mer_motifs.txt";
+                    PrintWriter pw = new PrintWriter(new FileWriter(filename)); 
+                    pw.println("Kmer\tPercentage");
+                    
+                    for (int i=0; i<motifs.size(); i++) {
+                        pw.printf("%s\t%.4f", motifs.get(i).getKey(), motifs.get(i).getValue());
+                        pw.println("");
+                    }
+                    pw.close();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("writeSubstitutionStats exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }   
+    }
+    
+    public int getIgnoredDuplicates() {
+        return ignoredDuplicates;
     }
 }
