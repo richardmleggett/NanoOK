@@ -103,6 +103,7 @@ public class ParserRunnable implements Runnable
                 AlignmentInfo ais = merger.endMergeAndStoreStats();
                 readReference.getStatsByType(stats.getType()).addCoverage(merger.getOverallHitStart(), merger.getOverallHitEnd()-merger.getOverallHitStart()+1);
                 readReference.getStatsByType(stats.getType()).getAlignmentsTableFile().writeMergedAlignment(stats, file.getName(), merger, ais);
+                readReference.getStatsByType(stats.getType()).addLongestAlignmentSize(ais.getAlignmentSize());
             }
         } catch (Exception e) {
             System.out.println("Error parsing alignment "+ alignmentPath);

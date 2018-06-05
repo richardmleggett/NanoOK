@@ -179,6 +179,8 @@ public class SampleReportWriter {
         pw.println("");
         pw.printf("Number of reads without alignments & %d & (%.2f\\%%) \\\\", stats.getNumberOfReadsWithoutAlignments(), stats.getPercentOfReadsWithoutAlignments());
         pw.println("");
+        pw.printf("Longest alignment & %d \\\\", stats.getLongestAlignmentSizeInSet());
+        pw.println("");
         pw.println("\\end{tabular}");
         pw.println("}");
         pw.println("\\end{table}");
@@ -777,18 +779,18 @@ public class SampleReportWriter {
         pw.println("{\\footnotesize");
         if (references.getNumberOfReferences() < LONGTABLE_THRESHOLD) {
             pw.println("\\fontsize{9pt}{11pt}\\selectfont");
-            pw.println("\\begin{tabular}{l c c c c c c c}");
+            pw.println("\\begin{tabular}{l c c c c c c c c}");
         } else {
-            pw.println("\\begin{longtable}[l]{l c c c c c c c}");
+            pw.println("\\begin{longtable}[l]{l c c c c c c c c}");
         }
-        pw.println("          &             & {\\bf Number of} & {\\bf \\% of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest} \\\\");
-        pw.println("{\\bf ID} & {\\bf Size} & {\\bf Reads}     & {\\bf Reads}  & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} \\\\");
+        pw.println("          &             & {\\bf Number of} & {\\bf \\% of} & {\\bf Mean read} & {\\bf Aligned} & {\\bf Mean} & {\\bf Longest} & {\\bf Longest} \\\\");
+        pw.println("{\\bf ID} & {\\bf Size} & {\\bf Reads}     & {\\bf Reads}  & {\\bf length}    & {\\bf bases}   & {\\bf coverage} & {\\bf Perf Kmer} & {\\bf alignment} \\\\");
         ArrayList<ReferenceSequence> sortedRefs = references.getSortedReferences();
         for (int i=0; i<sortedRefs.size(); i++) {
             ReferenceSequence r = sortedRefs.get(i);
             ReferenceSequenceStats refStats = r.getStatsByType(type);
             if ((sortedRefs.size() < 100) || (refStats.getNumberOfReadsWithAlignments() > 0)) {
-                pw.printf("%s & %d & %d & %.2f & %.2f & %d & %.2f & %d \\\\",
+                pw.printf("%s & %d & %d & %.2f & %.2f & %d & %.2f & %d & %d \\\\",
                            r.getName().replaceAll("_", " "),
                            r.getSize(),
                            refStats.getNumberOfReadsWithAlignments(),
@@ -796,7 +798,8 @@ public class SampleReportWriter {
                            refStats.getMeanReadLength(),
                            refStats.getTotalAlignedBases(),
                            (double)refStats.getTotalAlignedBases() / r.getSize(),
-                           refStats.getLongestPerfectKmer());
+                           refStats.getLongestPerfectKmer(),
+                           refStats.getLongestAlignmentSize());
                 pw.println("");
             }
         }
