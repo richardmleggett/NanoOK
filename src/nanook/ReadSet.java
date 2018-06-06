@@ -199,8 +199,8 @@ public class ReadSet {
         System.out.println("");
         
         stats.closeLengthsFile();
-        stats.writeSummaryFile();        
-        stats.calculateStats();    
+        stats.calculateStats(); 
+        stats.writeSummaryFile();           
         
         return nFastaFiles;
     }
@@ -321,8 +321,8 @@ public class ReadSet {
         System.out.println("");
         
         stats.closeLengthsFile();
-        stats.writeSummaryFile();        
-        stats.calculateStats();    
+        stats.calculateStats(); 
+        stats.writeSummaryFile();           
         
         return nFastaFiles;
     }    

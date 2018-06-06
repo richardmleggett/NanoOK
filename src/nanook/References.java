@@ -274,7 +274,7 @@ public class References implements Serializable {
             PrintWriter pw = new PrintWriter(new FileWriter(filename));
             String formatString = "%-"+longestId+"s %-12s %-10s %-10s %-10s %-12s %-10s %-10s";
             //pw.printf(formatString, "ID", "Size", "ReadsAlign", "PcReads", "MeanLen", "TotalBases", "MeanCov", "LongPerfKm");    
-            pw.print("ID\tSize\tReadsAlign\tPcReads\tMeanLen\tTotalBases\tMeanCov\tLongPerfKm");
+            pw.print("ID\tSize\tReadsAlign\tPcReads\tMeanLen\tTotalBases\tMeanCov\tLongPerfKm\tLongestAlignment");
             pw.println("");
             
             //List<String> keys = new ArrayList<String>(referenceSeqIds.keySet());
@@ -283,7 +283,7 @@ public class References implements Serializable {
             //    referenceSeqIds.get(id).getStatsByType(type).writeSummary(pw, "%-"+longestId+"s %-12d %-10d %-10.2f %-10d");
             //}
 
-            formatString = "%s\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%d";
+            formatString = "%s\t%d\t%d\t%.2f\t%.2f\t%d\t%.2f\t%d\t%d";
             ArrayList<ReferenceSequence> sortedRefs = getSortedReferences();
             for (int i=0; i<sortedRefs.size(); i++) {
                 ReferenceSequence r = sortedRefs.get(i);
@@ -296,7 +296,9 @@ public class References implements Serializable {
                            refStats.getMeanReadLength(),
                            refStats.getTotalAlignedBases(),
                            (double)refStats.getTotalAlignedBases() / r.getSize(),
-                           refStats.getLongestPerfectKmer());
+                           refStats.getLongestPerfectKmer(),
+                           refStats.getLongestAlignmentSize());
+                
                 pw.println("");
             }
             

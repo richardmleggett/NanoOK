@@ -51,6 +51,7 @@ public class ReferenceSequenceStats implements Serializable {
     private KmerTable readKmerTable = new KmerTable(5);
     private AlignmentsTableFile atf;
     private ArrayList<KmerAbundance> kmerAbundance = new ArrayList();
+    private int longestAlignmentSize = 0;
 
     /** 
      * Constructor.
@@ -544,5 +545,16 @@ public class ReferenceSequenceStats implements Serializable {
     
     public ArrayList getKmerAbundance() {
         return kmerAbundance;
+    }
+    
+    public int getLongestAlignmentSize() {
+        return longestAlignmentSize;
+    }
+    
+    public void addLongestAlignmentSize(int size) {
+        if(size > longestAlignmentSize) {
+            longestAlignmentSize = size;
+        }
+        
     }
 }
