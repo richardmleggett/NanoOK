@@ -53,6 +53,7 @@ public class ReadSetStats implements Serializable {
     private int nDeletions = 0;
     private int ignoredDuplicates = 0;
     private int type;
+    private int longestAlignmentSize = 0;
    
     /**
      * Constructor
@@ -131,6 +132,17 @@ public class ReadSetStats implements Serializable {
             }
         }
         
+        // calculate the longest alignment size in the whole set
+        int longest = 0;
+        ArrayList<ReferenceSequence> sortedRefs = options.getReferences().getSortedReferences();
+        for (int i=0; i<sortedRefs.size(); i++) {
+            ReferenceSequence r = sortedRefs.get(i);
+            ReferenceSequenceStats refStats = r.getStatsByType(type);
+            if(refStats.getLongestAlignmentSize() > longest) {
+                longest = refStats.getLongestAlignmentSize();
+            }
+        }
+        longestAlignmentSize = longest;        
     }
     
     /**
@@ -442,6 +454,7 @@ public class ReadSetStats implements Serializable {
             pw.println("");
             pw.printf("Num reads without alignments: %d", nReadsWithoutAlignments);
             pw.println("");
+            pw.printf("Length of longest aligned read: %d", longestAlignmentSize);
             pw.close();
         } catch (IOException e) {
             System.out.println("writeSummaryFile exception:");
@@ -621,5 +634,9 @@ public class ReadSetStats implements Serializable {
     
     public int getIgnoredDuplicates() {
         return ignoredDuplicates;
+    }
+    
+    public int getLongestAlignmentSizeInSet() {
+        return longestAlignmentSize;
     }
 }
