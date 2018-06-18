@@ -10,7 +10,7 @@ package nanook;
 import java.io.File;
 
 /**
- * Parser for BWA files
+ * Parser for GraphMap files
  * @author Richard Leggett
  */
 public class GraphMapParser extends SAMParser implements AlignmentFileParser {

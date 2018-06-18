@@ -112,43 +112,47 @@ public abstract class SAMParser {
         }
         
         if (mapped) {
-            ReferenceSequence readReference = references.getReferenceById(hitName);
-            if (readReference != null) {        
-                int readLength = overallStats.getReadLength(alignmentFile, queryName);
-                if (readLength != -1) {
-                    CIGARString cs = new CIGARString(cigar, seq, leafName, queryName, hitStart, options.getReferenceFile(), readReference, alignmentFile);
-                    if (cs.processString()) {
-                    //System.out.println("hitName "+hitName);
-                        al = new Alignment(mapQuality,
-                                           queryName, 
-                                           readLength,
-                                           cs.getQueryStart(),
-                                           cs.getQueryAlnSize(),
-                                           cs.getQueryString(),
-                                           hitName,
-                                           readReference.getSize(),
-                                           hitStart,
-                                           cs.getHitAlnSize(),
-                                           cs.getHitString(),
-                                           false); 
+            if (!seq.startsWith("*")) {
+                ReferenceSequence readReference = references.getReferenceById(hitName);
+                if (readReference != null) {        
+                    int readLength = overallStats.getReadLength(alignmentFile, queryName);
+                    if (readLength != -1) {
+                        CIGARString cs = new CIGARString(cigar, seq, leafName, queryName, hitStart, options.getReferenceFile(), readReference, alignmentFile);
+                        if (cs.processString()) {
+                        //System.out.println("hitName "+hitName);
+                            al = new Alignment(mapQuality,
+                                               queryName, 
+                                               readLength,
+                                               cs.getQueryStart(),
+                                               cs.getQueryAlnSize(),
+                                               cs.getQueryString(),
+                                               hitName,
+                                               readReference.getSize(),
+                                               hitStart,
+                                               cs.getHitAlnSize(),
+                                               cs.getHitString(),
+                                               false); 
 
-                        // Check for reverse complement
-                        if ((flags & 0x10) == 0x10) {
-                            al.setQueryStrand("-");
+                            // Check for reverse complement
+                            if ((flags & 0x10) == 0x10) {
+                                al.setQueryStrand("-");
+                            }
+
+                            al.writeMafFile(outputFilename);
+
                         }
 
-                        al.writeMafFile(outputFilename);
-                        
+                    } else {
+                        System.out.println("Error: can't find read length for ["+queryName+"]");
+                        System.exit(1);
                     }
-                    
                 } else {
-                    System.out.println("Error: can't find read length for ["+queryName+"]");
-                    System.exit(1);
+                    System.out.println("");
+                    System.out.println("Error: Couldn't find reference "+hitName);
                 }
-            } else {
-                System.out.println("");
-                System.out.println("Error: Couldn't find reference "+hitName);
             }
+        } else {
+            System.out.println("Not mapped: "+leafName);
         }
         
         return al;
