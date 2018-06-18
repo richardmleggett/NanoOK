@@ -134,11 +134,20 @@ public class CIGARString {
         int insCount = 0;
         int matchCount = 0;
         boolean processed = true;
+        boolean debug = false;
         
-        //System.out.println("Query filename: "+queryFilename);
-        //System.out.println("CIGAR: "+cigarString);
-        //System.out.println("  Hit: "+hitSeq.length()+" "+hitSeq);
-        //System.out.println("Query: "+querySeq.length()+" "+querySeq);
+        //if (queryFilename.startsWith("N79596_Lambda8kbp_LCv4_test_3559_1_ch60_file49_strand_BaseCalled_Complement.fasta.sam")) {
+        //if (queryFilename.startsWith("N79596_Lambda8kbp_LCv4_test_3559_1_ch96_file14_strand_BaseCalled_2D.fasta.sam")) {
+        //    System.out.println("\n\nDEBUGGING THIS...");
+        //    debug = true;
+        //}
+        
+        if (debug) {
+            System.out.println("Query filename: "+queryFilename);
+            System.out.println("CIGAR: "+cigarString);
+            System.out.println("  Hit: "+hitSeq.length()+" "+hitSeq);
+            System.out.println("Query: "+querySeq.length()+" "+querySeq);
+        }
 
         try {
             hitAlnSize = 0;
@@ -146,9 +155,11 @@ public class CIGARString {
             hitAlnSize = 0;
             while ((i<cigarString.length()) && (continueParsing)) {
             //for (int i=0; i<cigarString.length(); i++) {
-                //System.out.println("hitPtr="+hitPtr+" queryPtr="+queryPtr);
-                //System.out.println("Query: " + queryString.toString());
-                //System.out.println("  Hit: " + hitString.toString());
+                if (debug) {
+                    System.out.println("hitPtr="+hitPtr+" queryPtr="+queryPtr);
+                    //System.out.println("Query: " + queryString.toString());
+                    //System.out.println("  Hit: " + hitString.toString());
+                }
                 char c = cigarString.charAt(i);
 
                 if (Character.isDigit(c)) {
@@ -156,13 +167,17 @@ public class CIGARString {
                 } else {
                     int n = Integer.parseInt(value);
                     totalCount += n;
-                    //System.out.println(n + " " + c);
+                    if (debug) {
+                        System.out.println(n + " " + c);
+                    }
                     switch(c) {
                         case 'M':
                         case '=':
                         case 'X':
-                            //System.out.println(hitString.length() + " " + hitPtr);
-                            //System.out.println("Hit up: " + hitSeq.substring(hitPtr));
+                            if (debug) {
+                                System.out.println(hitString.length() + " " + hitPtr);
+                                //System.out.println("Hit up: " + hitSeq.substring(hitPtr));
+                            }
                             queryString.append(querySeq.substring(queryPtr, queryPtr + n));
                             hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
                             queryPtr += n;
@@ -173,7 +188,7 @@ public class CIGARString {
                             matchCount+=n;
                             break;
                         case 'I':
-                            if (n > 100) {
+                            if (n > 200) {
                                 // DEBUG MODE TURNS OFF THIS
                                 System.out.println("");
                                 System.out.println("Error: large I ("+n+") - read "+queryID+" ignored");
@@ -191,7 +206,7 @@ public class CIGARString {
                             insCount+=n;
                             break;
                         case 'D':
-                            if (n > 100) {
+                            if (n > 500) {
                                 System.out.println("Error: large D ("+n+") - read "+queryID+" ignored");
                                 processed = false;
                                 continueParsing = false;
@@ -248,13 +263,17 @@ public class CIGARString {
                     }
                     value="";
                     tagCtr++;
-                    //System.out.println("qseq="+querySeq.length()+" matchCount="+matchCount+" insCount="+insCount+" delCount="+delCount+" totalCount="+totalCount);
-                    //System.out.println("Query: "+queryString.toString());
-                    //System.out.println("  Hit: "+hitString.toString());
+                    if (debug) {
+                        //System.out.println("qseq="+querySeq.length()+" matchCount="+matchCount+" insCount="+insCount+" delCount="+delCount+" totalCount="+totalCount);
+                        //System.out.println("Query: "+queryString.toString());
+                        //System.out.println("  Hit: "+hitString.toString());
+                    }
                 }
 
                 i++;
-                //System.out.println("i="+i+" and length="+cigarString.length());
+                if (debug) {
+                    System.out.println("i="+i+" and length="+cigarString.length());
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
