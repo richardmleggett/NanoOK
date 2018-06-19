@@ -21,7 +21,7 @@ import java.util.Collections;
  */
 public class ReferenceSequenceStats implements Serializable {
     private static final long serialVersionUID = NanoOK.SERIAL_VERSION;
-    private static final int MAX_INDEL = 100;
+    private static final int MAX_INDEL = 200;
     private int size;
     private String name;
     private SequenceCoverage cov;
@@ -296,8 +296,8 @@ public class ReferenceSequenceStats implements Serializable {
     public synchronized void addDeletionError(int size, String kmer, ReadSetStats stats) {
         //System.out.println("Delete " + size);
         if (size >= MAX_INDEL) {
-            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error");
             System.out.println("");
+            System.out.println("Warning: deletion much larger than expected ("+size+") - too many of these may affect indel stats");
         } else {
             nDeletionErrors++;
             nDeletedBases += size;
@@ -318,8 +318,8 @@ public class ReferenceSequenceStats implements Serializable {
     public synchronized void addInsertionError(int size, String kmer, ReadSetStats stats) {
         //System.out.println("Insert " + size);
         if (size >= MAX_INDEL) {
-            System.out.println("Error: indel much larger than expected ("+size+") - possible parsing error");
             System.out.println("");
+            System.out.println("Warning: insertionl much larger than expected ("+size+") - too many of these may affect indel stats");
         } else {
             nInsertionErrors++;
             nInsertedBases += size;
