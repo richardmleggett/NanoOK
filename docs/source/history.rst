@@ -1,6 +1,14 @@
 Change history
 ==============
 
+**1.33 (19 June 2018)**
+
+- Added ngmlr support.
+
+** 1.32 (18 June 2018)**
+
+- Added minimap2 support.
+
 **1.25 (7 June 2017)**
 
 -  Added GraphMap support.

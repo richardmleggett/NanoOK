@@ -169,9 +169,9 @@ public class SampleChecker {
             System.out.println("Error: FASTA/Q directory structure not understood.");
             System.out.println("This may be because it was created with an earlier version of NanoOK.");
             System.out.println("NanoOK now expects the following structures:");
-            System.out.println("    sampledir/fasta/pass/Template/*.fast5");
-            System.out.println(" or sampledir/fasta/pass/Template/batch_XXX/*.fast5");
-            System.out.println(" or sampledir/fasta/pass/Template/0/*.fast5");
+            System.out.println("    sampledir/fasta/pass/Template/*");
+            System.out.println(" or sampledir/fasta/pass/Template/batch_XXX/*");
+            System.out.println(" or sampledir/fasta/pass/Template/0/*");
             System.out.println("etc.");
             System.exit(0);
         }
