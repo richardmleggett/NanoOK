@@ -207,17 +207,17 @@ public class CIGARString {
                             break;
                         case 'D':
                             if (n > 500) {
-                                System.out.println("Error: large D ("+n+") - read "+queryID+" ignored");
-                                processed = false;
-                                continueParsing = false;
-                            } else {
-                                hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
-                                for (int j=0; j<n; j++) {
-                                    queryString.append('-'); 
-                                }
-                                hitPtr += n;
-                                hitAlnSize += n;
+                                System.out.println("Warning: large D ("+n+") on "+ queryID);
+                                //processed = false;
+                                //continueParsing = false;
                             }
+                            
+                            hitString.append(hitSeq.substring(hitPtr, hitPtr + n));
+                            for (int j=0; j<n; j++) {
+                                queryString.append('-'); 
+                            }
+                            hitPtr += n;
+                            hitAlnSize += n;
                             donePreClipping = true;
                             delCount+=n;
                             break;
