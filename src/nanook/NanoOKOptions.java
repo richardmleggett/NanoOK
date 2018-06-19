@@ -209,7 +209,7 @@ public class NanoOKOptions implements Serializable {
             System.out.println("    -force to force NanoOK to ignore warnings");
             System.out.println("    -timeout to set the number of seconds before giving up waiting for new reads (default 2)");
             System.out.println("");
-            System.out.println("Valid aligners: last, bwa, blasr, marginalign, graphmap, minimap2");
+            System.out.println("Valid aligners: last, bwa, blasr, marginalign, graphmap, minimap2, ngmlr");
             System.out.println("");
             System.exit(0);
         }
@@ -990,6 +990,9 @@ public class NanoOKOptions implements Serializable {
                 break;
             case "minimap2":
                 parser = new Minimap2Parser(this, references);
+                break;
+            case "ngmlr":
+                parser = new NgmlrParser(this, references);
                 break;
             default:
                 System.out.println("Aligner unknown!");
