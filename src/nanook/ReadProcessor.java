@@ -249,11 +249,12 @@ public class ReadProcessor {
         
         // Now keep scanning
         while (!fw.timedOut()) {
+            options.getJobScheduler().manageQueue();
             fw.scan();
             fw.writeProgress();
             Thread.sleep(500);            
             fw.writeProgress();
-            Thread.sleep(500);            
+            Thread.sleep(500);    
         }
         fw.writeProgress();
                 

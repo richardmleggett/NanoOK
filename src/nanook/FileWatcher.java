@@ -20,6 +20,7 @@ public class FileWatcher {
     private int lastCompleted = -1;
     private long lastFileTime = System.nanoTime();
     private long secsSinceLast = 0;
+    private boolean useProgressBar = false;
     private ArrayList<FileWatcherItem> batchContainersToWatch = new ArrayList();
     private ArrayList<FileWatcherItem> fileDirsToWatch = new ArrayList();
     private Hashtable<String, Integer> batchDirs = new Hashtable();
@@ -63,20 +64,26 @@ public class FileWatcher {
         long e = 0;
         long s = NanoOKOptions.PROGRESS_WIDTH;
         
-        if (filesToProcess > 0) {
-            e = NanoOKOptions.PROGRESS_WIDTH * filesProcessed / filesToProcess;
-            s = NanoOKOptions.PROGRESS_WIDTH - e;
+        if (useProgressBar) {        
+            if (filesToProcess > 0) {
+                e = NanoOKOptions.PROGRESS_WIDTH * filesProcessed / filesToProcess;
+                s = NanoOKOptions.PROGRESS_WIDTH - e;
+            }
+
+            System.out.print("\rProcessing [");
+            for (int i=0; i<e; i++) {
+                System.out.print("=");
+            }
+            for (int i=0; i<s; i++) {
+                System.out.print(" ");
+            }
+            System.out.print("] " + filesProcessed +"/" +  filesToProcess);
+            lastCompleted = filesProcessed;
+        } else {
+            //if ((filesProcessed % 100) == 0) {
+                System.out.println("Processed " + filesProcessed +"/" +  filesToProcess);
+            //}
         }
-        
-        System.out.print("\rProcessing [");
-        for (int i=0; i<e; i++) {
-            System.out.print("=");
-        }
-        for (int i=0; i<s; i++) {
-            System.out.print(" ");
-        }
-        System.out.print("] " + filesProcessed +"/" +  filesToProcess);
-        lastCompleted = filesProcessed;
     }
     
     private void checkForNewBatchDirs() {

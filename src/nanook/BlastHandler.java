@@ -135,17 +135,33 @@ public class BlastHandler {
                     options.getLog().println("Writing blast command file "+commandFile);
                     PrintWriter pw = new PrintWriter(new FileWriter(commandFile));
                     // TODO: -task option shouldn't be hardcoded
-                    pw.write(blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue 0.001 -show_gis -task megablast -out " + outputBlast + " -outfmt "+formatString);
+                    String command=blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs " + Integer.toString(options.getBlastMaxTargetSeqs()) + " -show_gis -task megablast -out " + outputBlast + " -outfmt "+formatString;
+                    SimpleJobScheduler jobScheduler = options.getJobScheduler();
+                    pw.write(command);
                     pw.close();
 
-                    options.getLog().println("Submitting blast command file to SLURM "+commandFile);
-                    ProcessLogger pl = new ProcessLogger();
-                    String[] commands = {"slurmit",
-                                         "-o", logFile,
-                                         "-p", queue,
-                                         "-m", memory,
-                                         "sh "+commandFile};
-                    pl.runCommandToLog(commands, options.getLog());            
+                    if (jobScheduler == null) {
+                        options.getLog().println("Submitting blast command file to SLURM "+commandFile);
+                        ProcessLogger pl = new ProcessLogger();
+                        String[] commands = {"slurmit",
+                                             "-o", logFile,
+                                             "-p", queue,
+                                             "-m", memory,
+                                             "sh "+commandFile};
+                        pl.runCommandToLog(commands, options.getLog());            
+                    } else {
+                        String[] commands = {blastTool,
+                                             "-db", blastDb,
+                                             "-query", inputPathname,
+                                             "-evalue", Double.toString(options.getBlastMaxE()),
+                                             "-max_target_seqs", Integer.toString(options.getBlastMaxTargetSeqs()),
+                                             "-show_gis",
+                                             "-task", "megablast",
+                                             "-out", outputBlast,
+                                             "-outfmt", "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle"};
+                                                
+                        jobScheduler.submitJob(commands, logFile);
+                    }
                 } catch (IOException e) {
                     System.out.println("runBlast exception");
                     e.printStackTrace();

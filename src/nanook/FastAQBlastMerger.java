@@ -30,19 +30,33 @@ public class FastAQBlastMerger implements Runnable {
         String formatString = "'6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle'";
         
         try {
+            SimpleJobScheduler jobScheduler = options.getJobScheduler();
             System.out.println("Writing blast command file "+commandFile);
             PrintWriter pw = new PrintWriter(new FileWriter(commandFile));
-            pw.write("blastn -db "+options.getBacteriaPath()+" -query " + inputFasta + " -evalue 0.001 -show_gis -out " + outputBlast + " -outfmt "+formatString);
+            String command = "blastn -db "+options.getBacteriaPath()+" -query " + inputFasta + " -evalue 0.001 -show_gis -out " + outputBlast + " -outfmt "+formatString;
+            pw.write(command);
             pw.close();
             
-            options.getLog().println("Submitting blast command file to SLURM "+commandFile);
-            ProcessLogger pl = new ProcessLogger();
-            String[] commands = {"slurmit",
-                                 "-o", logFile,
-                                 "-p", "Nanopore",
-                                 "-m", "8G",
-                                 "sh "+commandFile};
-            pl.runCommandToLog(commands, options.getLog());            
+            if (jobScheduler == null) {            
+                options.getLog().println("Submitting blast command file to SLURM "+commandFile);
+                ProcessLogger pl = new ProcessLogger();
+                String[] commands = {"slurmit",
+                                     "-o", logFile,
+                                     "-p", "Nanopore",
+                                     "-m", "8G",
+                                     "sh "+commandFile};
+                pl.runCommandToLog(commands, options.getLog());
+            } else {
+                String[] commands = {"blastn",
+                                     "-db",
+                                     options.getBacteriaPath(),
+                                     "-query", inputFasta,
+                                     "-evalue", "0.001",
+                                     "-show_gis",
+                                     "-out", outputBlast,
+                                     "-outfmt", formatString};
+                jobScheduler.submitJob(commands, logFile);
+            }
         } catch (IOException e) {
             System.out.println("runBlast exception");
             e.printStackTrace();
