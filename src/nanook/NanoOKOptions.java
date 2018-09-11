@@ -118,7 +118,10 @@ public class NanoOKOptions implements Serializable {
     private transient ReadFileMerger readFileMerger;
     private transient SampleChecker sampleChecker = new SampleChecker(this);
     private double blastMaxE = 0.001;
-    private int blastMaxTargetSeqs = 50;
+    private int blastMaxTargetSeqs = 25;
+    private boolean isMac = false;
+    private String meganCmdLine="source MEGAN-5.11.3 ; xvfb-run -d MEGAN";
+    private String meganLicense="/tgac/workarea/group-si/BAMBI_Pt1/megan_support/MEGAN5-academic-license.txt";
         
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -131,6 +134,28 @@ public class NanoOKOptions implements Serializable {
         }
                 
         System.out.println("Scripts dir: "+scriptsDir);
+        
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.startsWith("mac os x")) { 
+            isMac = true;
+            System.out.println("Mac OS X detected");
+            meganCmdLine="/Applications/MEGAN5.11.3/MEGAN.app/Contents/MacOS/JavaApplicationStub";
+            meganLicense="/Applications/MEGAN5/MEGAN5-academic-license.txt";
+        }
+        
+        System.out.println("To do: options for specifying MEGAN command/license");
+    }
+    
+    public boolean isMac() {
+        return isMac;
+    }
+    
+    public String getMeganCmdLine() {
+        return meganCmdLine;
+    }
+    
+    public String getMeganLicense() {
+        return meganLicense;
     }
     
     public References getReferences() {
