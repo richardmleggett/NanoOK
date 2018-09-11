@@ -13,6 +13,7 @@ public class FastAQBlastMerger implements Runnable {
     private ArrayList<String> listOfFiles;
     private String mergedFilePrefix;
     private int fileCounter;
+    private String defaultFormatString = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxid";
 
     public FastAQBlastMerger(NanoOKOptions o, String m, ArrayList a, int fc) {
         options = o;
@@ -27,22 +28,40 @@ public class FastAQBlastMerger implements Runnable {
         String outputBlast = options.getSampleDirectory() + File.separator + "blastn_bacteria" + File.separator + iff.getName() + "_" + fileCounter + "_blast_bacteria.txt";
         String commandFile = options.getSampleDirectory() + File.separator + "blastn_bacteria" + File.separator + iff.getName() + "_" + fileCounter + "_blast_bacteria.sh";
         String logFile = options.getSampleDirectory() + File.separator + "blastn_bacteria" + File.separator + iff.getName() + "_" + fileCounter + "_blast_bacteria.log";
-        String formatString = "'6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle'";
+        String formatString = "'" + defaultFormatString + "'";
         
         try {
+            SimpleJobScheduler jobScheduler = options.getJobScheduler();
             System.out.println("Writing blast command file "+commandFile);
             PrintWriter pw = new PrintWriter(new FileWriter(commandFile));
-            pw.write("blastn -db "+options.getBacteriaPath()+" -query " + inputFasta + " -evalue 0.001 -show_gis -out " + outputBlast + " -outfmt "+formatString);
+            String command = "blastn -db "+options.getBacteriaPath()+" -query " + inputFasta + " -evalue 0.001 -show_gis -out " + outputBlast + " -outfmt "+formatString;
+            //String command = "blastn -db " + options.getBacteriaPath()+" -query " + inputFasta + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs " + Integer.toString(options.getBlastMaxTargetSeqs()) + " -show_gis -out " + outputBlast + " -outfmt "+formatString;
+            pw.write(command);
             pw.close();
             
-            options.getLog().println("Submitting blast command file to SLURM "+commandFile);
-            ProcessLogger pl = new ProcessLogger();
-            String[] commands = {"slurmit",
-                                 "-o", logFile,
-                                 "-p", "Nanopore",
-                                 "-m", "8G",
-                                 "sh "+commandFile};
-            pl.runCommandToLog(commands, options.getLog());            
+            if (jobScheduler == null) {            
+                options.getLog().println("Submitting blast command file to SLURM "+commandFile);
+                ProcessLogger pl = new ProcessLogger();
+                String[] commands = {"slurmit",
+                                     "-o", logFile,
+                                     "-p", "Nanopore",
+                                     "-m", "8G",
+                                     "sh "+commandFile};
+                pl.runCommandToLog(commands, options.getLog());
+            } else {
+                String[] commands = {"blastn",
+                                     "-db",
+                                     options.getBacteriaPath(),
+                                     "-query", inputFasta,
+                                     "-evalue", Double.toString(options.getBlastMaxE()),
+                                     "-max_target_seqs", Integer.toString(options.getBlastMaxTargetSeqs()),
+                                     "-show_gis",
+                                     "-task", "megablast",
+                                     "-out", outputBlast,
+                                     "-outfmt", formatString};
+                System.out.println("Submitting from FastAQBlastMerger");
+                jobScheduler.submitJob(commands, logFile);
+            }
         } catch (IOException e) {
             System.out.println("runBlast exception");
             e.printStackTrace();
@@ -55,8 +74,8 @@ public class FastAQBlastMerger implements Runnable {
         String outputBlast = options.getSampleDirectory() + File.separator + "blastn_nt" + File.separator + iff.getName() + "_" + fileCounter + "_blast_nt.txt";
         String commandFile = options.getSampleDirectory() + File.separator + "blastn_nt" + File.separator + iff.getName() + "_" + fileCounter + "_blast_nt.sh";
         String logFile = options.getSampleDirectory() + File.separator + "blastn_nt" + File.separator + iff.getName() + "_" + fileCounter + "_blast_nt.log";
-        String formatString = "'6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle'";
-        
+        String formatString = "'" + defaultFormatString + "'";
+
         try {
             System.out.println("Writing blast command file "+commandFile);
             PrintWriter pw = new PrintWriter(new FileWriter(commandFile));
@@ -83,8 +102,8 @@ public class FastAQBlastMerger implements Runnable {
         String outputBlast = options.getSampleDirectory() + File.separator + "blastn_card" + File.separator + iff.getName() + "_" + fileCounter + "_blast_card.txt";
         String commandFile = options.getSampleDirectory() + File.separator + "blastn_card" + File.separator + iff.getName() + "_" + fileCounter + "_blast_card.sh";
         String logFile = options.getSampleDirectory() + File.separator + "blastn_card" + File.separator + iff.getName() + "_" + fileCounter + "_blast_card.log";
-        String formatString = "'6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle'";
-        
+        String formatString = "'" + defaultFormatString + "'";
+
         try {
             System.out.println("Writing blast command file "+commandFile);
             PrintWriter pw = new PrintWriter(new FileWriter(commandFile));

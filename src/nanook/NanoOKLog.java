@@ -67,6 +67,7 @@ public class NanoOKLog  implements Serializable {
     public synchronized void println(String s) {
         if (pw != null) {
             pw.println(getTime() + " " + s);
+            pw.flush();
         }
     }
     

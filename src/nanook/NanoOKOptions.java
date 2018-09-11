@@ -82,6 +82,7 @@ public class NanoOKOptions implements Serializable {
     private boolean mergeFastaFiles = false;
     private boolean force = false;
     private double minQForPass = -1;
+    private int maxSchedulerJobs = 4;
     private int runMode = 0;
     private int readFormat = FASTA;
     private int numThreads = 1;
@@ -96,6 +97,7 @@ public class NanoOKOptions implements Serializable {
     private boolean outputFast5Path = true;
     private int readsPerBlast = 500;
     private boolean clearLogsOnStart = true;
+    private SimpleJobScheduler jobScheduler = null;
     private transient WatcherLog watcherReadLog = new WatcherLog(this);
     private transient WatcherLog watcherCardFileLog = new WatcherLog(this);
     private transient WatcherLog watcherntFileLog = new WatcherLog(this);
@@ -115,6 +117,11 @@ public class NanoOKOptions implements Serializable {
     private int fileCounterOffset = 0;
     private transient ReadFileMerger readFileMerger;
     private transient SampleChecker sampleChecker = new SampleChecker(this);
+    private double blastMaxE = 0.001;
+    private int blastMaxTargetSeqs = 25;
+    private boolean isMac = false;
+    private String meganCmdLine="source MEGAN-5.11.3 ; xvfb-run -d MEGAN";
+    private String meganLicense="/tgac/workarea/group-si/BAMBI_Pt1/megan_support/MEGAN5-academic-license.txt";
         
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -127,6 +134,28 @@ public class NanoOKOptions implements Serializable {
         }
                 
         System.out.println("Scripts dir: "+scriptsDir);
+        
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.startsWith("mac os x")) { 
+            isMac = true;
+            System.out.println("Mac OS X detected");
+            meganCmdLine="/Applications/MEGAN5.11.3/MEGAN.app/Contents/MacOS/JavaApplicationStub";
+            meganLicense="/Applications/MEGAN5/MEGAN5-academic-license.txt";
+        }
+        
+        System.out.println("To do: options for specifying MEGAN command/license");
+    }
+    
+    public boolean isMac() {
+        return isMac;
+    }
+    
+    public String getMeganCmdLine() {
+        return meganCmdLine;
+    }
+    
+    public String getMeganLicense() {
+        return meganLicense;
     }
     
     public References getReferences() {
@@ -388,7 +417,7 @@ public class NanoOKOptions implements Serializable {
                 numThreads = Integer.parseInt(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-subdirs") || args[i].equalsIgnoreCase("-barcoding")) {
-                System.out.println("-barcoding option ignore - now detected automatically.");
+                System.out.println("-barcoding option ignored - now detected automatically.");
                 i++;
             } else if (args[i].equalsIgnoreCase("-keeplogs")) {
                 clearLogsOnStart = false;
@@ -398,6 +427,12 @@ public class NanoOKOptions implements Serializable {
                 i++;
             } else if (args[i].equalsIgnoreCase("-minquality")) {
                 minQForPass = Double.parseDouble(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-maxe")) {
+                blastMaxE = Double.parseDouble(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-blastmaxtargets")) {
+                blastMaxTargetSeqs = Integer.parseInt(args[i+1]);
                 i+=2;
             } else {                
                 System.out.println("Unknown parameter: " + args[i]);
@@ -453,6 +488,11 @@ public class NanoOKOptions implements Serializable {
 
                 sampleName = s.getName();
             }
+        }
+        
+        if (scheduler.equalsIgnoreCase("local")) {
+            checkAndMakeDirectory(this.getLogsDir());
+            jobScheduler = new SimpleJobScheduler(maxSchedulerJobs, this);
         }
                 
         initialiseBlastHandlers();
@@ -1342,6 +1382,12 @@ public class NanoOKOptions implements Serializable {
                         } else if (tokens[0].compareToIgnoreCase("ReadsPerBlast") == 0) {
                             readsPerBlast = Integer.parseInt(tokens[1]);
                             System.out.println("  ReadsPerBlast "+readsPerBlast);
+                        } else if (tokens[0].compareToIgnoreCase("MaxEValue") == 0) {
+                            blastMaxE = Double.parseDouble(tokens[1]);
+                            System.out.println("  MaxEValue "+blastMaxE);
+                        } else if (tokens[0].compareToIgnoreCase("MaxTargetSeqs") == 0) {
+                            blastMaxTargetSeqs = Integer.parseInt(tokens[1]);
+                            System.out.println("  MaxTargetSeqs "+blastMaxTargetSeqs);
                         } else if (!tokens[0].startsWith("#")) {
                             System.out.println("Unknown token "+tokens[0]);
                         } 
@@ -1411,5 +1457,17 @@ public class NanoOKOptions implements Serializable {
     
     public boolean debugMode() {
         return false;
+    }
+    
+    public SimpleJobScheduler getJobScheduler() {
+        return jobScheduler;
+    }
+    
+    public double getBlastMaxE() {
+        return blastMaxE;
+    }
+    
+    public int getBlastMaxTargetSeqs() {
+        return blastMaxTargetSeqs;
     }
 }

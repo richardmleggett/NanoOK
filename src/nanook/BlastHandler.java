@@ -22,6 +22,7 @@ public class BlastHandler {
     private int nSeqs = 0;
     private int fileCounter = 0;
     private ArrayList<String> mergeList = new ArrayList<String>();
+    private String defaultFormatString = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxid";
     
     public BlastHandler(NanoOKOptions o, int t, int pf) {
         options = o;
@@ -81,13 +82,21 @@ public class BlastHandler {
                     }
                     
                     pw.print("import blastFile="+blastFileString+" fastaFile="+fastaFileString +" meganFile="+meganPathname);
-                    pw.println(" maxMatches=100 maxExpected=0.001 minSupport=1 minComplexity=0;");
+                    pw.println(" maxMatches=100 maxExpected=0.001 minSupport=1 minComplexity=0 blastFormat=BlastTAB;");
                     pw.println("quit;");
                     pw.close();
                     
                     pw = new PrintWriter(new FileWriter(slurmPathname));
-                    pw.print("slurmit -p TempProject4 -c 4 -o " + slurmLogname + " -m \"8G\" \"source MEGAN-5.11.3 ; ");
-                    pw.println("xvfb-run -d MEGAN -g -c " + cmdPathname + " -L /tgac/workarea/group-si/BAMBI_Pt1/megan_support/MEGAN5-academic-license.txt\"");
+                    if (!options.isMac()) {
+                        pw.print("slurmit -p TempProject4 -c 4 -o " + slurmLogname + " -m \"8G\" \"");
+                    }
+                    pw.print(options.getMeganCmdLine());
+                    pw.println(" -g -c " + cmdPathname + " -L " + options.getMeganLicense());
+                    
+                    if (!options.isMac()) {
+                        pw.print("\"");
+                    }
+                    
                     pw.close();
                 } catch (Exception e) {
                     System.out.println("writeMeganFile exception");
@@ -98,7 +107,7 @@ public class BlastHandler {
     }
     
     private void runBlasts(String inputPathname) {
-        String formatString = "'6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle'";
+        String formatString = "'" + defaultFormatString + "'";
         ArrayList<String> blastProcesses = options.getBlastProcesses();
         File iff = new File(inputPathname);
         String fileName = iff.getName();
@@ -135,17 +144,34 @@ public class BlastHandler {
                     options.getLog().println("Writing blast command file "+commandFile);
                     PrintWriter pw = new PrintWriter(new FileWriter(commandFile));
                     // TODO: -task option shouldn't be hardcoded
-                    pw.write(blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue 0.001 -show_gis -task megablast -out " + outputBlast + " -outfmt "+formatString);
+                    String command=blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs " + Integer.toString(options.getBlastMaxTargetSeqs()) + " -show_gis -task megablast -out " + outputBlast + " -outfmt "+formatString;
+                    SimpleJobScheduler jobScheduler = options.getJobScheduler();
+                    pw.write(command);
                     pw.close();
 
-                    options.getLog().println("Submitting blast command file to SLURM "+commandFile);
-                    ProcessLogger pl = new ProcessLogger();
-                    String[] commands = {"slurmit",
-                                         "-o", logFile,
-                                         "-p", queue,
-                                         "-m", memory,
-                                         "sh "+commandFile};
-                    pl.runCommandToLog(commands, options.getLog());            
+                    if (jobScheduler == null) {
+                        options.getLog().println("Submitting blast command file to SLURM "+commandFile);
+                        ProcessLogger pl = new ProcessLogger();
+                        String[] commands = {"slurmit",
+                                             "-o", logFile,
+                                             "-p", queue,
+                                             "-m", memory,
+                                             "sh "+commandFile};
+                        pl.runCommandToLog(commands, options.getLog());            
+                    } else {
+                        String[] commands = {blastTool,
+                                             "-db", blastDb,
+                                             "-query", inputPathname,
+                                             "-evalue", Double.toString(options.getBlastMaxE()),
+                                             "-max_target_seqs", Integer.toString(options.getBlastMaxTargetSeqs()),
+                                             "-show_gis",
+                                             "-task", "megablast",
+                                             "-out", outputBlast,
+                                             "-outfmt", defaultFormatString};
+                                                
+                        jobScheduler.submitJob(commands, logFile);
+                        System.out.println("Submitting from BlastHandler");
+                    }
                 } catch (IOException e) {
                     System.out.println("runBlast exception");
                     e.printStackTrace();
