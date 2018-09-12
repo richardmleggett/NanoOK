@@ -10,7 +10,7 @@ data generated for the BAMBI project.
 
 Please download NanoOK Reporter from https://github.com/richardmleggett/NanoOKReporter
 
-Please download the BAMBI dataset from http://opendata.earlham.ac.uk/bambi/BAMBI_P8_2D_Local_070317.tar.gz
+Please download the BAMBI dataset from https://opendata.earlham.ac.uk/opendata/data/bambi/BAMBI_1D_19092017_P8_LSK108.tar.gz
 
 Running NanoOK Reporter
 -----------------------
@@ -21,33 +21,32 @@ To clone from GitHub and run, type::
   cd NanoOKReporter
   java -jar dist/NanoOKReporter.jar
 
+A flash screen will display and then after a moment, you will be prompted to select a sample directory.
+
 Loading the BAMBI data
 ----------------------
 
 -  Untar the BAMBI dataset::
 
-     tar -xvzf BAMBI_P8_2D_Local_070317.tar.gz
+     tar -xvzf BAMBI_1D_19092017_P8_LSK108_nanook.tar.gz
 
 -  This is a NanoOK sample directory containing just the BLAST
    subdirectories - it is these that NanoOK Reporter uses.
--  With the tar file uncompressed, go back to NanoOK Reporter and click
-   the "Choose..." button next to the "Sample directory" field and
-   browse to find the BAMBI\_P8\_2D\_Local\_070317 sample directory that
-   you just untarred.
--  Then select the 'Template' radio button and the 'Pass' radio button
-   and click on "Load CARD" - this will load the CARD chunk data into
-   NanoOK. You can follow it's progress at the bottom of the window.
-   When it has finished loading, click on the CARD tab in the set of
-   tabs ("Stats/NT/Bacteria/CARD").
--  You can move the slider to move back in time through the data.
--  You can click on "Load NT" to load the NT data. This will take
-   slightly longer than for the CARD data.
+-  With the tar file uncompressed, go back to NanoOK Reporter and 
+   browse to find the BAMBI\_1D\19092017\_P8\_LSK108 sample directory that
+   you just untarred. Having highlighted the directory, click the “Choose” button.
+-  Press the “bacteria” button to load the bacteria data. You can follow its progress at the bottom of the window. There are 202 chunk files to load for this dataset and it may take a minute or two to load. If you want to just load a subset of data, select “10” or “100” from the “Chunks” dropdown menu.
+-  When the load has completed, the “Bacteria” tab will show a list of the top hitting sequences. This is calculated by taking the top BLAST hit for each read.
+-  Clicking the “Taxonomy” tab will show a taxonomic tree of the species composition of the samples, with the radius and colour shade indicating how abundant species are. This is based around a Lowest Common Ancestor assignment which considers multiple BLAST hits per read.
+-  Clicking the “Summary” tab will show a donut plot of the species composition of the sample, also based around the Lowest Common Ancestor assignment.
+-  Press the blue “CARD” button to load the CARD AMR data. When the load has finished, click the CARD tab to see the top AMR hits.
+-  In both the “Bacteria” and “CARD” tabs, you can move the slider to move back in time through the data. You cannot yet do this for the “Summary” or “Taxonomy” views.
+-  Pressing the “Walk” button will perform a walkout analysis in which the AMR hits are placed within containing bacteria. Once this has completed, the display will automatically switch to the “Walkout” tab, where plots will show the main bacteria containing AMR genes.
 
 Running with live sequencing
 ----------------------------
 
-When running with live sequencing, you can force the latest data to be
-imported by clicking on "Load CARD" or "Load NT" again. This will not
-reload chunk files that have already been analysed.
+When running with live sequencing, you can set the Refresh rate of the application by selecting from the “Refresh” dropdown menu. This specifies how frequently (in minutes) new data will be loaded the various views updated. You can also manually force the latest data to be loaded by clicking on the “CARD" or “Bacteria” buttons again. This will not
+reload chunk files that have already been analysed, just new files.
 
  
