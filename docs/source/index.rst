@@ -27,17 +27,24 @@ NanoOK (pronounced na-nook) is a tool for extraction, alignment and analysis of 
 
 NanoOK has a number of dependencies - Perl, LaTeX, R and an alignment tool - which means it works best on Linux and Mac OS platforms. 
 
-Further information:
+NanoOK RT
+=========
+NanoOK RT adds real-time functionality to NanoOK and enables species and AMR classification for metagenomic species. The core RT functionality is contained within the latest version of the NanoOK code and an additional tool, NanoOK Reporter, enables analysis to be viewed in real-time. NanoOK RT was originally developed for our pre-term baby diagnostics project (see papers below). See side panel links for instructions on :ref:`NanoOK RT <nanookrt>` and :ref:`NanoOK Reporter <reporter>`.
 
+Further information
+===================
 * To find out how to install NanoOK, see the :ref:`Download and installation page <installation>`.
-* For further information on NanoOK RT, see :ref:`these comments <nanookrt>`.
 * To find out how to run NanoOK, see the :ref:`Running NanoOK page <running>` or the :ref:`NanoOK tutorial page <tutorial>`.
-* Source code is on `GitHub <https://github.com/TGAC/NanoOK>`_.
+* To find out about NanoOK RT, see the :ref:`NanoOK RT page <nanookrt>`.
+* To find out about NanoOK Reporter, see the :ref:`NanoOK Reporter page <reporter>`.
+* Source code for NanoOK and NanoOK RT is on GitHub at `https://github.com/richardmleggett/NanoOK <https://github.com/richardmleggett/NanoOK>`_.
+* Source code for NanoOK Reporter is on GitHub at `https://github.com/richardmleggett/NanoOKReporter <https://github.com/richardmleggett/NanoOKReporter>`_.
 * Here's some information `about the other Nanook <http://en.wikipedia.org/wiki/Nanook>`_.
 
-Paper
-=====
-Leggett RM, Heavens D, Caccamo M, Clark MD, Davey RP (2016). `NanoOK: multi-reference alignment analysis of nanopore sequencing data, quality and error profiles <https://doi.org/10.1093/bioinformatics/btv540>`_. Bioinformatics 32(1):142–144.
+Papers
+======
+1. Leggett RM, Heavens D, Caccamo M, Clark MD, Davey RP (2016). `NanoOK: multi-reference alignment analysis of nanopore sequencing data, quality and error profiles <https://doi.org/10.1093/bioinformatics/btv540>`_. Bioinformatics 32(1):142–144.
+2. Leggett RM, Alcon-Giner C, Heavens D, Caim S, Brook TC, Kujawska M, Hoyles L, Clarke P, Hall L, Clark MD (2017). `Rapid MinION metagenomic profiling of the preterm infant gut microbiota to aid in pathogen diagnostics <https://www.biorxiv.org/content/early/2017/08/24/180406>`_. bioRxiv.
 
 Talks and posters
 =================
