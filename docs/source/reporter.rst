@@ -20,6 +20,13 @@ Running NanoOK Reporter
 To clone from GitHub and run, type::
 
   git clone https://github.com/richardmleggett/NanoOKReporter.git
+
+NanoOK Reporter relies on taxonomy information from NCBI, which you will need to download separately. This can be download from ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/ The files that NanoOK Reporter needs are the nodes.dmp and names.dmp files from the taxdump.tar.gz file. You need to download this file and untar it, then tell NanoOK Reporter the location of the files by setting the environment variable NANOOK_TAXONOMY to point to the directory containing the nodes.dmp and names.dmp files. On Linux or MacOS, you would typically do this by adding the following command to your .bash_profile (or .profile on Ubuntu) file or 'source' script::   
+     export NANOOK_TAXONOMY=/path/to/dir   On MacOs, you can edit the file using::   
+     open -e ~/.bash_profile
+
+Once you have done this, you can run the program as follows:
+
   cd NanoOKReporter
   java -jar dist/NanoOKReporter.jar
 
