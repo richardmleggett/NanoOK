@@ -17,7 +17,7 @@ Installing NanoOK RT
 --------------------
 NanoOK RT is included within the core NanoOK software. However, if you are only using NanoOK RT, you do not need to install all the dependencies. Please make sure you have installed the following:
 
-1 .`HDF5 tools <https://www.hdfgroup.org/products/hdf5_tools/>`_ - are required for extracting FASTA/Q from FAST5 files.
+1. `HDF5 tools <https://www.hdfgroup.org/products/hdf5_tools/>`_ - are required for extracting FASTA/Q from FAST5 files.
 2. `BLAST <https://www.st-va.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download>`_ and a suitable database.
 
 If using Mac OS, these can easily be installed with `Homebrew <https://brew.sh/>`_. On Linux, you can use a package manager.
