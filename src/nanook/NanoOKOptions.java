@@ -122,6 +122,10 @@ public class NanoOKOptions implements Serializable {
     private boolean isMac = false;
     private String meganCmdLine="source MEGAN-5.11.3 ; xvfb-run -d MEGAN";
     private String meganLicense="/tgac/workarea/group-si/BAMBI_Pt1/megan_support/MEGAN5-academic-license.txt";
+    private boolean nedome = false;
+    private NedomeProcessor nedProcess = null;
+    private boolean nedProcessorRunning = false;
+    private String nedomeFile = "";
         
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -144,6 +148,25 @@ public class NanoOKOptions implements Serializable {
         }
         
         System.out.println("To do: options for specifying MEGAN command/license");
+    }
+    
+    public boolean isNedProcessorRunning() {
+        return nedProcessorRunning;
+    }
+    
+    public void setNedProcessorRunning(boolean tf) {
+        nedProcessorRunning = tf;
+    }
+    
+    public void updateNedome() {        
+        if (nedProcessorRunning == false) {            
+            nedProcessorRunning = true;
+            executor.execute(new NedomeProcessor(this));
+        }
+    }
+    
+    public boolean isNedome() {
+        return nedome;
     }
     
     public boolean isMac() {
@@ -1388,7 +1411,12 @@ public class NanoOKOptions implements Serializable {
                         } else if (tokens[0].compareToIgnoreCase("MaxTargetSeqs") == 0) {
                             blastMaxTargetSeqs = Integer.parseInt(tokens[1]);
                             System.out.println("  MaxTargetSeqs "+blastMaxTargetSeqs);
-                        } else if (!tokens[0].startsWith("#")) {
+                        } else if (tokens[0].compareToIgnoreCase("Nedome") == 0) {
+                            System.out.println("  Nedome");
+                            nedomeFile = tokens[1];
+                            nedome = true;
+                        } 
+                        else if (!tokens[0].startsWith("#")) {
                             System.out.println("Unknown token "+tokens[0]);
                         } 
                     }
@@ -1469,5 +1497,9 @@ public class NanoOKOptions implements Serializable {
     
     public int getBlastMaxTargetSeqs() {
         return blastMaxTargetSeqs;
+    }
+    
+    public String getNedomeFile() {
+        return nedomeFile;
     }
 }

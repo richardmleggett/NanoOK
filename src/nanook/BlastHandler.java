@@ -144,8 +144,14 @@ public class BlastHandler {
                     options.getLog().println("Writing blast command file "+commandFile);
                     PrintWriter pw = new PrintWriter(new FileWriter(commandFile));
                     // TODO: -task option shouldn't be hardcoded
-                    String command=blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs " + Integer.toString(options.getBlastMaxTargetSeqs()) + " -show_gis -task megablast -out " + outputBlast + " -outfmt "+formatString;
+                    String command = "";
                     SimpleJobScheduler jobScheduler = options.getJobScheduler();
+                    
+                    if (options.isNedome()) {
+                        command = blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs 1 -max_hsps 1 -task megablast -out " + outputBlast + " -outfmt "+formatString;
+                    } else {
+                        command = blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs " + Integer.toString(options.getBlastMaxTargetSeqs()) + " -show_gis -task megablast -out " + outputBlast + " -outfmt "+formatString;
+                    }
                     pw.write(command);
                     pw.close();
 
@@ -158,6 +164,40 @@ public class BlastHandler {
                                              "-m", memory,
                                              "sh "+commandFile};
                         pl.runCommandToLog(commands, options.getLog());            
+                    } else if (options.isNedome()) {
+//                        String[] commands = {blastTool,
+//                                             "-db", blastDb,
+//                                             "-query", inputPathname,
+//                                             "-evalue", Double.toString(options.getBlastMaxE()),
+//                                             "-max_target_seqs", "1",
+//                                             "-max_hsps", "1",
+//                                             "-task", "megablast",
+//                                             "-out", outputBlast,
+//                                             "-outfmt", defaultFormatString};
+
+                        String outputMinimap = options.getSampleDirectory() + File.separator +
+                                     blastTool + "_" + blastName + File.separator + 
+                                     filePrefix + "_" + blastTool + "_" + blastName + ".paf";
+
+                        String[] commands = {"minimap2",
+                                             "-x", "map-ont",
+                                             blastDb,
+                                             inputPathname};
+
+                        File f = new File(outputMinimap);
+                        if (f.exists()) {
+                            f.delete();
+                            System.out.println("Deleted existing file "+f.getPath());
+                        }
+                        
+                        f = new File(outputMinimap + ".completed");
+                        if (f.exists()) {
+                            f.delete();
+                            System.out.println("Deleted existing file "+f.getPath());
+                        }
+                        
+                        jobScheduler.submitJob(commands, outputMinimap, logFile);
+                        System.out.println("Submitting from BlastHandler");                        
                     } else {
                         String[] commands = {blastTool,
                                              "-db", blastDb,
@@ -189,20 +229,46 @@ public class BlastHandler {
                                 Integer.toString(fileCounter) + 
                                 (options.getReadFormat() == NanoOKOptions.FASTA ? ".fasta":".fastq");
 
-       options.getLog().println("Writing merged file "+mergedPathname);
-        
+        options.getLog().println("Writing merged file "+mergedPathname);
+               
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(mergedPathname));
+            PrintWriter pwSizes = null;
+
+            if (options.isNedome()) {
+                pwSizes = new PrintWriter(new FileWriter(mergedPathname + ".sizes"));
+            }
             
             for (int i=0; i<mergeList.size(); i++) {                
                 BufferedReader br = new BufferedReader(new FileReader(mergeList.get(i)));
-                String line;                
+                String line;
+                String id = "Unknown";
+                int lineCount = 0;
+                int readSize = 0;
+
                 while ((line = br.readLine()) != null) {
                     pw.println(line);
+                    
+                    if (options.isNedome()) {
+                        lineCount++;
+                        if (lineCount == 1) {
+                            id = line.substring(1, line.indexOf(' '));
+                        } else {
+                            readSize += line.length();
+                        }
+                    }
+
                 }
                 br.close();
-            }            
-            pw.close();            
+
+                if (options.isNedome()) {
+                    pwSizes.println(id + "\t" + readSize);
+                }
+            }
+            pw.close();
+            if (options.isNedome()) {
+                pwSizes.close();
+            }
         } catch (IOException e) {
             System.out.println("mergeFiles exception");
             e.printStackTrace();
