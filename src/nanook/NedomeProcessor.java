@@ -135,7 +135,7 @@ public class NedomeProcessor implements Runnable {
             pw.print("{");
             int totalCount = 0;
             for (int i=1; i<=24; i++) {
-                pw.print("\"chr\""+i);
+                pw.print("\"chr"+i+"\"");
                 pw.print(":{\"coverage\":" + genomeStats.getChromosomeCoverage(i));
                 pw.print(",\"read_count\":" + genomeStats.getChromosomeCount(i));
                 pw.println("},");
