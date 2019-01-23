@@ -22,7 +22,7 @@ public class BlastHandler {
     private int nSeqs = 0;
     private int fileCounter = 0;
     private ArrayList<String> mergeList = new ArrayList<String>();
-    private String defaultFormatString = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxid";
+    private String defaultFormatString = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxids";
     
     public BlastHandler(NanoOKOptions o, int t, int pf) {
         options = o;
