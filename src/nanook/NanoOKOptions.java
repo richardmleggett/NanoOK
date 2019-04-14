@@ -76,6 +76,7 @@ public class NanoOKOptions implements Serializable {
     private boolean doKmerCounting = true;
     private boolean showAlignerCommand = false;
     private boolean extractingReads = false;
+    private boolean convertingFastQ = false;
     private boolean aligningReads = false;
     private boolean parsingReads = false;
     private boolean blastingReads = false;
@@ -92,6 +93,7 @@ public class NanoOKOptions implements Serializable {
     private String imageFormat = "pdf";
     private int specifiedType = TYPE_2D;
     private String readsDir = "fast5";
+    private String fastQConvertDir = "fastq_pass";
     private int returnValue = 0;
     private int basecallIndex = -1;
     private boolean outputFast5Path = true;
@@ -120,8 +122,8 @@ public class NanoOKOptions implements Serializable {
     private double blastMaxE = 0.001;
     private int blastMaxTargetSeqs = 25;
     private boolean isMac = false;
-    private String meganCmdLine="source MEGAN-5.11.3 ; xvfb-run -d MEGAN";
-    private String meganLicense="/tgac/workarea/group-si/BAMBI_Pt1/megan_support/MEGAN5-academic-license.txt";
+    private String meganCmdLine="source MEGAN-5.11.3 ; /tgac/software/testing/MEGAN/5.11.3/x86_64/xvfb-run -d MEGAN";
+    private String meganLicense="/tgac/software/testing/MEGAN/5.11.3/x86_64/megan/MEGAN5-academic-license.txt";
     private boolean nedome = false;
     private NedomeProcessor nedProcess = null;
     private boolean nedProcessorRunning = false;
@@ -756,6 +758,10 @@ public class NanoOKOptions implements Serializable {
         }
     }
     
+    public String getFastQConvertDir() {
+        return fastQConvertDir;
+    }
+    
     /**
      * Get FASTA directory.
      * @return directory name as String
@@ -1226,6 +1232,10 @@ public class NanoOKOptions implements Serializable {
         return extractingReads;
     }
     
+    public boolean isConvertingFastQ() {
+        return convertingFastQ;
+    }
+    
     public boolean isAligningRead() {
         return aligningReads;
     }
@@ -1303,6 +1313,10 @@ public class NanoOKOptions implements Serializable {
             //}                
         }
 
+        if (this.isConvertingFastQ()) {
+            checkAndMakeDirectory(this.getFastaDir());
+        }
+        
         if (this.isBlastingRead()) {
             checkAndMakeDirectory(this.getReadDir() + "_chunks");
         }
@@ -1383,6 +1397,10 @@ public class NanoOKOptions implements Serializable {
                         } else if (tokens[0].compareToIgnoreCase("Fast5Dir") == 0) {
                             readsDir = tokens[1];
                             System.out.println("  Fast5Dir "+tokens[1]);
+                        } else if (tokens[0].compareToIgnoreCase("ConvertFastQ") == 0) {
+                            convertingFastQ = true;
+                            fastQConvertDir = tokens[1];
+                            System.out.println("  FastQDir "+fastQConvertDir);
                         } else if (tokens[0].compareToIgnoreCase("Aligner") == 0) {
                             aligningReads = true;
                             System.out.println("  Aligner "+tokens[1]);

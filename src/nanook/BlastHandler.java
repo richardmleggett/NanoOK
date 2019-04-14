@@ -88,7 +88,7 @@ public class BlastHandler {
                     
                     pw = new PrintWriter(new FileWriter(slurmPathname));
                     if (!options.isMac()) {
-                        pw.print("slurmit -p TempProject4 -c 4 -o " + slurmLogname + " -m \"8G\" \"");
+                        pw.print("slurmit -p ei-medium -c 4 -o " + slurmLogname + " -m \"8G\" \"");
                     }
                     pw.print(options.getMeganCmdLine());
                     pw.println(" -g -c " + cmdPathname + " -L " + options.getMeganLicense());
@@ -291,4 +291,9 @@ public class BlastHandler {
             nSeqs = 0;
         }
     }    
+    
+    public synchronized void addReadChunk(String readFilename) {
+        runBlasts(readFilename);
+        //writeMeganFile();
+    }
 }
