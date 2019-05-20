@@ -206,7 +206,7 @@ public class BlastHandler {
                                      blastTool + "_" + blastName + File.separator + 
                                      filePrefix + "_" + blastTool + "_" + blastName + ".paf";
                         
-                        createSizesFile(inputPathname, outputMinimap+".sizes");
+                        createSizesFile(inputPathname, inputPathname+".sizes");
 
                         String[] commands = {"minimap2",
                                              "-x", "map-ont",
