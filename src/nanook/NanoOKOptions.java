@@ -88,6 +88,7 @@ public class NanoOKOptions implements Serializable {
     private int readFormat = FASTA;
     private int numThreads = 1;
     private int fileWatcherTimeout = 10;
+    private int readsPerMultiFastq = 1;
     private String jobQueue = "";
     private NanoOKLog logFile = new NanoOKLog();
     private String imageFormat = "pdf";
@@ -1182,6 +1183,10 @@ public class NanoOKOptions implements Serializable {
         return clearLogsOnStart;
     }
     
+    public int getReadsPerMultiFastq() {
+        return readsPerMultiFastq;
+    }
+    
     public void openMergedFile(String filename, int type, int pf) {
         if (pf == NanoOKOptions.READTYPE_PASS) {
             if (type == NanoOKOptions.TYPE_TEMPLATE) {
@@ -1429,6 +1434,9 @@ public class NanoOKOptions implements Serializable {
                         } else if (tokens[0].compareToIgnoreCase("MaxTargetSeqs") == 0) {
                             blastMaxTargetSeqs = Integer.parseInt(tokens[1]);
                             System.out.println("  MaxTargetSeqs "+blastMaxTargetSeqs);
+                        } else if (tokens[0].compareToIgnoreCase("ReadsPerMultiFastQ") == 0) {
+                            readsPerMultiFastq = Integer.parseInt(tokens[1]);
+                            System.out.println("  ReadsPerMultiFastQ "+readsPerMultiFastq);
                         } else if (tokens[0].compareToIgnoreCase("Nedome") == 0) {
                             System.out.println("  Nedome");
                             nedomeFile = tokens[1];

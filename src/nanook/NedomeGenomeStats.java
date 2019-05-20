@@ -38,6 +38,7 @@ public class NedomeGenomeStats {
     private int[] chromosomeYield = new int[24];
     private int[] chromosomeCounts = new int[24];
     private int assignedCount = 0;
+    private int hitsProcessedCount = 0;
     private int readsProcessedCount = 0;
     private long genomeSize = 0;
 
@@ -67,8 +68,9 @@ public class NedomeGenomeStats {
         int n = idToNumber(targetId);
         //System.out.println(targetId + " = "+n);
         
-        if (readsProcessedCount == 0) {
-            readsProcessedCount = options.getReadsPerBlast();
+        // This structure is just used to add a chunk, so safe to set it here, not increment
+        if (hitsProcessedCount == 0) {
+            readsProcessedCount = options.getReadsPerMultiFastq();
         }
         
         if (n != -1) {
@@ -115,7 +117,7 @@ public class NedomeGenomeStats {
             chromosomeCounts[i-1] += ngs.getChromosomeCount(i);
             chromosomeYield[i-1] += ngs.getChromosomeYield(i);
         }
-        readsProcessedCount += ngs.getReadsProcessedCount();
+        hitsProcessedCount += ngs.getHitsProcessedCount();
         assignedCount += ngs.getAssigned();
         
     }
@@ -125,7 +127,15 @@ public class NedomeGenomeStats {
     }
     
     public int getUnassigned() {
-        return readsProcessedCount - assignedCount;
+        return hitsProcessedCount - assignedCount;
+    }
+    
+    public int getHitsProcessedCount() {
+        return hitsProcessedCount;
+    }
+    
+    public void incrementReadsProcessedCount() {
+        readsProcessedCount++;
     }
     
     public int getReadsProcessedCount() {
