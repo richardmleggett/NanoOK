@@ -67,7 +67,7 @@ public class NedomeProcessor implements Runnable {
                     if (querySize.containsKey(queryName)) {
                        size = querySize.get(queryName);
                     } else {
-                        System.out.println("Can't find ["+queryName+"]");
+                        System.out.println("Nedome: Can't find ["+queryName+"]");
                     }
                     queryIds.put(queryName, 1);
                     ngs.addRead(targetName, size);

@@ -106,6 +106,33 @@ public class BlastHandler {
         }
     }
     
+    void createSizesFile(String fastqFilename, String sizesFilename) {
+        System.out.println("Writing "+sizesFilename);
+        
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(fastqFilename));
+            PrintWriter pwSizes = new PrintWriter(new FileWriter(sizesFilename));
+            String line;
+            
+            while ((line = br.readLine()) != null) {
+                String header = line;
+                String seq = br.readLine();
+                String otherheader = br.readLine();
+                String quals = br.readLine();
+                String[] tokens = seq.substring(1).split("\\s+");
+                int readSize = seq.length();
+                String id = tokens[0];
+                pwSizes.println(id + "\t" + readSize);            
+            }
+            pwSizes.close();
+            br.close();
+        } catch (IOException e) {
+            System.out.println("createSizesFile exception");
+            e.printStackTrace();
+        }
+                    
+    }
+    
     private void runBlasts(String inputPathname) {
         String formatString = "'" + defaultFormatString + "'";
         ArrayList<String> blastProcesses = options.getBlastProcesses();
@@ -178,6 +205,8 @@ public class BlastHandler {
                         String outputMinimap = options.getSampleDirectory() + File.separator +
                                      blastTool + "_" + blastName + File.separator + 
                                      filePrefix + "_" + blastTool + "_" + blastName + ".paf";
+                        
+                        createSizesFile(inputPathname, outputMinimap+".sizes");
 
                         String[] commands = {"minimap2",
                                              "-x", "map-ont",
