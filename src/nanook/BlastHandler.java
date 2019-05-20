@@ -119,7 +119,7 @@ public class BlastHandler {
                 String seq = br.readLine();
                 String otherheader = br.readLine();
                 String quals = br.readLine();
-                String[] tokens = seq.substring(1).split("\\s+");
+                String[] tokens = header.substring(1).split("\\s+");
                 int readSize = seq.length();
                 String id = tokens[0];
                 pwSizes.println(id + "\t" + readSize);            
