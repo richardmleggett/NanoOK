@@ -387,8 +387,6 @@ public class ReadProcessorRunnable implements Runnable {
             if (fwi != null) {
                 String nextPathname = fwi.getPathname();
                 int pf = fwi.getPassOrFail();
-                
-                System.out.println("Got file "+fwi.getPathname());
 
                 // Check valid filename
                 if (options.isExtractingReads()) {

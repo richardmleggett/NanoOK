@@ -130,6 +130,7 @@ public class NedomeProcessor implements Runnable {
         
         try {
             System.out.println("Writing "+options.getNedomeFile());
+            System.out.println(genomeStats.getReadsProcessedCount() + " reads processed");
             PrintWriter pw = new PrintWriter(new FileWriter(options.getNedomeFile())); 
             
             pw.print("{");
