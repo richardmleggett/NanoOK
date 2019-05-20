@@ -75,6 +75,7 @@ public class NedomeProcessor implements Runnable {
                 
             }
             br.close();
+            ngs.addToReadsProcessedCount(options.getReadsPerMultiFastq());
             genomeStats.addGenomeStats(ngs);
         } catch (Exception e) {
             e.printStackTrace();
@@ -131,7 +132,7 @@ public class NedomeProcessor implements Runnable {
         try {
             System.out.println("Writing "+options.getNedomeFile());
             System.out.println(genomeStats.getReadsProcessedCount() + " reads processed");
-            System.out.println(genomeStats.getHitsProcessedCount() + " reads with hits");
+            System.out.println(genomeStats.getAssigned() + " reads with hits");
             PrintWriter pw = new PrintWriter(new FileWriter(options.getNedomeFile())); 
             
             pw.print("{");
@@ -145,7 +146,7 @@ public class NedomeProcessor implements Runnable {
             }
 
             pw.print("\"nedome\":{\"coverage\":" + genomeStats.getTotalCoverage());
-            pw.println(",\"read_count\":" + genomeStats.getHitsProcessedCount() + "}}");
+            pw.println(",\"read_count\":" + genomeStats.getAssigned() + "}}");
             pw.close();
         } catch (IOException e) {
             e.printStackTrace();
