@@ -56,7 +56,7 @@ public class NedomeGenomeStats {
         for (int i=0; i<24; i++) {
             for (int j=0; j<5000; j++) {
                 chromosomeCounts[i]++;
-                chromosomeYield[i] += (int)(Math.random()*20000.0);
+                chromosomeYield[i] += 10000;
                 assignedCount++;
                 readsProcessedCount++;
             }
@@ -119,6 +119,7 @@ public class NedomeGenomeStats {
     }
      
     public double getChromosomeCoverage(int oneBasedChromosomeId) {
+        System.out.println("Chromosome "+oneBasedChromosomeId+" yield "+ chromosomeYield[oneBasedChromosomeId - 1]);
         return (double)chromosomeYield[oneBasedChromosomeId - 1] / (double)chromosomeLengths[oneBasedChromosomeId - 1];
     }
 
