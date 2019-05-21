@@ -46,10 +46,16 @@ public class NedomeGenomeStats {
         options = o;
                 
         for (int i=0; i<24; i++) {
+            chromosomeYield[i] = 0;
+            chromosomeCounts[i] = 0;
+            genomeSize += chromosomeLengths[i];
+        }
+    }
+    
+    public void bodgeStats() {
+        for (int i=0; i<24; i++) {
             chromosomeYield[i] = (int)((double)40 + (Math.random() * 20))*1000000;
             chromosomeCounts[i] = (int)((double)40 + (Math.random() * 20))*100;
-            //chromosomeYield[i] = 0;
-            //chromosomeCounts[i] = 0;
             genomeSize += chromosomeLengths[i];
             System.out.println("Chr"+i+" "+chromosomeYield[i]+" "+chromosomeCounts[i]);
         }

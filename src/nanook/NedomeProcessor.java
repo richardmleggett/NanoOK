@@ -98,6 +98,7 @@ public class NedomeProcessor implements Runnable {
     @Override
     public void run() {
         NedomeGenomeStats genomeStats = new NedomeGenomeStats(options);
+        genomeStats.bodgeStats();
         
         System.out.println("Processing nedome chunks");
         try {
