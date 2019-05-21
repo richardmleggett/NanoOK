@@ -54,12 +54,10 @@ public class NedomeGenomeStats {
     
     public void bodgeStats() {
         for (int i=0; i<24; i++) {
-            for (int j=0; j<5000; j++) {
-                chromosomeCounts[i]++;
-                chromosomeYield[i] += 10000;
-                assignedCount++;
-                readsProcessedCount++;
-            }
+            chromosomeYield[i] += chromosomeLengths[i] / 2;
+            chromosomeCounts[i] += chromosomeLengths[i] / 10000;
+            assignedCount +=  chromosomeCounts[i];
+            readsProcessedCount += chromosomeCounts[i];
         }
     }
     
