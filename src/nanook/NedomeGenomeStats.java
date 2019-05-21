@@ -111,7 +111,7 @@ public class NedomeGenomeStats {
     public double getTotalCoverage() {
         double totalYield = (double)getTotalYield();
         double gs = (double)genomeSize;
-        double totalCoverage = totalYield / gs;
+        double totalCoverage = 100 * totalYield / gs;
         
         System.out.println(totalYield + " / " + gs + " = "+ totalCoverage);
 
@@ -120,7 +120,7 @@ public class NedomeGenomeStats {
      
     public double getChromosomeCoverage(int oneBasedChromosomeId) {
         System.out.println("Chromosome "+oneBasedChromosomeId+" yield "+ chromosomeYield[oneBasedChromosomeId - 1]);
-        return (double)chromosomeYield[oneBasedChromosomeId - 1] / (double)chromosomeLengths[oneBasedChromosomeId - 1];
+        return (double)100.0 * (double)chromosomeYield[oneBasedChromosomeId - 1] / (double)chromosomeLengths[oneBasedChromosomeId - 1];
     }
 
     public void addGenomeStats(NedomeGenomeStats ngs) {
