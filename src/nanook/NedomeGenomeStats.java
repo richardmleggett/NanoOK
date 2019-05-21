@@ -54,9 +54,12 @@ public class NedomeGenomeStats {
     
     public void bodgeStats() {
         for (int i=0; i<24; i++) {
-            chromosomeYield[i] = (int)((double)40 + (Math.random() * 20))*1000000;
-            chromosomeCounts[i] = (int)((double)40 + (Math.random() * 20))*100;
-            System.out.println("Chr"+i+" "+chromosomeYield[i]+" "+chromosomeCounts[i]);
+            for (int j=0; j<5000; j++) {
+                chromosomeCounts[i]++;
+                chromosomeYield[i] += (int)(Math.random()*20000.0);
+                assignedCount++;
+                readsProcessedCount++;
+            }
         }
     }
     
