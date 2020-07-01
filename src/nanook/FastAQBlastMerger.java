@@ -56,7 +56,7 @@ public class FastAQBlastMerger implements Runnable {
                                      "-evalue", Double.toString(options.getBlastMaxE()),
                                      "-max_target_seqs", Integer.toString(options.getBlastMaxTargetSeqs()),
                                      "-show_gis",
-                                     "-task", "megablast",
+                                     "-task", options.getBlastTask(),
                                      "-out", outputBlast,
                                      "-outfmt", formatString};
                 System.out.println("Submitting from FastAQBlastMerger");

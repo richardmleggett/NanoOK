@@ -129,6 +129,7 @@ public class NanoOKOptions implements Serializable {
     private NedomeProcessor nedProcess = null;
     private boolean nedProcessorRunning = false;
     private String nedomeFile = "";
+    private String blastTask = "megablast";
         
     public NanoOKOptions() {
         String value = System.getenv("NANOOK_DIR");
@@ -310,7 +311,10 @@ public class NanoOKOptions implements Serializable {
         i++;
         
         while (i < (args.length)) {
-            if (args[i].equalsIgnoreCase("-coveragebin")) {
+            if (args[i].equalsIgnoreCase("-blasttask")) {
+                blastTask = args[i+1];
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-coveragebin")) {
                 coverageBinSize = Integer.parseInt(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-batchdirs")) {
@@ -524,6 +528,8 @@ public class NanoOKOptions implements Serializable {
         initialiseBlastHandlers();
         
         //System.out.println("Number of cores: "+Runtime.getRuntime().availableProcessors());
+        
+        System.out.println("Blast task: "+ blastTask);
         
         executor = new ThreadPoolExecutor(numThreads, numThreads, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }    
@@ -1370,7 +1376,7 @@ public class NanoOKOptions implements Serializable {
         if (this.isBlastingRead()) {
             for (int i=0; i<blastProcesses.size(); i++) {
                 String[] params = blastProcesses.get(i).split(",");
-                if (params.length == 5) {
+                if (params.length >= 5) {
                     String blastName = params[0];
                     String blastTool = params[1];
                     String blastDb = params[2];
@@ -1527,5 +1533,9 @@ public class NanoOKOptions implements Serializable {
     
     public String getNedomeFile() {
         return nedomeFile;
+    }
+    
+    public String getBlastTask() {
+        return blastTask;
     }
 }

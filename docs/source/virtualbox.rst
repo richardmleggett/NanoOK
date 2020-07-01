@@ -4,7 +4,7 @@ Using the VirtualBox image
 ==========================
 
 You can download a VirtualBox image from `TGAC's opendata
-site <http://opendata.tgac.ac.uk/nanook/>`__. This is a complete virtual
+site <https://opendata.earlham.ac.uk/opendata/nanook/>`__. This is a complete virtual
 computer system that includes an Ubuntu operating system, NanoOK, all
 the dependencies and an example data set.
 

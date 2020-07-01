@@ -23,6 +23,9 @@ public class BlastHandler {
     private int fileCounter = 0;
     private ArrayList<String> mergeList = new ArrayList<String>();
     private String defaultFormatString = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxids";
+    private ArrayList<String> inputFilenames = new ArrayList<String>();
+    private ArrayList<String> blastFilenames = new ArrayList<String>();
+    private boolean runningFromMultiFastQ = false;
     
     public BlastHandler(NanoOKOptions o, int t, int pf) {
         options = o;
@@ -45,34 +48,51 @@ public class BlastHandler {
         
         for (int i=0; i<blastProcesses.size(); i++) {
             String[] params = blastProcesses.get(i).split(",");
-            if (params.length == 5) {
+            if ((params.length == 5) || (params.length == 6)) {
                 String blastName = params[0];
                 String blastTool = params[1];
                 String blastDb = params[2];
                 String memory = params[3];
                 String queue = params[4];
-                String cmdPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
-                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".cmds";
-                String meganPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
-                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".rma";
-                String slurmPathname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
-                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".slurm.sh";
-                String slurmLogname = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
-                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + ".slurm.log";
+                // A is min support 1
+                String cmdPathnameA = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + "_ms1.cmds";
+                String meganPathnameA = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + "_ms1.rma";
+                String slurmPathnameA = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + "_ms1.slurm.sh";
+                String slurmLognameA = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + "_ms1.slurm.log";
+                // B is min support 0.1%
+                String cmdPathnameB = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + "_ms0.1pc.cmds";
+                String meganPathnameB = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + "_ms0.1pc.rma";
+                String slurmPathnameB = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + "_ms0.1pc.slurm.sh";
+                String slurmLognameB = meganDir + File.separator + "all_" + NanoOKOptions.getTypeFromInt(type) +
+                                    "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" + Integer.toString(fileCounter) + "_ms0.1pc.slurm.log";
+               
                 
                 try {
-                    options.getLog().println("Writing MEGAN command file " + cmdPathname);
-                    PrintWriter pw = new PrintWriter(new FileWriter(cmdPathname));
-                    pw.println("setprop MaxNumberCores=4;");
                     String blastFileString="";
                     String fastaFileString="";
                     
                     for (int fc=0; fc<=fileCounter; fc++) {
                         String fileName = "all_" + NanoOKOptions.getTypeFromInt(type) + "_" + NanoOKOptions.getPassFailFromInt(passfail) + "_" +  Integer.toString(fc);
-                        String fastaPathname = options.getReadDir() + "_chunks" + File.separator + fileName + (options.getReadFormat() == NanoOKOptions.FASTA ? ".fasta":".fastq");
-                        String blastPathname = options.getSampleDirectory() + File.separator +
+                        String fastaPathname;
+                        String blastPathname;
+                        
+                        if (runningFromMultiFastQ) {
+                            fastaPathname = inputFilenames.get(fc);
+                            blastPathname = blastFilenames.get(fc);
+                        } else {
+                            fastaPathname = options.getReadDir() + "_chunks" + File.separator + fileName + (options.getReadFormat() == NanoOKOptions.FASTA ? ".fasta":".fastq");
+                            blastPathname = options.getSampleDirectory() + File.separator +
                                                  blastTool + "_" + blastName + File.separator + 
                                                  fileName + "_" + blastTool + "_" + blastName + ".txt";
+                        }
+                        
                         if (blastFileString != "") {
                             blastFileString += ",";
                             fastaFileString += ",";
@@ -81,23 +101,45 @@ public class BlastHandler {
                         blastFileString = blastFileString + "'" + blastPathname + "'";
                     }
                     
-                    pw.print("import blastFile="+blastFileString+" fastaFile="+fastaFileString +" meganFile="+meganPathname);
+                    options.getLog().println("Writing MEGAN command file " + cmdPathnameA);
+                    PrintWriter pw = new PrintWriter(new FileWriter(cmdPathnameA));
+                    pw.println("setprop MaxNumberCores=4;");
+                    pw.print("import blastFile="+blastFileString+" fastaFile="+fastaFileString +" meganFile="+meganPathnameA);
                     pw.println(" maxMatches=100 maxExpected=0.001 minSupport=1 minComplexity=0 blastFormat=BlastTAB;");
                     pw.println("quit;");
                     pw.close();
-                    
-                    pw = new PrintWriter(new FileWriter(slurmPathname));
+
+                    options.getLog().println("Writing MEGAN command file " + cmdPathnameB);
+                    pw = new PrintWriter(new FileWriter(cmdPathnameB));
+                    pw.println("setprop MaxNumberCores=4;");
+                    pw.print("import blastFile="+blastFileString+" fastaFile="+fastaFileString +" meganFile="+meganPathnameB);
+                    pw.println(" maxMatches=100 maxExpected=0.001 minSupportPercent=0.1 minComplexity=0 blastFormat=BlastTAB;");
+                    pw.println("quit;");
+                    pw.close();
+
+                    pw = new PrintWriter(new FileWriter(slurmPathnameA));
                     if (!options.isMac()) {
-                        pw.print("slurmit -p ei-medium -c 4 -o " + slurmLogname + " -m \"8G\" \"");
+                        pw.print("slurmit -p ei-long -c 4 -o " + slurmLognameA + " -m \"16G\" \"");
                     }
                     pw.print(options.getMeganCmdLine());
-                    pw.println(" -g -c " + cmdPathname + " -L " + options.getMeganLicense());
-                    
+                    pw.println(" -g -c " + cmdPathnameA + " -L " + options.getMeganLicense());
                     if (!options.isMac()) {
                         pw.print("\"");
-                    }
-                    
+                    }                    
                     pw.close();
+                    
+                    pw = new PrintWriter(new FileWriter(slurmPathnameB));
+                    if (!options.isMac()) {
+                        pw.print("slurmit -p ei-long -c 4 -o " + slurmLognameB + " -m \"16G\" \"");
+                    }
+                    pw.print(options.getMeganCmdLine());
+                    pw.println(" -g -c " + cmdPathnameB + " -L " + options.getMeganLicense());
+                    if (!options.isMac()) {
+                        pw.print("\"");
+                    }                    
+                    pw.close();
+                    
+                    
                 } catch (Exception e) {
                     System.out.println("writeMeganFile exception");
                     e.printStackTrace();
@@ -146,12 +188,18 @@ public class BlastHandler {
         
         for (int i=0; i<blastProcesses.size(); i++) {
             String[] params = blastProcesses.get(i).split(",");
-            if (params.length == 5) {
+            if ((params.length == 5) || (params.length == 6)) {
                 String blastName = params[0];
                 String blastTool = params[1];
                 String blastDb = params[2];
                 String memory = params[3];
                 String queue = params[4];
+                String taxfilter = "";
+                
+                if (params.length == 6) {
+                    taxfilter = params[5];
+                }
+                
                 String outputBlast = options.getSampleDirectory() + File.separator +
                                      blastTool + "_" + blastName + File.separator + 
                                      filePrefix + "_" + blastTool + "_" + blastName + ".txt";
@@ -167,6 +215,9 @@ public class BlastHandler {
                 options.getLog().println("BLAST command: " + commandFile);
                 options.getLog().println("    BLAST log: " + logFile);
                 
+                inputFilenames.add(inputPathname);
+                blastFilenames.add(outputBlast);
+                
                 try {
                     options.getLog().println("Writing blast command file "+commandFile);
                     PrintWriter pw = new PrintWriter(new FileWriter(commandFile));
@@ -175,10 +226,14 @@ public class BlastHandler {
                     SimpleJobScheduler jobScheduler = options.getJobScheduler();
                     
                     if (options.isNedome()) {
-                        command = blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs 1 -max_hsps 1 -task megablast -out " + outputBlast + " -outfmt "+formatString;
+                        command = blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs 1 -max_hsps 1 -task "+options.getBlastTask()+" -out " + outputBlast + " -outfmt "+formatString;
                     } else {
-                        command = blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs " + Integer.toString(options.getBlastMaxTargetSeqs()) + " -show_gis -task megablast -out " + outputBlast + " -outfmt "+formatString;
+                        command = blastTool + " -db " + blastDb + " -query " + inputPathname + " -evalue " + Double.toString(options.getBlastMaxE()) + " -max_target_seqs " + Integer.toString(options.getBlastMaxTargetSeqs()) + " -show_gis -task "+options.getBlastTask()+" -out " + outputBlast + " -outfmt "+formatString;
                     }
+                    if (taxfilter.length() > 1) {
+                        command = command + " -taxidlist " + taxfilter;
+                    }
+                    
                     pw.write(command);
                     pw.close();
 
@@ -198,7 +253,7 @@ public class BlastHandler {
 //                                             "-evalue", Double.toString(options.getBlastMaxE()),
 //                                             "-max_target_seqs", "1",
 //                                             "-max_hsps", "1",
-//                                             "-task", "megablast",
+//                                             "-task", options.getBlastTask(),
 //                                             "-out", outputBlast,
 //                                             "-outfmt", defaultFormatString};
 
@@ -228,15 +283,30 @@ public class BlastHandler {
                         jobScheduler.submitJob(commands, outputMinimap, logFile);
                         System.out.println("Submitting from BlastHandler");                        
                     } else {
-                        String[] commands = {blastTool,
-                                             "-db", blastDb,
-                                             "-query", inputPathname,
-                                             "-evalue", Double.toString(options.getBlastMaxE()),
-                                             "-max_target_seqs", Integer.toString(options.getBlastMaxTargetSeqs()),
-                                             "-show_gis",
-                                             "-task", "megablast",
-                                             "-out", outputBlast,
-                                             "-outfmt", defaultFormatString};
+                        String[] commands;
+                        
+                        if (taxfilter.length() > 1) {
+                            commands = new String[]{blastTool,
+                                                 "-db", blastDb,
+                                                 "-query", inputPathname,
+                                                 "-evalue", Double.toString(options.getBlastMaxE()),
+                                                 "-max_target_seqs", Integer.toString(options.getBlastMaxTargetSeqs()),
+                                                 "-show_gis",
+                                                 "-task", options.getBlastTask(),
+                                                 "-out", outputBlast,
+                                                 "-outfmt", defaultFormatString,
+                                                 "-taxidlist", taxfilter};
+                        } else {
+                            commands = new String[]{blastTool,
+                                                 "-db", blastDb,
+                                                 "-query", inputPathname,
+                                                 "-evalue", Double.toString(options.getBlastMaxE()),
+                                                 "-max_target_seqs", Integer.toString(options.getBlastMaxTargetSeqs()),
+                                                 "-show_gis",
+                                                 "-task", options.getBlastTask(),
+                                                 "-out", outputBlast,
+                                                 "-outfmt", defaultFormatString};
+                        }
                                                 
                         jobScheduler.submitJob(commands, logFile);
                         System.out.println("Submitting from BlastHandler");
@@ -322,7 +392,9 @@ public class BlastHandler {
     }    
     
     public synchronized void addReadChunk(String readFilename) {
+        runningFromMultiFastQ = true;
         runBlasts(readFilename);
-        //writeMeganFile();
+        writeMeganFile();
+        fileCounter++;
     }
 }
